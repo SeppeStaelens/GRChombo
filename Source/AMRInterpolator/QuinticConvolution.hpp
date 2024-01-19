@@ -9,26 +9,22 @@
 #include "InterpSource.hpp"
 #include <utility>
 
-template <int N_DIMS> class QuinticConvolution
+class QuinticConvolution
 {
-    const InterpSource<N_DIMS> &m_source;
+    const InterpSource &m_source;
     bool m_verbosity;
 
     std::vector<IntVect> m_interp_points;
     std::vector<double> m_interp_weights;
 
   public:
-    QuinticConvolution(const InterpSource<N_DIMS> &source,
-                       bool verbosity = false);
+    QuinticConvolution(const InterpSource &source, bool verbosity = false);
 
-    // eval_index is in 'index' coordinates, not physical coordinates
-    void setup(const std::array<int, N_DIMS> &deriv,
-               const std::array<double, N_DIMS> &eval_index);
-
-    // any class with a method:
-    // Real get(const IntVect &a_iv, int a_comp) const
-    template <class GeneralArrayBox>
-    double interpData(const GeneralArrayBox &fab, int comp = 0);
+    void setup(const std::array<int, CH_SPACEDIM> &deriv,
+               const std::array<double, CH_SPACEDIM> &dx,
+               const std::array<double, CH_SPACEDIM> &evalCoord,
+               const IntVect &nearest);
+    double interpData(const FArrayBox &fab, int comp);
 
     const static string TAG;
 };

@@ -42,12 +42,12 @@ class BinaryBHLevel : public GRAMRLevel
     virtual void preTagCells() override;
 
     /// Identify and tag the cells that need higher resolution
-    virtual void computeTaggingCriterion(
-        FArrayBox &tagging_criterion, const FArrayBox &current_state,
-        const FArrayBox &current_state_diagnostics) override;
+    virtual void
+    computeTaggingCriterion(FArrayBox &tagging_criterion,
+                            const FArrayBox &current_state) override;
 
-    // to do post each time step on every level
-    virtual void specificPostTimeStep() override;
+    // to do analysis after a timestep and after restart/initialization
+    virtual void doAnalysis() override;
 
 #ifdef CH_USE_HDF5
     /// Any actions that should happen just before plot files output

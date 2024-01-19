@@ -3,8 +3,6 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#if CH_SPACEDIM == 3
-
 #include "PunctureTracker.hpp"
 #include "ChomboParameters.hpp" // for writing data
 #include "DimensionDefinitions.hpp"
@@ -243,5 +241,3 @@ std::vector<double> PunctureTracker::get_puncture_vector() const
     }
     return puncture_vector;
 }
-
-#endif // #if CH_SPACEDIM == 3

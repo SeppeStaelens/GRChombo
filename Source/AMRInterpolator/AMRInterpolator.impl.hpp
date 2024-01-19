@@ -3,10 +3,6 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#if !defined(AMRINTERPOLATOR_HPP_)
-#error "This file should only be included through AMRInterpolator.hpp"
-#endif
-
 #ifndef AMRINTERPOLATOR_IMPL_HPP_
 #define AMRINTERPOLATOR_IMPL_HPP_
 
@@ -45,7 +41,9 @@ void AMRInterpolator<InterpAlgo>::refresh(const bool a_fill_ghosts)
 {
     CH_TIME("AMRInterpolator::refresh");
 
-    m_num_levels = const_cast<GRAMR &>(m_gr_amr).getAMRLevels().size();
+    const Vector<AMRLevel *> &levels =
+        const_cast<GRAMR &>(m_gr_amr).getAMRLevels();
+    m_num_levels = levels.size();
 
     m_mem_level.clear();
     m_mem_box.clear();
@@ -75,30 +73,15 @@ const AMR &AMRInterpolator<InterpAlgo>::getAMR() const
 
 template <typename InterpAlgo>
 const std::array<double, CH_SPACEDIM> &
-AMRInterpolator<InterpAlgo>::get_coarsest_dx() const
+AMRInterpolator<InterpAlgo>::get_coarsest_dx()
 {
     return m_coarsest_dx;
 }
 template <typename InterpAlgo>
 const std::array<double, CH_SPACEDIM> &
-AMRInterpolator<InterpAlgo>::get_coarsest_origin() const
+AMRInterpolator<InterpAlgo>::get_coarsest_origin()
 {
     return m_coarsest_origin;
-}
-
-template <typename InterpAlgo>
-bool AMRInterpolator<InterpAlgo>::get_boundary_reflective(Side::LoHiSide a_side,
-                                                          int a_dir) const
-{
-    if (a_side == Side::Lo)
-        return m_lo_boundary_reflective[a_dir];
-    else
-        return m_hi_boundary_reflective[a_dir];
-}
-template <typename InterpAlgo>
-bool AMRInterpolator<InterpAlgo>::get_boundary_periodic(int a_dir) const
-{
-    return m_bc_params.is_periodic[a_dir];
 }
 
 template <typename InterpAlgo>
@@ -106,7 +89,7 @@ void AMRInterpolator<InterpAlgo>::limit_num_levels(unsigned int num_levels)
 {
     CH_TIME("AMRInterpolator::limit_num_levels");
 
-    int max_num_levels = const_cast<GRAMR &>(m_gr_amr).getAMRLevels().size();
+    int max_num_levels = const_cast<AMR &>(m_gr_amr).getAMRLevels().size();
     if (num_levels > max_num_levels || num_levels == 0)
     {
         m_num_levels = max_num_levels;
@@ -256,14 +239,10 @@ void AMRInterpolator<InterpAlgo>::computeLevelLayouts()
         if (m_verbosity >= 2)
         {
             _pout << "    Level " << level_idx << "\t"
-                  << "dx=("
-                  << D_TERM(m_dx[level_idx][0], << "," << m_dx[level_idx][1],
-                                                << "," << m_dx[level_idx][2])
-                  << ")\t"
-                  << "grid_origin=("
-                  << D_TERM(m_origin[level_idx][0],
-                            << "," << m_origin[level_idx][1],
-                            << "," << m_origin[level_idx][2])
+                  << "dx=(" << m_dx[level_idx][0] << "," << m_dx[level_idx][1]
+                  << "," << m_dx[level_idx][2] << ")\t"
+                  << "grid_origin=(" << m_origin[level_idx][0] << ","
+                  << m_origin[level_idx][1] << "," << m_origin[level_idx][2]
                   << ")" << endl;
         }
 
@@ -278,7 +257,7 @@ void AMRInterpolator<InterpAlgo>::computeLevelLayouts()
 }
 
 template <typename InterpAlgo>
-typename AMRInterpolator<InterpAlgo>::InterpolationLayout
+InterpolationLayout
 AMRInterpolator<InterpAlgo>::findBoxes(InterpolationQuery &query)
 {
     CH_TIME("AMRInterpolator::findBoxes");
@@ -314,7 +293,7 @@ AMRInterpolator<InterpAlgo>::findBoxes(InterpolationQuery &query)
     //    const AMRLevel& level = *levels[level_idx];
 
     //    const LevelData<FArrayBox>& level_data = dynamic_cast<const
-    //    InterpSource<>&>(level).getLevelData(); const DisjointBoxLayout&
+    //    InterpSource&>(level).getLevelData(); const DisjointBoxLayout&
     //    box_layout = level_data.disjointBoxLayout(); const Box& domain_box =
     //    level.problemDomain().domainBox();
 
@@ -402,7 +381,7 @@ AMRInterpolator<InterpAlgo>::findBoxes(InterpolationQuery &query)
         const AMRLevel &level = *levels[level_idx];
 
         const LevelData<FArrayBox> &level_data =
-            dynamic_cast<const InterpSource<> &>(level).getLevelData(
+            dynamic_cast<const InterpSource &>(level).getLevelData(
                 VariableType::evolution);
         const DisjointBoxLayout &box_layout = level_data.disjointBoxLayout();
         const Box &domain_box = level.problemDomain().domainBox();
@@ -516,7 +495,7 @@ found_all_points:
 
 template <typename InterpAlgo>
 void AMRInterpolator<InterpAlgo>::prepareMPI(InterpolationQuery &query,
-                                             const InterpolationLayout &layout)
+                                             const InterpolationLayout layout)
 {
     CH_TIME("AMRInterpolator::prepareMPI");
 
@@ -652,6 +631,7 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
     const int num_answers = m_mpi.totalAnswerCount();
 
     std::array<double, CH_SPACEDIM> grid_coord;
+    IntVect nearest;
 
     for (int answer_idx = 0; answer_idx < num_answers; ++answer_idx)
     {
@@ -659,8 +639,7 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
         const int level_idx = m_answer_level[answer_idx];
 
         const AMRLevel &level = *levels[level_idx];
-        const InterpSource<> &source =
-            dynamic_cast<const InterpSource<> &>(level);
+        const InterpSource &source = dynamic_cast<const InterpSource &>(level);
         const LevelData<FArrayBox> *const evolution_level_data_ptr =
             &source.getLevelData(VariableType::evolution);
         const LevelData<FArrayBox> *diagnostics_level_data_ptr;
@@ -677,6 +656,10 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
             diagnostics_box_layout_ptr =
                 &diagnostics_level_data_ptr->disjointBoxLayout();
         }
+
+        const Box &domain_box = level.problemDomain().domainBox();
+        const IntVect &small_end = domain_box.smallEnd();
+        const IntVect &big_end = domain_box.bigEnd();
 
         // Convert the LayoutIndex to DataIndex
         const DataIndex evolution_data_idx(
@@ -713,6 +696,22 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
                   << (box.bigEnd()[i] + 0.5) << "]";
                 MayDay::Abort(s.str().c_str());
             }
+
+            // point lies beyond the "small end" of the whole domain, but still
+            // within the boundary cell
+            if (grid_coord[i] < small_end[i] &&
+                grid_coord[i] >= small_end[i] - 0.5)
+                nearest[i] = small_end[i];
+
+            // point lies beyond the "big end" of the whole domain, but still
+            // within the boundary cell
+            else if (grid_coord[i] > big_end[i] &&
+                     grid_coord[i] <= big_end[i] + 0.5)
+                nearest[i] = big_end[i];
+
+            // otherwise we round to nearest grid point
+            else
+                nearest[i] = (int)ceil(grid_coord[i] - 0.5);
         }
 
         if (m_verbosity >= 2)
@@ -738,7 +737,7 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
 
             typedef std::vector<typename InterpolationQuery::out_t> comps_t;
             comps_t &comps = deriv_it->second;
-            algo.setup(deriv, grid_coord);
+            algo.setup(deriv, m_dx[level_idx], grid_coord, nearest);
 
             for (typename comps_t::iterator it = comps.begin();
                  it != comps.end(); ++it)

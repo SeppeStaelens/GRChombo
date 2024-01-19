@@ -41,6 +41,9 @@ class GRAMR : public AMR
     using Hours = std::chrono::duration<double, std::ratio<3600, 1>>;
     std::chrono::time_point<Clock> start_time = Clock::now();
 
+    // This is used by computeSum, computeNorm, etc.
+    Vector<LevelData<FArrayBox>* > getLevelDataPtrs();
+
   public:
     AMRInterpolator<Lagrange<4>> *m_interpolator; //!< The interpolator pointer
 
@@ -64,9 +67,6 @@ class GRAMR : public AMR
 
     // const version of above
     std::vector<const GRAMRLevel *> get_gramrlevels() const;
-
-    int get_max_level() const { return m_max_level; }
-    int get_restart_step() const { return m_restart_step; }
 
     // Fill ghosts on multiple levels
     void fill_multilevel_ghosts(

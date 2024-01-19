@@ -177,6 +177,7 @@ void GRAMRLevel::postTimeStep()
     }
 
     specificPostTimeStep();
+    doAnalysis();
 
     // enforce solution BCs - this is required after the averaging
     // and postentially after specificPostTimeStep actions
@@ -184,15 +185,6 @@ void GRAMRLevel::postTimeStep()
 
     if (m_verbosity)
         pout() << "GRAMRLevel::postTimeStep " << m_level << " finished" << endl;
-}
-
-// for examples that don't implement a computeTaggingCriterion with diagnostic
-// variables
-void GRAMRLevel::computeTaggingCriterion(
-    FArrayBox &tagging_criterion, const FArrayBox &current_state,
-    const FArrayBox &current_state_diagnostics)
-{
-    computeTaggingCriterion(tagging_criterion, current_state);
 }
 
 // things to do before tagging cells
@@ -222,41 +214,38 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
         DataIndex di = dit0[ibox];
         const Box &b = level_domain[di];
         const FArrayBox &state_fab = m_state_new[di];
-        FArrayBox invalid_box; // no array memory allocated
-        const FArrayBox *diagnostics_fab = &invalid_box;
-        if (NUM_DIAGNOSTIC_VARS > 0)
-        {
-            diagnostics_fab = &m_state_diagnostics[di];
-        }
 
-        // FAB to store value of criterion
+        // mod gradient
         FArrayBox tagging_criterion(b, 1);
-        computeTaggingCriterion(tagging_criterion, state_fab, *diagnostics_fab);
+        computeTaggingCriterion(tagging_criterion, state_fab);
 
         const IntVect &smallEnd = b.smallEnd();
         const IntVect &bigEnd = b.bigEnd();
 
-        D_TERM(const int xmin = smallEnd[0];, const int ymin = smallEnd[1];
-               , const int zmin = smallEnd[2];)
+        const int xmin = smallEnd[0];
+        const int ymin = smallEnd[1];
+        const int zmin = smallEnd[2];
 
-        D_TERM(const int xmax = bigEnd[0];, const int ymax = bigEnd[1];
-               , const int zmax = bigEnd[2];)
+        const int xmax = bigEnd[0];
+        const int ymax = bigEnd[1];
+        const int zmax = bigEnd[2];
 
-#pragma omp parallel for collapse(CH_SPACEDIM) schedule(static) default(shared)
-        D_INVTERM(for (int ix = xmin; ix <= xmax; ++ix),
-                  for (int iy = ymin; iy <= ymax; ++iy),
-                  for (int iz = zmin; iz <= zmax; ++iz))
-        {
-            IntVect iv(D_DECL(ix, iy, iz));
-            if (tagging_criterion(iv, 0) >= m_p.regrid_thresholds[m_level])
-            {
+#pragma omp parallel for collapse(3) schedule(static) default(shared)
+        for (int iz = zmin; iz <= zmax; ++iz)
+            for (int iy = ymin; iy <= ymax; ++iy)
+                for (int ix = xmin; ix <= xmax; ++ix)
+                {
+                    IntVect iv(ix, iy, iz);
+                    if (tagging_criterion(iv, 0) >=
+                        m_p.regrid_thresholds[m_level])
+                    {
 // local_tags |= is not thread safe.
 #pragma omp critical
-                {
-                    local_tags |= iv;
+                        {
+                            local_tags |= iv;
+                        }
+                    }
                 }
-            }
-        }
     }
 
     local_tags.grow(m_p.tag_buffer_size);
@@ -996,6 +985,8 @@ void GRAMRLevel::copySolnData(GRLevelData &dest, const GRLevelData &src)
     // cells outside the domain are not copied by default
     copyBdyGhosts(src, dest);
 }
+
+double GRAMRLevel::get_dx() const { return m_dx; }
 
 bool GRAMRLevel::at_level_timestep_multiple(int a_level) const
 {

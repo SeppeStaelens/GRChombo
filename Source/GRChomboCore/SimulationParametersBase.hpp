@@ -11,15 +11,11 @@
 #include "CCZ4RHS.hpp"
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
+#include "SphericalExtraction.hpp"
 #include <limits>
 
-#ifdef USE_AHFINDER
-#include "AHFinder.hpp"
-#endif
-
-#include "SphericalExtraction.hpp"
 // add this type alias here for backwards compatibility
-using extraction_params_t = spherical_extraction_params_t;
+using extraction_params_t = SphericalExtraction::params_t;
 
 class SimulationParametersBase : public ChomboParameters
 {
@@ -61,6 +57,14 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("nan_check", nan_check, true);
         pp.load("min_chi", min_chi, 1e-4);
         pp.load("min_lapse", min_lapse, 1e-4);
+
+        // directory to store data (extraction files, puncture data, constraint
+        // norms)
+        pp.load("data_subpath", data_path, std::string(""));
+        if (!data_path.empty() && data_path.back() != '/')
+            data_path += "/";
+        if (output_path != "./" && !output_path.empty())
+            data_path = output_path + data_path;
 
         // Extraction params
         pp.load("activate_extraction", activate_extraction, false);
@@ -137,16 +141,11 @@ class SimulationParametersBase : public ChomboParameters
                     false);
 
             std::string extraction_path;
-            if (pp.contains("extraction_subpath"))
-            {
-                pp.load("extraction_subpath", extraction_path);
-                if (!extraction_path.empty() && extraction_path.back() != '/')
-                    extraction_path += "/";
-                if (output_path != "./" && !output_path.empty())
-                    extraction_path = output_path + extraction_path;
-            }
-            else
-                extraction_path = data_path;
+            pp.load("extraction_subpath", extraction_path, data_path);
+            if (!extraction_path.empty() && extraction_path.back() != '/')
+                extraction_path += "/";
+            if (output_path != "./" && !output_path.empty())
+                extraction_path = output_path + extraction_path;
 
             extraction_params.data_path = data_path;
             extraction_params.extraction_path = extraction_path;
@@ -160,12 +159,18 @@ class SimulationParametersBase : public ChomboParameters
                     std::string("Weyl4_mode_"));
         }
 
-#ifdef USE_AHFINDER
-        // Apparent horizon parameters
-        pp.load("AH_activate", AH_activate, false);
-        if (AH_activate)
-            AH_params.read_params(pp, *this);
-#endif
+        pp.load("flux_number_of_radii", angmomflux_params.num_extraction_radii,1);
+       pp.load("flux_write_extraction",angmomflux_params.write_extraction,false );
+       pp.load("flux_do", do_flux_integration,false);
+       pp.load("flux_extraction_levels", angmomflux_params.extraction_levels,angmomflux_params.num_extraction_radii);
+       pp.load("flux_num_theta", angmomflux_params.num_points_theta,10);
+       pp.load("flux_num_phi", angmomflux_params.num_points_phi,10);
+       pp.load("flux_extraction_centre", angmomflux_params.center,
+                                               {0.5 * L, 0.5 * L, 0.5 * L});
+
+       //angmomflux_params.radii.resize(angmomflux_params.number_radii);
+       pp.load("flux_extraction_radii", angmomflux_params.extraction_radii,
+                                               angmomflux_params.num_extraction_radii);
     }
 
     void check_params()
@@ -323,12 +328,11 @@ class SimulationParametersBase : public ChomboParameters
     CCZ4_params_t<> ccz4_params;
 
     bool activate_extraction;
-    spherical_extraction_params_t extraction_params;
+    SphericalExtraction::params_t extraction_params;
+    SphericalExtraction::params_t angmomflux_params;
+    bool do_flux_integration;
 
-#ifdef USE_AHFINDER
-    bool AH_activate;
-    AHParams_t<AHFunction> AH_params;
-#endif
+    std::string data_path;
 };
 
 #endif /* SIMULATIONPARAMETERSBASE_HPP_ */

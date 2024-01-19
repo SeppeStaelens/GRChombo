@@ -28,7 +28,7 @@
 // Chombo namespace
 #include "UsingNamespace.H"
 
-class GRAMRLevel : public AMRLevel, public InterpSource<>
+class GRAMRLevel : public AMRLevel, public InterpSource
 {
   public:
     GRAMRLevel(GRAMR &gr_amr, const SimulationParameters &a_p, int a_verbosity);
@@ -139,22 +139,16 @@ class GRAMRLevel : public AMRLevel, public InterpSource<>
     /// Virtual function for the problem specific parts of postTimeStep
     virtual void specificPostTimeStep() {}
 
+    /// Virtual function for analysis called in postTimeStep
+    /// and after AMR set up
+    virtual void doAnalysis() {}
+
     /// (Pure) virtual function for the initial data calculation
     virtual void initialData() = 0;
 
-    /// Virtual function which tags cells for refinement based on just evolution
-    /// variables state
+    /// Computes which cells have insufficient resolution and should be tagged
     virtual void computeTaggingCriterion(FArrayBox &tagging_criterion,
-                                         const FArrayBox &current_state)
-    {
-    }
-
-    /// Virtual function which tags cells for refinement based on current
-    /// evolution and diagnostic variables state
-    virtual void
-    computeTaggingCriterion(FArrayBox &tagging_criterion,
-                            const FArrayBox &current_state,
-                            const FArrayBox &current_state_diagnostics);
+                                         const FArrayBox &current_state) = 0;
 
 #ifdef CH_USE_HDF5
     /// Things to do immediately before checkpointing
@@ -175,8 +169,7 @@ class GRAMRLevel : public AMRLevel, public InterpSource<>
     {
     }
 
-    // direction irrelevant, but relevant for InterpSource
-    ALWAYS_INLINE double get_dx(int dir = 0) const { return m_dx; };
+    double get_dx() const;
 
     /// Returns true if m_time is the same as the time at the end of the current
     /// timestep on level a_level and false otherwise

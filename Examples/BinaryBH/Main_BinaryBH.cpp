@@ -17,6 +17,7 @@
 #include "MultiLevelTask.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
+#include "CallDoAnalysis.hpp"
 // TPAMR.hpp includes BHAMR.hpp
 #include "TPAMR.hpp" // TPAMR code conditional compiled on USE_TWOPUNCTURES
 
@@ -76,28 +77,20 @@ int runGRChombo(int argc, char *argv[])
     if (sim_params.track_punctures)
         bh_amr.m_puncture_tracker.restart_punctures();
 
-#ifdef USE_AHFINDER
-    if (sim_params.AH_activate)
-    {
-        AHSurfaceGeometry sph1(sim_params.bh1_params.center);
-        AHSurfaceGeometry sph2(sim_params.bh2_params.center);
-
-        bh_amr.m_ah_finder.add_ah(sph1, sim_params.AH_1_initial_guess,
-                                  sim_params.AH_params);
-        bh_amr.m_ah_finder.add_ah(sph2, sim_params.AH_2_initial_guess,
-                                  sim_params.AH_params);
-        bh_amr.m_ah_finder.add_ah_merger(0, 1, sim_params.AH_params);
-    }
-#endif
-
     using Clock = std::chrono::steady_clock;
     using Minutes = std::chrono::duration<double, std::ratio<60, 1>>;
+
+    // Add a scheduler to GRAMR which just calls doAnalysis on every AMRLevel
+    // at time 0. It is called later in postTimeStep
+    RefCountedPtr<CallDoAnalysis> call_do_analysis_ptr(new CallDoAnalysis);
+    RefCountedPtr<Scheduler> scheduler_ptr(new Scheduler);
+    scheduler_ptr->schedule(call_do_analysis_ptr, sim_params.max_steps);
+    bh_amr.schedule(scheduler_ptr);
 
     std::chrono::time_point<Clock> start_time = Clock::now();
 
     // Add a scheduler to call specificPostTimeStep on every AMRLevel at t=0
-    auto task = [](GRAMRLevel *level)
-    {
+    auto task = [](GRAMRLevel *level) {
         if (level->time() == 0.)
             level->specificPostTimeStep();
     };

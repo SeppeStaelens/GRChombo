@@ -87,7 +87,11 @@ class IntegratedMovingPunctureGauge
         {
             rhs.shift[i] = m_params.shift_advec_coeff * advec.shift[i] +
                            m_params.shift_Gamma_coeff * vars.Gamma[i] -
-                           m_params.eta * vars.shift[i] - vars.B[i];
+                           m_params.eta * vars.shift[i];
+                           
+            // rhs.shift[i] = m_params.shift_advec_coeff * advec.shift[i] +
+            //                m_params.shift_Gamma_coeff * vars.Gamma[i] -
+            //                m_params.eta * vars.shift[i] - vars.B[i];
             rhs.B[i] = 0.; // static, stays the same to save initial condition
         }
     }

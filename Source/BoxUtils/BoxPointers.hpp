@@ -74,16 +74,16 @@ class BoxPointers
 
     CellIndexIn get_in_index(IntVect integer_coords) const
     {
-        return (D_TERM((integer_coords[0] - m_in_lo[0]),
-                       +m_in_stride[1] * (integer_coords[1] - m_in_lo[1]),
-                       +m_in_stride[2] * (integer_coords[2] - m_in_lo[2])));
+        return (m_in_stride[2] * (integer_coords[2] - m_in_lo[2]) +
+                m_in_stride[1] * (integer_coords[1] - m_in_lo[1]) +
+                (integer_coords[0] - m_in_lo[0]));
     }
 
     CellIndexOut get_out_index(IntVect integer_coords) const
     {
-        return (D_TERM((integer_coords[0] - m_out_lo[0]),
-                       +m_out_stride[1] * (integer_coords[1] - m_out_lo[1]),
-                       +m_out_stride[2] * (integer_coords[2] - m_out_lo[2])));
+        return (m_out_stride[2] * (integer_coords[2] - m_out_lo[2]) +
+                m_out_stride[1] * (integer_coords[1] - m_out_lo[1]) +
+                (integer_coords[0] - m_out_lo[0]));
     }
 };
 

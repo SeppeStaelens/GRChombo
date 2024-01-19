@@ -6,8 +6,8 @@
 #ifndef LAGRANGE_IMPL_HPP_
 #define LAGRANGE_IMPL_HPP_
 
-template <int Order, int N_DIMS>
-const string Lagrange<Order, N_DIMS>::TAG = "\x1b[36;1m[Lagrange]\x1b[0m ";
+template <int Order>
+const string Lagrange<Order>::TAG = "\x1b[36;1m[Lagrange]\x1b[0m ";
 
 /* Finite difference weight generation algorithm
  *
@@ -20,9 +20,9 @@ const string Lagrange<Order, N_DIMS>::TAG = "\x1b[36;1m[Lagrange]\x1b[0m ";
  * routine: - change type of c1,c2,c3 to 'double' - replace '0', 'i', 'j' in the
  * annotated lines with 'grid[0]', 'grid[i]', 'grid[j]'.
  */
-template <int Order, int N_DIMS>
-Lagrange<Order, N_DIMS>::Stencil::Stencil(int width, int deriv, double dx,
-                                          double point_offset)
+template <int Order>
+Lagrange<Order>::Stencil::Stencil(int width, int deriv, double dx,
+                                  double point_offset)
     : m_width(width), m_deriv(deriv), m_dx(dx), m_point_offset(point_offset)
 {
     int c1 = 1;
@@ -102,17 +102,17 @@ Lagrange<Order, N_DIMS>::Stencil::Stencil(int width, int deriv, double dx,
     }
 }
 
-template <int Order, int N_DIMS>
-bool Lagrange<Order, N_DIMS>::Stencil::operator==(
-    const Lagrange<Order, N_DIMS>::Stencil &rhs) const
+template <int Order>
+bool Lagrange<Order>::Stencil::operator==(
+    const Lagrange<Order>::Stencil &rhs) const
 {
     return (rhs.m_width == m_width) && (rhs.m_deriv == m_deriv) &&
            (rhs.m_point_offset == m_point_offset) && (rhs.dx == m_dx);
 }
 
-template <int Order, int N_DIMS>
-bool Lagrange<Order, N_DIMS>::Stencil::isSameAs(int width, int deriv, double dx,
-                                                double point_offset) const
+template <int Order>
+bool Lagrange<Order>::Stencil::isSameAs(int width, int deriv, double dx,
+                                        double point_offset) const
 {
     return (width == m_width) && (deriv == m_deriv) && (dx == m_dx) &&
            (point_offset == m_point_offset);
@@ -120,10 +120,10 @@ bool Lagrange<Order, N_DIMS>::Stencil::isSameAs(int width, int deriv, double dx,
 
 /* STENCIL ACCESSOR */
 
-template <int Order, int N_DIMS>
-typename Lagrange<Order, N_DIMS>::Stencil
-Lagrange<Order, N_DIMS>::getStencil(int width, int deriv, double dx,
-                                    double point_offset)
+template <int Order>
+typename Lagrange<Order>::Stencil
+Lagrange<Order>::getStencil(int width, int deriv, double dx,
+                            double point_offset)
 {
     for (typename stencil_collection_t::iterator it =
              m_memoized_stencils.begin();
@@ -142,8 +142,8 @@ Lagrange<Order, N_DIMS>::getStencil(int width, int deriv, double dx,
                                        Stencil(width, deriv, dx, point_offset));
 }
 
-template <int Order, int N_DIMS>
-const double &Lagrange<Order, N_DIMS>::Stencil::operator[](unsigned int i) const
+template <int Order>
+const double &Lagrange<Order>::Stencil::operator[](unsigned int i) const
 {
     CH_assert(i < m_width);
     return m_weights[i];
@@ -151,29 +151,28 @@ const double &Lagrange<Order, N_DIMS>::Stencil::operator[](unsigned int i) const
 
 /* LAGRANGE TENSOR PRODUCT LOGIC */
 
-template <int Order, int N_DIMS>
-Lagrange<Order, N_DIMS>::Lagrange(const InterpSource<N_DIMS> &source,
-                                  bool verbosity)
+template <int Order>
+Lagrange<Order>::Lagrange(const InterpSource &source, bool verbosity)
     : m_source(source), m_verbosity(verbosity)
 {
 }
 
-template <int Order, int N_DIMS>
-void Lagrange<Order, N_DIMS>::setup(
-    const std::array<int, N_DIMS> &deriv,
-    const std::array<double, N_DIMS> &eval_index)
+template <int Order>
+void Lagrange<Order>::setup(const std::array<int, CH_SPACEDIM> &deriv,
+                            const std::array<double, CH_SPACEDIM> &dx,
+                            const std::array<double, CH_SPACEDIM> &evalCoord,
+                            const IntVect &nearest)
 {
-    std::array<double, N_DIMS> dxs = m_source.get_dxs();
     pair<std::vector<IntVect>, std::vector<double>> result =
-        generateStencil(deriv, dxs, eval_index);
+        generateStencil(deriv, dx, evalCoord, nearest);
     m_interp_points = result.first;
     m_interp_weights = result.second;
 
     /*
-    pout() << TAG << "Stencil: point = { ";
-    for (int i = 0; i < N_DIMS; ++i)
+    pout() << TAG << "Stencil: coord = { ";
+    for (int i = 0; i < CH_SPACEDIM; ++i)
     {
-        pout() << eval_index[i] << " ";
+        pout() << evalCoord[i] << " ";
     }
     pout() << "}, weights = { ";
     for (int i = 0; i < m_interp_weights.size(); ++i)
@@ -184,9 +183,8 @@ void Lagrange<Order, N_DIMS>::setup(
     */
 }
 
-template <int Order, int N_DIMS>
-template <class GeneralArrayBox>
-double Lagrange<Order, N_DIMS>::interpData(const GeneralArrayBox &fab, int comp)
+template <int Order>
+double Lagrange<Order>::interpData(const FArrayBox &fab, int comp)
 {
     /*
     m_interp_neg.clear();
@@ -238,11 +236,13 @@ double Lagrange<Order, N_DIMS>::interpData(const GeneralArrayBox &fab, int comp)
     return accum;
 }
 
-template <int Order, int N_DIMS>
+template <int Order>
 pair<std::vector<IntVect>, std::vector<double>>
-Lagrange<Order, N_DIMS>::generateStencil(
-    const std::array<int, N_DIMS> &deriv, const std::array<double, N_DIMS> &dx,
-    const std::array<double, N_DIMS> &eval_index, int dim)
+Lagrange<Order>::generateStencil(
+    const std::array<int, CH_SPACEDIM> &deriv,
+    const std::array<double, CH_SPACEDIM> &dx,
+    const std::array<double, CH_SPACEDIM> &evalCoord, const IntVect &nearest,
+    int dim)
 {
     std::vector<IntVect> out_points;
     std::vector<double> out_weights;
@@ -266,20 +266,16 @@ Lagrange<Order, N_DIMS>::generateStencil(
     int points_min = Order + deriv[dim];
     int points_max = Order + deriv[dim];
 
-    std::array<double, N_DIMS> interp_point = eval_index;
-
-    // TF: assume nearest point is at 'std::round(eval_index[dim])'
-    // this used to be an argument, but I think this assumption should always
-    // hold
-    int candidate = std::round(eval_index[dim]);
-    int grown_direction = (candidate - eval_index[dim] < 0) ? DOWN : UP;
+    std::array<double, CH_SPACEDIM> interp_coord = evalCoord;
+    int candidate = nearest[dim];
+    int grown_direction = (nearest[dim] - evalCoord[dim] < 0) ? DOWN : UP;
 
     while ((can_grow[DOWN] || can_grow[UP]) &&
            (points_max - points_min < Order + deriv[dim]))
     {
-        interp_point[dim] = candidate;
+        interp_coord[dim] = candidate;
 
-        if (m_source.contains(interp_point))
+        if (m_source.contains(interp_coord))
         {
             int idx =
                 (grown_direction == DOWN) ? (--points_min) : (points_max++);
@@ -305,12 +301,12 @@ Lagrange<Order, N_DIMS>::generateStencil(
 
     const Stencil my_weights =
         getStencil(stencil_width, deriv[dim], dx[dim],
-                   eval_index[dim] - my_points[points_min]);
+                   evalCoord[dim] - my_points[points_min]);
 
     if (m_verbosity)
     {
         pout() << TAG << "Stencil: dim = " << dim
-               << ", point = " << eval_index[dim] << ", points = { ";
+               << ", coord = " << evalCoord[dim] << ", points = { ";
         for (int i = points_min; i < points_max; ++i)
         {
             pout() << my_points[i] << " ";
@@ -328,13 +324,13 @@ Lagrange<Order, N_DIMS>::generateStencil(
     // first.
     for (int i = 0; i < stencil_width; ++i)
     {
-        interp_point[dim] = my_points[i + points_min];
+        interp_coord[dim] = my_points[i + points_min];
 
         if (dim > 0)
         {
             // Descend to the next dimension
             pair<std::vector<IntVect>, std::vector<double>> sub_result =
-                generateStencil(deriv, dx, interp_point, dim - 1);
+                generateStencil(deriv, dx, interp_coord, nearest, dim - 1);
             std::vector<IntVect> &sub_points = sub_result.first;
             std::vector<double> &sub_weights = sub_result.second;
 
@@ -354,8 +350,8 @@ Lagrange<Order, N_DIMS>::generateStencil(
             if (my_weights[i] != 0)
             {
                 out_points.push_back(IntVect(D_DECL6(
-                    interp_point[0], interp_point[1], interp_point[2],
-                    interp_point[3], interp_point[4], interp_point[5])));
+                    interp_coord[0], interp_coord[1], interp_coord[2],
+                    interp_coord[3], interp_coord[4], interp_coord[5])));
                 out_weights.push_back(my_weights[i]);
             }
         }
