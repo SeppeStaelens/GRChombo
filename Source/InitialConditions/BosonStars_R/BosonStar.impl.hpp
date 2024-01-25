@@ -24,6 +24,8 @@ inline BosonStar::BosonStar(BosonStar_params_t a_params_BosonStar, BosonStar_par
 }
 
 void BosonStar::compute_1d_solution(const double max_r)
+/** This function computes the 1d solution for both BSs in the binary
+*/
 {
     try
     {   
@@ -108,7 +110,7 @@ void BosonStar::compute(Cell<data_t> current_cell) const
     double lapse_2 = 1.;
     double w_ = m_1d_sol.get_w();
 
-    //Write in phase, shift, metric componnets of star 1 and initialise metric components of star 2
+    //Write in phase, shift, metric components of star 1 and initialise metric components of star 2
     double phase_ = m_params_BosonStar.phase * M_PI + w_ * t;
     double beta_x = s_ * c_ * (psi_ * psi_ - omega_ * omega_) / (pc_os);
     vars.shift[0] += beta_x;
@@ -158,18 +160,21 @@ void BosonStar::compute(Cell<data_t> current_cell) const
     double chi_;
     double chi_plain;
 
-     // This is the effect of object 1 on object 2 and hence represents the value to be substracted in the initial data from the position of object 2 
+    // This is the effect of object 1 on object 2 and hence represents the value to be substracted in the initial data from the position of object 2
+    // In the second block, stuff gets calculated at the position of the second star that got calculated before already. 
     double t_p = (-separation) * s_; //set /tilde{t} to zero
     double x_p = (-separation) * c_;
     double z_p = 0.; //set /tilde{t} to zero
     double y_p = impact_parameter;
     double r_p = sqrt(x_p * x_p + y_p * y_p + z_p * z_p);
+
     double p_p = m_1d_sol.get_p_interp(r_p);
     double dp_p = m_1d_sol.get_dp_interp(r_p);
     double omega_p = m_1d_sol.get_lapse_interp(r_p);
     double omega_prime_p = m_1d_sol.get_dlapse_interp(r_p);
     double psi_p = m_1d_sol.get_psi_interp(r_p);
     double psi_prime_p = m_1d_sol.get_dpsi_interp(r_p);
+
     double pc_os_p = psi_p * psi_p * c_ * c_ - omega_p * omega_p * s_ * s_;
     
     //Initialise weight function calculation
@@ -178,20 +183,22 @@ void BosonStar::compute(Cell<data_t> current_cell) const
     
     if (binary)
     {
+        // compare this to g_ll_1 above
         helferLL[1][1] = psi_p * psi_p;
         helferLL[2][2] = psi_p * psi_p;
         helferLL[0][0] = pc_os_p;
+
         double chi_inf = pow((2. - helferLL[0][0]) * (2. - helferLL[1][1]) *
-        (2. - helferLL[2][2]), -1./3.), h00_inf = (2. - helferLL[0][0]) * chi_inf,
-        h11_inf = (2. - helferLL[1][1]) * chi_inf, h22_inf = (2. - helferLL[2][2]) * chi_inf;
+        (2. - helferLL[2][2]), -1./3.);
+        double h00_inf = (2. - helferLL[0][0]) * chi_inf; 
+        double h11_inf = (2. - helferLL[1][1]) * chi_inf;
+        double h22_inf = (2. - helferLL[2][2]) * chi_inf;
         /*if (r<3){
         std::cout << "h00 = " << h00_inf << ", h11 = " << h11_inf
                           << ", h22 = " << h22_inf << ", chi inf = " <<
                           chi_inf << std::endl;}*/
-    }
 
-    if (binary)
-    {   
+
         //Second star positioning
         c_ = cosh(-rapidity2);
         s_ = sinh(-rapidity2);
@@ -205,23 +212,28 @@ void BosonStar::compute(Cell<data_t> current_cell) const
         //Second star physical variables
         p_ = m_1d_sol2.get_p_interp(r);
         dp_ = m_1d_sol2.get_dp_interp(r);
-        omega_ = m_1d_sol2.get_lapse_interp(r);
-        omega_prime_ = m_1d_sol2.get_dlapse_interp(r);
-        psi_ = m_1d_sol2.get_psi_interp(r);
-        psi_prime_ = m_1d_sol2.get_dpsi_interp(r);
-        double r_tilde;
 
         if (BS_BH_binary)
         {
+            double r_tilde;
             r_tilde = sqrt(r  *r + 10e-10);
+
             omega_ = (2. - M / r_tilde) / (2. + M / r_tilde);
             omega_prime_ = 4. * M / pow(2. * r_tilde + M, 2);
             psi_ = pow(1. + M/ (2. * r_tilde), 2);
             psi_prime_ = -(M / (r_tilde * r_tilde)) * (1. + M / (2. * r_tilde));
         }
+        else
+        {
+            omega_ = m_1d_sol2.get_lapse_interp(r);
+            omega_prime_ = m_1d_sol2.get_dlapse_interp(r);
+            psi_ = m_1d_sol2.get_psi_interp(r);
+            psi_prime_ = m_1d_sol2.get_dpsi_interp(r);
+        }
 
         pc_os = psi_ * psi_ * c_ *c_ - omega_ * omega_ * s_ * s_;
         lapse_2 = omega_ * psi_ / (sqrt(pc_os));
+
         if (antiboson)
         {
             w_ = - m_1d_sol2.get_w();
@@ -368,6 +380,7 @@ void BosonStar::compute(Cell<data_t> current_cell) const
     if (initial_data_choice == 2)
     {
         //If one uses fixing conformal trick, we need to have the vales of the metric of star 1 at its centre
+        //In the solution stored in m_1d_sol, this is at the origin, as this is the single star solution
         double r_11 = 0.;
         double p_11 = m_1d_sol.get_p_interp(r_11);
         double dp_11 = m_1d_sol.get_dp_interp(r_11);
@@ -387,7 +400,7 @@ void BosonStar::compute(Cell<data_t> current_cell) const
         double psi_prime_22 = m_1d_sol2.get_dpsi_interp(r_22);
         double pc_os_22 = psi_22 * psi_22 * cosh(-rapidity2) * cosh(-rapidity2) - omega_22 * omega_22 * sinh(-rapidity2) * sinh(-rapidity2);
 
-        //These are to be filled in with plain supporposed metric components evaluated at x_A and x_B respectively 
+        //These are to be filled in with plain superposed metric components evaluated at x_A and x_B respectively 
         double superpose_1[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
         double superpose_2[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
 

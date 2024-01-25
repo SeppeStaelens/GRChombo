@@ -39,11 +39,9 @@ public:
     template <class data_t>
     void compute(Cell<data_t> current_cell) const;
 
+    //The object that stores the solution found by the 1d ODE integrator */
     BosonStarSolution m_1d_sol;
     BosonStarSolution m_1d_sol2;
-
-    //The object that stores the solution found by the 1d ODE integrator */
-
 
 protected:
     double m_dx;
