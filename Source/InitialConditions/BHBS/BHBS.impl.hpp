@@ -3,27 +3,27 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#if !defined(BOSONSTAR_HPP_)
+#if !defined(BHBS_HPP_)
 #error "This file should only be included through BosonStar.hpp"
 #endif
 
-#ifndef BOSONSTAR_IMPL_HPP_
-#define BOSONSTAR_IMPL_HPP_
+#ifndef BHBS_IMPL_HPP_
+#define BHBS_IMPL_HPP_
 
 #include "BosonStarSolution.hpp" //for BosonStarSolution class
 #include "WeightFunction.hpp"
 #include "DebuggingTools.hpp"
 #include "Max.hpp"
 
-inline BosonStar::BosonStar(BosonStar_params_t a_params_BosonStar, BosonStar_params_t a_params_BosonStar2,
+inline BHBSBinary::BHBSBinary(BosonStar_params_t a_params_BosonStar, BlackHole_params_t a_params_BlackHole,
                     Potential::params_t a_params_potential, double a_G_Newton,
                     double a_dx, bool a_identical, int a_verbosity)
-    :m_dx(a_dx), m_G_Newton(a_G_Newton), m_params_BosonStar(a_params_BosonStar), m_params_BosonStar2(a_params_BosonStar2),
+    :m_dx(a_dx), m_G_Newton(a_G_Newton), m_params_BosonStar(a_params_BosonStar), m_params_BlackHole(a_params_BlackHole),
     m_params_potential(a_params_potential), m_identical(a_identical), m_verbosity(a_verbosity)
 {
 }
 
-void BosonStar::compute_1d_solution(const double max_r)
+void BHBSBinary::compute_1d_solution(const double max_r)
 /** This function computes the 1d solution for both BSs in the binary
 */
 {
@@ -38,13 +38,6 @@ void BosonStar::compute_1d_solution(const double max_r)
         pout() << "Running the solver for Star 1" << endl;
         m_1d_sol.main();
         pout() << "Completed for star 1" << endl;
-
-        pout() << "Setting initial conditions for Star 2" << endl;
-        m_1d_sol2.set_initialcondition_params(m_params_BosonStar2,m_params_potential,max_r);
-        pout() << "Running the solver for Star 2" << endl;
-        m_1d_sol2.main();
-        pout() << "Completed for star 2" << endl;
-
     }
     catch (std::exception &exception)
     {
@@ -54,7 +47,7 @@ void BosonStar::compute_1d_solution(const double max_r)
 
 // Compute the value of the initial vars on the grid
 template <class data_t>
-void BosonStar::compute(Cell<data_t> current_cell) const
+void BHBSBinary::compute(Cell<data_t> current_cell) const
 {
     MatterCCZ4<ComplexScalarField<>>::Vars<data_t> vars;
     // Load variables (should be set to zero if this is a single BS)
@@ -66,13 +59,11 @@ void BosonStar::compute(Cell<data_t> current_cell) const
     Coordinates<data_t> coords(current_cell, m_dx,
         m_params_BosonStar.star_centre);
 
-    // Import BS parameters and option of whether this is a BS binary or BS-BH binary
+    // Import BS, BH parameters
     double rapidity = m_params_BosonStar.BS_rapidity;
-    double rapidity2 = m_params_BosonStar2.BS_rapidity;
-    bool binary = m_params_BosonStar.BS_binary;
-    bool BS_BH_binary = m_params_BosonStar.BS_BH_binary;
+    double rapidity2 = m_params_BlackHole.BH_rapidity;
     bool antiboson = m_params_BosonStar.antiboson;
-    double M = m_params_BosonStar.BlackHoleMass;
+    double M = m_params_BlackHole.BlackHoleMass;
     double separation = m_params_BosonStar.BS_separation;
     double impact_parameter = m_params_BosonStar.BS_impact_parameter;
     double q = m_params_BosonStar.mass_ratio;
@@ -117,6 +108,7 @@ void BosonStar::compute(Cell<data_t> current_cell) const
     double g_zz_1 = psi_ * psi_;
     double g_yy_1 = psi_ * psi_;
     double g_xx_1 = pc_os;
+
     double g_xx_2 = 0., g_yy_2 = 0., g_zz_2 = 0., g_xx, g_yy, g_zz;
 
     //Add on to evolution equations
@@ -179,130 +171,112 @@ void BosonStar::compute(Cell<data_t> current_cell) const
     
     //Initialise weight function calculation
 
+    //////////// CHECK TILL BH POS //////////////
+
     WeightFunction weight;
-    
-    if (binary)
+        
+    // compare this to g_ll_1 above
+    helferLL[1][1] = psi_p * psi_p;
+    helferLL[2][2] = psi_p * psi_p;
+    helferLL[0][0] = pc_os_p;
+
+    double chi_inf = pow((2. - helferLL[0][0]) * (2. - helferLL[1][1]) *
+    (2. - helferLL[2][2]), -1./3.);
+    double h00_inf = (2. - helferLL[0][0]) * chi_inf; 
+    double h11_inf = (2. - helferLL[1][1]) * chi_inf;
+    double h22_inf = (2. - helferLL[2][2]) * chi_inf;
+    /*if (r<3){
+    std::cout << "h00 = " << h00_inf << ", h11 = " << h11_inf
+                        << ", h22 = " << h22_inf << ", chi inf = " <<
+                        chi_inf << std::endl;}*/
+
+
+    // BH positioning
+    c_ = cosh(-rapidity2);
+    s_ = sinh(-rapidity2);
+    v_ = tanh(-rapidity2);
+    t = (coords.x + separation / (q + 1.)) * s_; //set /tilde{t} to zero
+    x = (coords.x + separation / (q + 1.)) * c_;
+    z = coords.z;
+    y = coords.y - impact_parameter / (q + 1.);
+    r = sqrt(x * x + y * y + z * z);
+
+    // BH contributions
+    double r_tilde;
+    r_tilde = sqrt(r  *r + 10e-10);
+
+    omega_ = (2. - M / r_tilde) / (2. + M / r_tilde);
+    omega_prime_ = 4. * M / pow(2. * r_tilde + M, 2);
+    psi_ = pow(1. + M/ (2. * r_tilde), 2);
+    psi_prime_ = -(M / (r_tilde * r_tilde)) * (1. + M / (2. * r_tilde));
+
+    pc_os = psi_ * psi_ * c_ *c_ - omega_ * omega_ * s_ * s_;
+    lapse_2 = omega_ * psi_ / (sqrt(pc_os));
+
+    if (antiboson)
     {
-        // compare this to g_ll_1 above
-        helferLL[1][1] = psi_p * psi_p;
-        helferLL[2][2] = psi_p * psi_p;
-        helferLL[0][0] = pc_os_p;
-
-        double chi_inf = pow((2. - helferLL[0][0]) * (2. - helferLL[1][1]) *
-        (2. - helferLL[2][2]), -1./3.);
-        double h00_inf = (2. - helferLL[0][0]) * chi_inf; 
-        double h11_inf = (2. - helferLL[1][1]) * chi_inf;
-        double h22_inf = (2. - helferLL[2][2]) * chi_inf;
-        /*if (r<3){
-        std::cout << "h00 = " << h00_inf << ", h11 = " << h11_inf
-                          << ", h22 = " << h22_inf << ", chi inf = " <<
-                          chi_inf << std::endl;}*/
-
-
-        //Second star positioning
-        c_ = cosh(-rapidity2);
-        s_ = sinh(-rapidity2);
-        v_ = tanh(-rapidity2);
-        t = (coords.x + separation / (q + 1.)) * s_; //set /tilde{t} to zero
-        x = (coords.x + separation / (q + 1.)) * c_;
-        z = coords.z;
-        y = coords.y - impact_parameter / (q + 1.);
-        r = sqrt(x * x + y * y + z * z);
-
-        //Second star physical variables
-        p_ = m_1d_sol2.get_p_interp(r);
-        dp_ = m_1d_sol2.get_dp_interp(r);
-
-        if (BS_BH_binary)
-        {
-            double r_tilde;
-            r_tilde = sqrt(r  *r + 10e-10);
-
-            omega_ = (2. - M / r_tilde) / (2. + M / r_tilde);
-            omega_prime_ = 4. * M / pow(2. * r_tilde + M, 2);
-            psi_ = pow(1. + M/ (2. * r_tilde), 2);
-            psi_prime_ = -(M / (r_tilde * r_tilde)) * (1. + M / (2. * r_tilde));
-        }
-        else
-        {
-            omega_ = m_1d_sol2.get_lapse_interp(r);
-            omega_prime_ = m_1d_sol2.get_dlapse_interp(r);
-            psi_ = m_1d_sol2.get_psi_interp(r);
-            psi_prime_ = m_1d_sol2.get_dpsi_interp(r);
-        }
-
-        pc_os = psi_ * psi_ * c_ *c_ - omega_ * omega_ * s_ * s_;
-        lapse_2 = omega_ * psi_ / (sqrt(pc_os));
-
-        if (antiboson)
-        {
-            w_ = - m_1d_sol2.get_w();
-        }
-        else
-        {
-            w_ = m_1d_sol2.get_w();
-        }
-        phase_ = w_ * t;
-        beta_x = s_ * c_ * (psi_ * psi_ - omega_ * omega_) / (pc_os);
-        vars.shift[0] += beta_x;
-        g_zz_2 = psi_ * psi_;
-        g_yy_2 = psi_ * psi_;
-        g_xx_2 = pc_os;
-        gammaUU_2[0][0] = 1. / g_xx_2;
-        gammaUU_2[1][1] = 1. / g_yy_2;
-        gammaUU_2[2][2] = 1. / g_zz_2;
-
-        if (BS_BH_binary)
-        {
-            //do not need to modify scalar field or momentum if we have a black hole
-        }
-        else
-        {
-            vars.phi_Re += p_ * cos(phase_);
-            vars.phi_Im += p_ * sin(phase_);
-            vars.Pi_Re += -(1. / lapse_2) * ((x / r) * (s_ - beta_x * c_) * dp_ * cos(phase_) - w_ * (c_ - beta_x * s_) * p_ * sin(phase_));
-            vars.Pi_Im += -(1. / lapse_2) * ((x / r) * (s_ - beta_x * c_) * dp_ * sin(phase_) + w_ * (c_ - beta_x * s_) * p_ * cos(phase_));
-        }
-
-        KLL_2[2][2] = -lapse_2 * s_ * x * psi_prime_ / (r * psi_);
-        KLL_2[1][1] = KLL_2[2][2];
-        KLL_2[0][1] = lapse_2 * c_ * s_ * (y / r) * (psi_prime_ / psi_ - omega_prime_ / omega_);
-        KLL_2[0][2] = lapse_2 * c_ * s_ * (z / r) * (psi_prime_ / psi_ - omega_prime_ / omega_);
-        KLL_2[1][0] = KLL_2[0][1];
-        KLL_2[2][0] = KLL_2[0][2];
-        KLL_2[2][1] = 0.;
-        KLL_2[1][2] = 0.;
-        KLL_2[0][0] = lapse_2 * (x / r) * s_ * c_ * c_ * (psi_prime_ / psi_ - 2. * omega_prime_ / omega_ + v_ * v_ * omega_ * omega_prime_ * pow(psi_, -2));
-        FOR2(i,j) K2 += gammaUU_2[i][j] * KLL_2[i][j];
-
-        // Again, finding the values to be substracted from position of star 1, that is below we find the effect of star 2 on star 1
-        double x_p2 = (separation) * c_;
-        double z_p2 = 0.; //set /tilde{t} to zero
-        double y_p2 = -impact_parameter;
-        double r_p2 = sqrt(x_p2 * x_p2 + y_p2 * y_p2 + z_p2 * z_p2);
-
-        // Get physical variables needed for the metric
-        double p_p2 = m_1d_sol2.get_p_interp(r_p2);
-        double dp_p2 = m_1d_sol2.get_dp_interp(r_p2);
-        double omega_p2 = m_1d_sol2.get_lapse_interp(r_p2);
-        double omega_prime_p2 = m_1d_sol2.get_dlapse_interp(r_p2);
-        double psi_p2 = m_1d_sol2.get_psi_interp(r_p2);
-        double psi_prime_p2 = m_1d_sol2.get_dpsi_interp(r_p2);
-        double pc_os_p2 = psi_p2 * psi_p2 * c_ * c_ - omega_p2 * omega_p2 * s_ * s_;
-
-        if (m_identical == 1)
-        {
-            helferLL2[1][1] = psi_p * psi_p;
-            helferLL2[2][2] = psi_p * psi_p;
-            helferLL2[0][0] = pc_os_p;
-        }
-        else
-        {
-            helferLL2[1][1] = psi_p2 * psi_p2;
-            helferLL2[2][2] = psi_p2 * psi_p2;
-            helferLL2[0][0] = pc_os_p2;
-        }
+        w_ = - m_1d_sol2.get_w();
     }
+    else
+    {
+        w_ = m_1d_sol2.get_w();
+    }
+
+    phase_ = w_ * t;
+    beta_x = s_ * c_ * (psi_ * psi_ - omega_ * omega_) / (pc_os);
+    vars.shift[0] += beta_x;
+    g_zz_2 = psi_ * psi_;
+    g_yy_2 = psi_ * psi_;
+    g_xx_2 = pc_os;
+    gammaUU_2[0][0] = 1. / g_xx_2;
+    gammaUU_2[1][1] = 1. / g_yy_2;
+    gammaUU_2[2][2] = 1. / g_zz_2;
+
+    //do not need to modify scalar field or momentum if we have a black hole
+   
+    KLL_2[2][2] = -lapse_2 * s_ * x * psi_prime_ / (r * psi_);
+    KLL_2[1][1] = KLL_2[2][2];
+    KLL_2[0][1] = lapse_2 * c_ * s_ * (y / r) * (psi_prime_ / psi_ - omega_prime_ / omega_);
+    KLL_2[0][2] = lapse_2 * c_ * s_ * (z / r) * (psi_prime_ / psi_ - omega_prime_ / omega_);
+    KLL_2[1][0] = KLL_2[0][1];
+    KLL_2[2][0] = KLL_2[0][2];
+    KLL_2[2][1] = 0.;
+    KLL_2[1][2] = 0.;
+    KLL_2[0][0] = lapse_2 * (x / r) * s_ * c_ * c_ * (psi_prime_ / psi_ - 2. * omega_prime_ / omega_ + v_ * v_ * omega_ * omega_prime_ * pow(psi_, -2));
+    FOR2(i,j) K2 += gammaUU_2[i][j] * KLL_2[i][j];
+
+    // Again, finding the values to be substracted from position of star 1, that is below we find the effect of star 2 on star 1
+    double x_p2 = (separation) * c_;
+    double z_p2 = 0.; //set /tilde{t} to zero
+    double y_p2 = -impact_parameter;
+    double r_p2 = sqrt(x_p2 * x_p2 + y_p2 * y_p2 + z_p2 * z_p2);
+
+    ////////// BELOW Get RID OF ? ////////////////
+
+    // Get physical variables needed for the metric
+    // double p_p2 = m_1d_sol2.get_p_interp(r_p2);
+    // double dp_p2 = m_1d_sol2.get_dp_interp(r_p2);
+    // double omega_p2 = m_1d_sol2.get_lapse_interp(r_p2);
+    // double omega_prime_p2 = m_1d_sol2.get_dlapse_interp(r_p2);
+    // double psi_p2 = m_1d_sol2.get_psi_interp(r_p2);
+    // double psi_prime_p2 = m_1d_sol2.get_dpsi_interp(r_p2);
+    // double pc_os_p2 = psi_p2 * psi_p2 * c_ * c_ - omega_p2 * omega_p2 * s_ * s_;
+
+    // if (m_identical == 1)
+    // {
+    //     helferLL2[1][1] = psi_p * psi_p;
+    //     helferLL2[2][2] = psi_p * psi_p;
+    //     helferLL2[0][0] = pc_os_p;
+    // }
+    // else
+    // {
+    //     helferLL2[1][1] = psi_p2 * psi_p2;
+    //     helferLL2[2][2] = psi_p2 * psi_p2;
+    //     helferLL2[0][0] = pc_os_p2;
+    // }
+
+    //////////////////////////////////////////////////
+
 
     //Plain superposition 
     if (initial_data_choice == 0)
@@ -327,9 +301,7 @@ void BosonStar::compute(Cell<data_t> current_cell) const
         vars.chi = chi_;
 
         // Define initial lapse
-        if (BS_BH_binary){vars.lapse += sqrt(vars.chi);}
-        else if (binary){vars.lapse += sqrt(lapse_1 * lapse_1 + lapse_2 * lapse_2 - 1.);}
-        else{vars.lapse += lapse_1;}
+        vars.lapse += sqrt(vars.chi);
 
         // Define initial trace of K and A_ij
         double one_third = 1./3.;
@@ -362,9 +334,7 @@ void BosonStar::compute(Cell<data_t> current_cell) const
         vars.chi = chi_;
 
         // Define initial lapse
-        if (BS_BH_binary){vars.lapse += sqrt(vars.chi);}
-        else if (binary){vars.lapse += sqrt(lapse_1 * lapse_1 + lapse_2 * lapse_2 - 1.);}
-        else{vars.lapse += lapse_1;}
+        vars.lapse += sqrt(vars.chi);
 
         // Define initial trace of K and A_ij
         double one_third = 1./3.;
@@ -390,16 +360,6 @@ void BosonStar::compute(Cell<data_t> current_cell) const
         double psi_prime_11 = m_1d_sol.get_dpsi_interp(r_11);
         double pc_os_11 = psi_11 * psi_11 * cosh(rapidity) * cosh(rapidity) - omega_11 * omega_11 * sinh(rapidity) * sinh(rapidity);
 
-        //If one uses fixing conformal trick, we need to have the vales of the metric of star 2 at its centre
-        double r_22 = 0.;
-        double p_22 = m_1d_sol2.get_p_interp(r_22);
-        double dp_22 = m_1d_sol2.get_dp_interp(r_22);
-        double omega_22 = m_1d_sol2.get_lapse_interp(r_22);
-        double omega_prime_22 = m_1d_sol2.get_dlapse_interp(r_22);
-        double psi_22 = m_1d_sol2.get_psi_interp(r_22);
-        double psi_prime_22 = m_1d_sol2.get_dpsi_interp(r_22);
-        double pc_os_22 = psi_22 * psi_22 * cosh(-rapidity2) * cosh(-rapidity2) - omega_22 * omega_22 * sinh(-rapidity2) * sinh(-rapidity2);
-
         //These are to be filled in with plain superposed metric components evaluated at x_A and x_B respectively 
         double superpose_1[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
         double superpose_2[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
@@ -414,10 +374,12 @@ void BosonStar::compute(Cell<data_t> current_cell) const
         double g_yy_11 = psi_11 * psi_11;
         double g_xx_11 = pc_os_11;
 
-        //metric components of \gamma_B(x_B)
-        double g_zz_22 = psi_22 * psi_22;
-        double g_yy_22 = psi_22 * psi_22;
-        double g_xx_22 = pc_os_22;
+        //metric components of \gamma_B(x_B); i.e. components of metric at singularity??
+        double g_zz_22 = ;
+        double g_yy_22 = ;
+        double g_xx_22 = ;
+
+        // Are we calculating the right Helfer???? 
 
         // This  is \gamma_{ij}(x_A) = \gamma_A(x_A) + \gamma_B(x_A) - 1
         superpose_1[0][0] = g_xx_11 + helferLL2[0][0] - 1.;
@@ -445,7 +407,10 @@ void BosonStar::compute(Cell<data_t> current_cell) const
         {
             double chi2_2 = 1000000;
         }
-            
+
+
+        // One of the below should be zero / inf
+
         //This is \delta_A
         double delta_1 = chi1_1 - chi_1;
         //This is \delta_B
@@ -484,9 +449,7 @@ void BosonStar::compute(Cell<data_t> current_cell) const
         vars.chi = pow(chi_, - 4.0 / conformal_power);
 
         // Define initial lapse
-        if (BS_BH_binary){vars.lapse += sqrt(vars.chi);}
-        else if (binary){vars.lapse += sqrt(lapse_1 * lapse_1 + lapse_2 * lapse_2 - 1.);}
-        else{vars.lapse += lapse_1;}
+        vars.lapse += sqrt(vars.chi);
 
         // Define initial trace of K and A_ij
         double one_third = 1./3.;
@@ -499,4 +462,4 @@ void BosonStar::compute(Cell<data_t> current_cell) const
     }
 }
 
-#endif /* BOSONSTAR_IMPL_HPP_ */
+#endif /* BHBS_IMPL_HPP_ */

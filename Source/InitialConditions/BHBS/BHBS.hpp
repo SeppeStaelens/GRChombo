@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef BOSONSTAR_HPP_
-#define BOSONSTAR_HPP_
+#ifndef BHBS_HPP_
+#define BHBS_HPP_
 
 #include "Cell.hpp"
 #include "Coordinates.hpp"
@@ -23,12 +23,12 @@
 
 //! Class which solves for the initial data for a spherically symmetric boson
 //! star with phi^4 coupling
-class BosonStar
+class BHBSBinary
 {
 
 public:
     //! The constructor
-    BosonStar(BosonStar_params_t a_params_BosonStar, BosonStar_params_t a_params_BosonStar2,
+    BHBSBinary(BosonStar_params_t a_params_BosonStar, BlackHole_params_t a_params_BlackHole,
         Potential::params_t a_params_potential, double a_G_Newton, double a_dx, bool a_identical,
         int a_verbosity);
 
@@ -41,18 +41,16 @@ public:
 
     //The object that stores the solution found by the 1d ODE integrator */
     BosonStarSolution m_1d_sol;
-    BosonStarSolution m_1d_sol2;
 
 protected:
     double m_dx;
     double m_G_Newton;
-    bool m_identical;
     BosonStar_params_t m_params_BosonStar;
-    BosonStar_params_t m_params_BosonStar2; //!< The complex scalar field params
+    BlackHole_params_t m_params_BlackHole;
     Potential::params_t m_params_potential; //!< The potential params
     int m_verbosity;
 };
 
-#include "BosonStar.impl.hpp"
+#include "BHBS.impl.hpp"
 
-#endif /* BOSONSTAR_HPP_ */
+#endif /* BHBS_HPP_ */

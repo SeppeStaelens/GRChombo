@@ -27,7 +27,7 @@
 // Problem specific includes
 #include "ComputePack.hpp"
 #include "ComplexPotential.hpp"
-#include "BosonStar.hpp"
+#include "BHBS.hpp"
 #include "ComplexScalarField.hpp"
 #include "SetValue.hpp"
 
@@ -76,16 +76,16 @@ void BHBSLevel::initialData()
         pout() << "BHBSLevel::initialData " << m_level << endl;
 
     // First initalise a BosonStar object
-    BosonStar boson_star(m_p.bosonstar_params, m_p.bosonstar2_params, m_p.potential_params,
+    BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, m_p.potential_params,
                          m_p.G_Newton, m_dx, m_p.identical, m_verbosity);
 
 
     // the max radius the code might need to calculate out to is L*sqrt(3)
-    boson_star.compute_1d_solution(4.*m_p.L);
+    bh_bs_binary.compute_1d_solution(4.*m_p.L);
 
     // First set everything to zero ... we don't want undefined values in
     // constraints etc, then  initial conditions for Boson Star
-    BoxLoops::loop(make_compute_pack(SetValue(0.0), boson_star),
+    BoxLoops::loop(make_compute_pack(SetValue(0.0), bh_bs_binary),
                    m_state_new, m_state_new, INCLUDE_GHOST_CELLS,
                    disable_simd());
  
@@ -93,6 +93,7 @@ void BHBSLevel::initialData()
                    m_state_new, m_state_new, EXCLUDE_GHOST_CELLS,
                    disable_simd());
 
+    // Check this one
     BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.bosonstar2_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
 
     fillAllGhosts();

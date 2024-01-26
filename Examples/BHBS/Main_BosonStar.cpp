@@ -15,7 +15,7 @@
 #include "CallDoAnalysis.hpp"
 
 // Problem specific includes:
-#include "BosonStarLevel.hpp"
+#include "BHBSLevel.hpp"
 
 // Star tracking
 #include "STAMR.hpp"
@@ -33,12 +33,13 @@ int runGRChombo(int argc, char *argv[])
     // and an associated LevelFactory)
     STAMR st_amr;
 
+    // !!!! Seems like this assumes the existence of two boson stars...
     st_amr.m_star_tracker.initial_setup(sim_params.do_star_track,
         sim_params.number_of_stars, {sim_params.positionA, sim_params.positionB},
         sim_params.star_points, sim_params.star_track_width_A, sim_params.star_track_width_B, sim_params.star_track_direction_of_motion);
-    DefaultLevelFactory<BosonStarLevel> boson_star_level_fact(st_amr,
+    DefaultLevelFactory<BHBSLevel> bh_bs_level_fact(st_amr,
                                                                   sim_params);
-    setupAMRObject(st_amr, boson_star_level_fact);
+    setupAMRObject(st_amr, bh_bs_level_fact);
 
     // Instantiate AMR interpolator for mass/GW extraction
     AMRInterpolator<Lagrange<4>> interpolator(

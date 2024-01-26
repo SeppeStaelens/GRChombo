@@ -19,15 +19,22 @@ struct BosonStar_params_t
     double mass;
     double BS_impact_parameter;
     double Newtons_constant;
-    double BlackHoleMass;
     double BS_rapidity;
-    double mass_ratio;
+    double mass_ratio; // redundant ?
     int n_power;
     int id_choice; // initial data choice: 0 - plain superposition, 1 - Thomas' trick, 2 - fixing conformal factor method
-    double radius_width;
+    double radius_width1; // not sure what these do, redundant?
+    double radius_width2; // ^
     int conformal_factor_power;
     bool antiboson;
     std::array<double, CH_SPACEDIM> star_centre; //!< coordinates of the centre of the star
+};
+
+struct BlackHole_params_t
+{
+    double BlackHoleMass;
+    double BH_rapidity;
+    std::array<double, CH_SPACEDIM> BH_centre; //!< coordinates of the centre of the star
 };
 
 #endif /* BOSONSTARPARAMS_HPP_ */
