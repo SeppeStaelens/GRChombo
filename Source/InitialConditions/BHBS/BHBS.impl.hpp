@@ -168,13 +168,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double psi_prime_p = m_1d_sol.get_dpsi_interp(r_p);
 
     double pc_os_p = psi_p * psi_p * c_ * c_ - omega_p * omega_p * s_ * s_;
-    
-    //Initialise weight function calculation
-
-    //////////// CHECK TILL BH POS //////////////
-
-    WeightFunction weight;
-        
+           
     // compare this to g_ll_1 above
     helferLL[1][1] = psi_p * psi_p;
     helferLL[2][2] = psi_p * psi_p;
@@ -244,39 +238,6 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     KLL_2[1][2] = 0.;
     KLL_2[0][0] = lapse_2 * (x / r) * s_ * c_ * c_ * (psi_prime_ / psi_ - 2. * omega_prime_ / omega_ + v_ * v_ * omega_ * omega_prime_ * pow(psi_, -2));
     FOR2(i,j) K2 += gammaUU_2[i][j] * KLL_2[i][j];
-
-    // Again, finding the values to be substracted from position of star 1, that is below we find the effect of star 2 on star 1
-    double x_p2 = (separation) * c_;
-    double z_p2 = 0.; //set /tilde{t} to zero
-    double y_p2 = -impact_parameter;
-    double r_p2 = sqrt(x_p2 * x_p2 + y_p2 * y_p2 + z_p2 * z_p2);
-
-    ////////// BELOW Get RID OF ? ////////////////
-
-    // Get physical variables needed for the metric
-    // double p_p2 = m_1d_sol2.get_p_interp(r_p2);
-    // double dp_p2 = m_1d_sol2.get_dp_interp(r_p2);
-    // double omega_p2 = m_1d_sol2.get_lapse_interp(r_p2);
-    // double omega_prime_p2 = m_1d_sol2.get_dlapse_interp(r_p2);
-    // double psi_p2 = m_1d_sol2.get_psi_interp(r_p2);
-    // double psi_prime_p2 = m_1d_sol2.get_dpsi_interp(r_p2);
-    // double pc_os_p2 = psi_p2 * psi_p2 * c_ * c_ - omega_p2 * omega_p2 * s_ * s_;
-
-    // if (m_identical == 1)
-    // {
-    //     helferLL2[1][1] = psi_p * psi_p;
-    //     helferLL2[2][2] = psi_p * psi_p;
-    //     helferLL2[0][0] = pc_os_p;
-    // }
-    // else
-    // {
-    //     helferLL2[1][1] = psi_p2 * psi_p2;
-    //     helferLL2[2][2] = psi_p2 * psi_p2;
-    //     helferLL2[0][0] = pc_os_p2;
-    // }
-
-    //////////////////////////////////////////////////
-
 
     //Plain superposition 
     if (initial_data_choice == 0)
@@ -349,6 +310,9 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     //Our new method of fixing the conformal factor (with arbitrary n power) to its central equilibrium value
     if (initial_data_choice == 2)
     {
+        //This is to be filled in with plain superposed metric components evaluated at x_BS
+        double superpose[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
+        
         //If one uses fixing conformal trick, we need to have the vales of the metric of star 1 at its centre
         //In the solution stored in m_1d_sol, this is at the origin, as this is the single star solution
         double r_11 = 0.;
@@ -360,9 +324,19 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         double psi_prime_11 = m_1d_sol.get_dpsi_interp(r_11);
         double pc_os_11 = psi_11 * psi_11 * cosh(rapidity) * cosh(rapidity) - omega_11 * omega_11 * sinh(rapidity) * sinh(rapidity);
 
-        //These are to be filled in with plain superposed metric components evaluated at x_A and x_B respectively 
-        double superpose_1[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
-        double superpose_2[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
+        // We need to calculate the influence of the BH at the BS centre.         
+        double x_p2 = (separation) * c_;
+        double z_p2 = 0.; //set /tilde{t} to zero
+        double y_p2 = -impact_parameter;
+        double r_p2 = sqrt(x_p2 * x_p2 + y_p2 * y_p2 + z_p2 * z_p2);
+               
+        double omega_p2 = (2. - M / r_p2) / (2. + M / r_p2);
+        double psi_p2 = pow(1. + M/ (2. * r_p2), 2);
+        double pc_os_p2 = psi_p2 * psi_p2 * c_ *c_ - omega_p2 * omega_p2 * s_ * s_;
+
+        helferLL2[1][1] = psi_p2 * psi_p2;
+        helferLL2[2][2] = psi_p2 * psi_p2;
+        helferLL2[0][0] = pc_os_p2;               
 
         //Start with plain superposed metrics
         g_xx = g_xx_1 + g_xx_2 - 1.0;
@@ -374,69 +348,30 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         double g_yy_11 = psi_11 * psi_11;
         double g_xx_11 = pc_os_11;
 
-        //metric components of \gamma_B(x_B); i.e. components of metric at singularity??
-        double g_zz_22 = ;
-        double g_yy_22 = ;
-        double g_xx_22 = ;
-
-        // Are we calculating the right Helfer???? 
-
         // This  is \gamma_{ij}(x_A) = \gamma_A(x_A) + \gamma_B(x_A) - 1
-        superpose_1[0][0] = g_xx_11 + helferLL2[0][0] - 1.;
-        superpose_1[1][1] = g_yy_11 + helferLL2[1][1] - 1.;
-        superpose_1[2][2] = g_zz_11 + helferLL2[2][2] - 1.;
-
-        // This  is \gamma_{ij}(x_B) = \gamma_B(x_B) + \gamma_A(x_B) - 1
-        superpose_2[0][0] = g_xx_22 + helferLL[0][0] - 1.;
-        superpose_2[1][1] = g_yy_22 + helferLL[1][1] - 1.;
-        superpose_2[2][2] = g_zz_22 + helferLL[2][2] - 1.;
+        superpose[0][0] = g_xx_11 + helferLL2[0][0] - 1.;
+        superpose[1][1] = g_yy_11 + helferLL2[1][1] - 1.;
+        superpose[2][2] = g_zz_11 + helferLL2[2][2] - 1.;
 
         double n_power = conformal_power / 12.0;
 
-        //This is \chi(x_A)
+        //This is \chi(x_BS)
         double chi_1 = pow(superpose_1[0][0] * superpose_1[1][1] * superpose_1[2][2], n_power);
-        //This is \chi(x_B)
-        double chi_2 = pow(superpose_2[0][0] * superpose_2[1][1] * superpose_2[2][2], n_power);
 
-        //This is \chi^A(x_A)
+        //This is \chi^BS(x_BS)
         double chi1_1 = pow(g_xx_11 * g_yy_11 * g_zz_11, n_power);
-        //This is \chi^B(x_B)
-        double chi2_2 = pow(g_xx_22 * g_yy_22 * g_zz_22, n_power);
 
-        if (BS_BH_binary)
-        {
-            double chi2_2 = 1000000;
-        }
-
-
-        // One of the below should be zero / inf
-
-        //This is \delta_A
+        //This is \delta_BS
         double delta_1 = chi1_1 - chi_1;
-        //This is \delta_B
-        double delta_2 = chi2_2 - chi_2;
 
         chi_plain = pow(g_xx * g_yy * g_zz, n_power);
 
-        //Find all the profile functions needed
+        // Create the weight function
+        WeightFunction weight(separation, x_p2, y_p2, z_p2, 4);
         double profile1 = weight.profile_chi((coords.x - q * separation / (q+1)) * cosh(rapidity), coords.y + q * impact_parameter / (q + 1.), coords.z, radius_width1);
-        double profile2 = weight.profile_chi((coords.x + separation / (q+1)) * cosh(-rapidity2), coords.y - impact_parameter / (q + 1.), coords.z, radius_width2);
-
-            
-        double profile_11 = weight.profile_chi(0., 0., 0., radius_width1);
-        double argument_xB_xA = (separation / (q+1)) * (cosh(-rapidity2) + q * cosh(rapidity));
-        double argument_yB_yA = -impact_parameter;
-        double profile_12 = weight.profile_chi(argument_xB_xA, argument_yB_yA, 0., radius_width1);
-            
-        double argument_xA_xB = (separation / (q + 1)) * (- q * cosh(rapidity) - cosh(-rapidity2));
-        double argument_yA_yB = impact_parameter;
-        double profile_21 = weight.profile_chi(argument_xA_xB, argument_yA_yB, 0., radius_width2);
-        double profile_22 = weight.profile_chi(0., 0., 0., radius_width2);
-
-        double value1 = (-profile_21 * delta_2 + profile_22 * delta_1)/(profile_11 * profile_22 - profile_12 * profile_21);
-        double value2 = (profile_11 * delta_2 - profile_12 * delta_1)/(profile_11 * profile_22 - profile_12 * profile_21);
-
-        chi_ = chi_plain + profile1 * value1 + profile2 * value2;
+       
+        // Adapted conformal factor
+        chi_ = chi_plain + profile1 * delta_1;
 
         // Now, compute upper and lower components
         gammaLL[0][0] = g_xx;
