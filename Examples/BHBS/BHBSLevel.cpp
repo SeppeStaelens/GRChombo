@@ -77,7 +77,7 @@ void BHBSLevel::initialData()
 
     // First initalise a BosonStar object
     BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, m_p.potential_params,
-                         m_p.G_Newton, m_dx, m_p.identical, m_verbosity);
+                         m_p.G_Newton, m_dx, m_verbosity);
 
 
     // the max radius the code might need to calculate out to is L*sqrt(3)

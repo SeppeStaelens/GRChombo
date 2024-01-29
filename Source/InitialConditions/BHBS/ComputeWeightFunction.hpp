@@ -31,7 +31,7 @@ class ComputeWeightFunction
     };
 
     ComputeWeightFunction(BosonStar_params_t a_params_BosonStar,
-                   BosonStar_params_t a_params_BlackHole, 
+                   BlackHole_params_t a_params_BlackHole, 
                    const double a_dx)
                     : m_dx(a_dx), 
                     m_params_BosonStar(a_params_BosonStar), 
@@ -56,9 +56,13 @@ class ComputeWeightFunction
         double radius_width1 = m_params_BosonStar.radius_width1;
         double radius_width2 = m_params_BosonStar.radius_width2;
 
-        WeightFunction weightfunction;
+	double x_p2 = (separation) * cosh(rapidity);
+        double z_p2 = 0.; //set /tilde{t} to zero
+        double y_p2 = -impact_parameter;
 
-        double profile_func1 = weightfunction.profile_chi((coords.x-q*separation/(q+1))*cosh(rapidity), coords.y+q*impact_parameter/(q+1.), coords.z, radius_width1);
+        WeightFunction weightfunction(separation, x_p2, y_p2, z_p2, m_params_BlackHole.weight_function_order);
+
+        double profile_func1 = weightfunction.profile_chi((coords.x-q*separation/(q+1))*cosh(rapidity), coords.y+q*impact_parameter/(q+1.), coords.z);
 
         current_cell.store_vars(profile_func1, c_profile1);
     

@@ -63,14 +63,15 @@ public:
         // BH parameters
         pp.load("BlackHoleMass", blackhole_params.BlackHoleMass, 0.);
 	pp.load("BH_rapidity", blackhole_params.BH_rapidity, 0.0);
+	pp.load("weight_function_order", blackhole_params.weight_function_order, 4);
 
 	//std::array<double, CH_SPACEDIM> positionA, positionB;
 
-	positionA[0] = (bosonstar_params.star_centre[0] + bosonstar_params.mass_ratio * bosonstar_params.BS_separation / (bosonstar_params.mass_ratio + 1.));
+	positionA[0] = (bosonstar_params.star_centre[0] + bosonstar_params.mass_ratio * bosonstar_params.binary_separation / (bosonstar_params.mass_ratio + 1.));
 	positionA[1] = bosonstar_params.star_centre[1] - bosonstar_params.mass_ratio * bosonstar_params.BS_impact_parameter / (bosonstar_params.mass_ratio + 1.);
 	positionA[2] = bosonstar_params.star_centre[2];
 
-	positionB[0] = (bosonstar_params.star_centre[0] - bosonstar_params.BS_separation / (bosonstar_params.mass_ratio + 1.));
+	positionB[0] = (bosonstar_params.star_centre[0] - bosonstar_params.binary_separation / (bosonstar_params.mass_ratio + 1.));
 	positionB[1] = bosonstar_params.star_centre[1] + bosonstar_params.BS_impact_parameter / (bosonstar_params.mass_ratio + 1.);
         positionB[2] = bosonstar_params.star_centre[2];
 

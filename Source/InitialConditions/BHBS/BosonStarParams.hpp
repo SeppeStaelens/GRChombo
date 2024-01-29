@@ -34,6 +34,7 @@ struct BlackHole_params_t
 {
     double BlackHoleMass;
     double BH_rapidity;
+    int weight_function_order;
     std::array<double, CH_SPACEDIM> BH_centre; //!< coordinates of the centre of the star
 };
 

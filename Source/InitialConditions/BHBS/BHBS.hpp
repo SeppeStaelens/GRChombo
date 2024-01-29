@@ -29,8 +29,7 @@ class BHBSBinary
 public:
     //! The constructor
     BHBSBinary(BosonStar_params_t a_params_BosonStar, BlackHole_params_t a_params_BlackHole,
-        Potential::params_t a_params_potential, double a_G_Newton, double a_dx, bool a_identical,
-        int a_verbosity);
+        Potential::params_t a_params_potential, double a_G_Newton, double a_dx, int a_verbosity);
 
     //! Computes the 1d solution and stores in m_1d_sol
     void compute_1d_solution(const double max_r);

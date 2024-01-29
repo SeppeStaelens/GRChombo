@@ -367,7 +367,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         chi_plain = pow(g_xx * g_yy * g_zz, n_power);
 
         // Create the weight function
-        WeightFunction weight(separation, x_p2, y_p2, z_p2, 4);
+        WeightFunction weight(separation, x_p2, y_p2, z_p2, m_params_BlackHole.weight_function_order);
         double profile1 = weight.profile_chi((coords.x - q * separation / (q+1)) * cosh(rapidity), coords.y + q * impact_parameter / (q + 1.), coords.z, radius_width1);
        
         // Adapted conformal factor
