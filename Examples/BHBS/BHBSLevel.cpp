@@ -94,7 +94,7 @@ void BHBSLevel::initialData()
                    disable_simd());
 
     // Check this one
-    BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.bosonstar2_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
+    BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.blackhole_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
 
     fillAllGhosts();
     BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params),
@@ -211,7 +211,7 @@ void BHBSLevel::doAnalysis()
         {
             if (m_verbosity)
             {
-                pout() << "BinaryBSLevel::specificPostTimeStep:"
+                pout() << "BHBSLevel::specificPostTimeStep:"
                           " Extracting gravitational waves." << endl;
             }
 
@@ -229,7 +229,7 @@ void BHBSLevel::doAnalysis()
     {
         if (m_verbosity)
         {
-            pout() << "BinaryBSLevel::specificPostTimeStep:"
+            pout() << "BHBSLevel::specificPostTimeStep:"
                       " Extracting mass." << endl;
         }
 

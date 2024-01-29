@@ -48,12 +48,9 @@ public:
         pp.load("phi4_coeff", potential_params.phi4_coeff, 0.0);
         pp.load("solitonic", potential_params.solitonic, false);
         pp.load("sigma_soliton", potential_params.sigma_soliton, 0.02);
-        pp.load("BS_binary", bosonstar_params.BS_binary, false);
-        pp.load("BS_BH_binary", bosonstar_params.BS_BH_binary, false);
         pp.load("antiboson", bosonstar_params.antiboson, false);
-        pp.load("BlackHoleMass", bosonstar_params.BlackHoleMass, 0.);
         pp.load("BS_rapidity", bosonstar_params.BS_rapidity, 0.0);
-        pp.load("BS_separation", bosonstar_params.BS_separation, 0.0);
+        pp.load("binary_separation", bosonstar_params.binary_separation, 0.0);
         pp.load("BS_mass", bosonstar_params.mass);
         pp.load("BS_impact_parameter", bosonstar_params.BS_impact_parameter, 0.0);
         pp.load("id_choice", bosonstar_params.id_choice, 2);
@@ -63,22 +60,9 @@ public:
         pp.load("conformal_factor_power", bosonstar_params.conformal_factor_power, -4);
         pp.load("G_Newton", bosonstar_params.Newtons_constant, 1.0);
         
-	// Initialize values for bosonstar2_params to same as bosonstar_params
-        // and then assign that ones that should differ below
-        bosonstar2_params = bosonstar_params;
-
-        // Are the two stars' profiles identical
-        pp.load("identical", identical, false);
-
-        // Boson Star 2 parameters
-        if (!identical)
-        {
-            pp.load("central_amplitude_CSF2",
-                    bosonstar2_params.central_amplitude_CSF);
-            pp.load("BS_rapidity2",
-                    bosonstar2_params.BS_rapidity);
-            pp.load("BS_mass2", bosonstar2_params.mass);
-        }
+        // BH parameters
+        pp.load("BlackHoleMass", blackhole_params.BlackHoleMass, 0.);
+	pp.load("BH_rapidity", blackhole_params.BH_rapidity, 0.0);
 
 	//std::array<double, CH_SPACEDIM> positionA, positionB;
 
@@ -182,10 +166,9 @@ public:
 
     // Initial data for matter and potential
     double G_Newton;
-    bool identical; // whether or not the 2 boson stars have the same profile
 
     BosonStar_params_t bosonstar_params;
-    BosonStar_params_t bosonstar2_params;
+    BlackHole_params_t blackhole_params;
     Potential::params_t potential_params;
 
     // Mass extraction

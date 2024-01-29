@@ -64,7 +64,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double rapidity2 = m_params_BlackHole.BH_rapidity;
     bool antiboson = m_params_BosonStar.antiboson;
     double M = m_params_BlackHole.BlackHoleMass;
-    double separation = m_params_BosonStar.BS_separation;
+    double separation = m_params_BosonStar.binary_separation;
     double impact_parameter = m_params_BosonStar.BS_impact_parameter;
     double q = m_params_BosonStar.mass_ratio;
     double radius_width1 = m_params_BosonStar.radius_width1;
