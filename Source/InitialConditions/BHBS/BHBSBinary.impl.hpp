@@ -3,12 +3,12 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#if !defined(BHBS_HPP_)
+#if !defined(BHBSBINARY_HPP_)
 #error "This file should only be included through BosonStar.hpp"
 #endif
 
-#ifndef BHBS_IMPL_HPP_
-#define BHBS_IMPL_HPP_
+#ifndef BHBSBINARY_IMPL_HPP_
+#define BHBSBINARY_IMPL_HPP_
 
 #include "BosonStarSolution.hpp" //for BosonStarSolution class
 #include "WeightFunction.hpp"
@@ -17,9 +17,9 @@
 
 inline BHBSBinary::BHBSBinary(BosonStar_params_t a_params_BosonStar, BlackHole_params_t a_params_BlackHole,
                     Potential::params_t a_params_potential, double a_G_Newton,
-                    double a_dx, bool a_identical, int a_verbosity)
+                    double a_dx, int a_verbosity)
     :m_dx(a_dx), m_G_Newton(a_G_Newton), m_params_BosonStar(a_params_BosonStar), m_params_BlackHole(a_params_BlackHole),
-    m_params_potential(a_params_potential), m_identical(a_identical), m_verbosity(a_verbosity)
+    m_params_potential(a_params_potential), m_verbosity(a_verbosity)
 {
 }
 
@@ -209,11 +209,11 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
     if (antiboson)
     {
-        w_ = - m_1d_sol2.get_w();
+        w_ = - m_1d_sol.get_w();
     }
     else
     {
-        w_ = m_1d_sol2.get_w();
+        w_ = m_1d_sol.get_w();
     }
 
     phase_ = w_ * t;
@@ -356,7 +356,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         double n_power = conformal_power / 12.0;
 
         //This is \chi(x_BS)
-        double chi_1 = pow(superpose_1[0][0] * superpose_1[1][1] * superpose_1[2][2], n_power);
+        double chi_1 = pow(superpose[0][0] * superpose[1][1] * superpose[2][2], n_power);
 
         //This is \chi^BS(x_BS)
         double chi1_1 = pow(g_xx_11 * g_yy_11 * g_zz_11, n_power);
@@ -368,7 +368,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
         // Create the weight function
         WeightFunction weight(separation, x_p2, y_p2, z_p2, m_params_BlackHole.weight_function_order);
-        double profile1 = weight.profile_chi((coords.x - q * separation / (q+1)) * cosh(rapidity), coords.y + q * impact_parameter / (q + 1.), coords.z, radius_width1);
+        double profile1 = weight.profile_chi((coords.x - q * separation / (q+1)) * cosh(rapidity), coords.y + q * impact_parameter / (q + 1.), coords.z);
        
         // Adapted conformal factor
         chi_ = chi_plain + profile1 * delta_1;

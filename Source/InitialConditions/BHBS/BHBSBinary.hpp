@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef BHBS_HPP_
-#define BHBS_HPP_
+#ifndef BHBSBINARY_HPP_
+#define BHBSBINARY_HPP_
 
 #include "Cell.hpp"
 #include "Coordinates.hpp"
@@ -50,6 +50,6 @@ protected:
     int m_verbosity;
 };
 
-#include "BHBS.impl.hpp"
+#include "BHBSBinary.impl.hpp"
 
 #endif /* BHBS_HPP_ */

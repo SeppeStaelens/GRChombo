@@ -27,7 +27,7 @@
 // Problem specific includes
 #include "ComputePack.hpp"
 #include "ComplexPotential.hpp"
-#include "BHBS.hpp"
+#include "BHBSBinary.hpp"
 #include "ComplexScalarField.hpp"
 #include "SetValue.hpp"
 
