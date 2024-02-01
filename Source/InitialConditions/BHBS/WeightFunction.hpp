@@ -21,7 +21,7 @@ class WeightFunction
 
         double profile_chi(double coord_x, double coord_y, double coord_z)
         {
-            double dist_BS = sqrt(pow(coord_x - m_x_BS, 2)+pow(coord_y - m_y_BS, 2)+pow(coord_z - m_z_BS, 2));
+            double dist_BS = sqrt(m_x_BS*m_x_BS + m_y_BS*m_y_BS + m_z_BS*m_z_BS);
             double numer = m_separation * pow(m_separation - dist_BS, m_order);
             double denom = pow(m_separation, m_order + 1) + pow(dist_BS, m_order + 1);
             return numer / denom;
