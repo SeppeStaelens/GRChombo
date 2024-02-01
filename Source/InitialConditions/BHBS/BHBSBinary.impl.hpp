@@ -87,6 +87,12 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double y = coords.y + q * impact_parameter / (q + 1.);
     double r = sqrt(x * x + y * y + z * z);
 
+    // Save relative coordinates to the star
+    double x_star {x};
+    double y_star {y};
+    double z_star {z};
+    double r_star {r};
+
     // First star physical variables
     double p_ = m_1d_sol.get_p_interp(r);
     double dp_ = m_1d_sol.get_dp_interp(r);
@@ -194,6 +200,12 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     z = coords.z;
     y = coords.y - impact_parameter / (q + 1.);
     r = sqrt(x * x + y * y + z * z);
+
+    // Save relative coordinates to the BH
+    double x_BH {x};
+    double y_BH {y};
+    double z_BH {z};
+    double r_BH {r};
 
     // BH contributions
     double r_tilde;
@@ -325,7 +337,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         double pc_os_11 = psi_11 * psi_11 * cosh(rapidity) * cosh(rapidity) - omega_11 * omega_11 * sinh(rapidity) * sinh(rapidity);
 
         // We need to calculate the influence of the BH at the BS centre.         
-        double x_p2 = (separation) * c_;
+        double x_p2 = separation * c_;
         double z_p2 = 0.; //set /tilde{t} to zero
         double y_p2 = -impact_parameter;
         double r_p2 = sqrt(x_p2 * x_p2 + y_p2 * y_p2 + z_p2 * z_p2);
@@ -367,7 +379,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         chi_plain = pow(g_xx * g_yy * g_zz, n_power);
 
         // Create the weight function
-        WeightFunction weight(separation, x_p2, y_p2, z_p2, m_params_BlackHole.weight_function_order);
+        WeightFunction weight(separation, x_star, y_star, z_star, m_params_BlackHole.weight_function_order);
         double profile1 = weight.profile_chi((coords.x - q * separation / (q+1)) * cosh(rapidity), coords.y + q * impact_parameter / (q + 1.), coords.z);
        
         // Adapted conformal factor

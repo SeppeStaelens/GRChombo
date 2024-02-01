@@ -26,6 +26,11 @@ class WeightFunction
             double denom = pow(m_separation, m_order + 1) + pow(dist_BS, m_order + 1);
             return numer / denom;
         }
+
+        double profile_chi_2(double coord_x, double coord_y, double coord_z)
+        {
+            
+        }
 };
 
 #endif /* WEIGHTFUNCTION_HPP_ */
