@@ -31,7 +31,7 @@ class WeightFunction
         {
             double r = sqrt(x*x + y*y + z*z);
             double ratio = r / R;
-            return 1 - tanh( pow(ratio, m_order) )
+            return 1 - tanh( pow(ratio, m_order) );
         }
 };
 
