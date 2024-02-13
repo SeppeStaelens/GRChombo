@@ -56,13 +56,13 @@ class ComputeWeightFunction
         double radius_width1 = m_params_BosonStar.radius_width1;
         double radius_width2 = m_params_BosonStar.radius_width2;
 
-	double x_p2 = (separation) * cosh(rapidity);
+	    double x_p2 = (separation) * cosh(rapidity);
         double z_p2 = 0.; //set /tilde{t} to zero
         double y_p2 = -impact_parameter;
 
         WeightFunction weightfunction(separation, x_p2, y_p2, z_p2, m_params_BlackHole.weight_function_order);
 
-        double profile_func1 = weightfunction.profile_chi((coords.x-q*separation/(q+1))*cosh(rapidity), coords.y+q*impact_parameter/(q+1.), coords.z);
+        double profile_func1 = weightfunction.profile_chi();
 
         current_cell.store_vars(profile_func1, c_profile1);
     
