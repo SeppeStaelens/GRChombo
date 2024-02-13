@@ -27,10 +27,10 @@ class WeightFunction
             return numer / denom;
         }
 
-        double profile_chi_2(double coord_x, double coord_y, double coord_z)
-        {
+        // double profile_chi_2(double coord_x, double coord_y, double coord_z)
+        // {
             
-        }
+        // }
 };
 
 #endif /* WEIGHTFUNCTION_HPP_ */

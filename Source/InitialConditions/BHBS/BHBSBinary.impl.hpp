@@ -158,6 +158,38 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double chi_;
     double chi_plain;  
 
+    // This is the effect of object 1 on object 2 and hence represents the value to be substracted in the initial data from the position of object 2
+    // In the second block, stuff gets calculated at the position of the second star that got calculated before already. 
+    double t_p = (-separation) * s_; //set /tilde{t} to zero
+    double x_p = (-separation) * c_;
+    double z_p = 0.; //set /tilde{t} to zero
+    double y_p = impact_parameter;
+    double r_p = sqrt(x_p * x_p + y_p * y_p + z_p * z_p);
+
+    double p_p = m_1d_sol.get_p_interp(r_p);    
+    double dp_p = m_1d_sol.get_dp_interp(r_p);
+    double omega_p = m_1d_sol.get_lapse_interp(r_p);
+    double omega_prime_p = m_1d_sol.get_dlapse_interp(r_p);
+    double psi_p = m_1d_sol.get_psi_interp(r_p);
+    double psi_prime_p = m_1d_sol.get_dpsi_interp(r_p);
+
+    double pc_os_p = psi_p * psi_p * c_ * c_ - omega_p * omega_p * s_ * s_;
+        
+    // compare this to g_ll_1 above
+    helferLL[1][1] = psi_p * psi_p;
+    helferLL[2][2] = psi_p * psi_p;
+    helferLL[0][0] = pc_os_p;
+
+    // double chi_inf = pow((2. - helferLL[0][0]) * (2. - helferLL[1][1]) *
+    // (2. - helferLL[2][2]), -1./3.);
+    // double h00_inf = (2. - helferLL[0][0]) * chi_inf; 
+    // double h11_inf = (2. - helferLL[1][1]) * chi_inf;
+    // double h22_inf = (2. - helferLL[2][2]) * chi_inf;
+    /*if (r<3){
+    std::cout << "h00 = " << h00_inf << ", h11 = " << h11_inf
+                        << ", h22 = " << h22_inf << ", chi inf = " <<
+                        chi_inf << std::endl;}*/
+
     // BH positioning
     c_ = cosh(-rapidity2);
     s_ = sinh(-rapidity2);
@@ -314,39 +346,6 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     //Our new method of fixing the conformal factor (with arbitrary n power) to its central equilibrium value
     if (initial_data_choice == 2)
     {
-
-        // This is the effect of object 1 on object 2 and hence represents the value to be substracted in the initial data from the position of object 2
-        // In the second block, stuff gets calculated at the position of the second star that got calculated before already. 
-        double t_p = (-separation) * s_; //set /tilde{t} to zero
-        double x_p = (-separation) * c_;
-        double z_p = 0.; //set /tilde{t} to zero
-        double y_p = impact_parameter;
-        double r_p = sqrt(x_p * x_p + y_p * y_p + z_p * z_p);
-
-        double p_p = m_1d_sol.get_p_interp(r_p);    
-        double dp_p = m_1d_sol.get_dp_interp(r_p);
-        double omega_p = m_1d_sol.get_lapse_interp(r_p);
-        double omega_prime_p = m_1d_sol.get_dlapse_interp(r_p);
-        double psi_p = m_1d_sol.get_psi_interp(r_p);
-        double psi_prime_p = m_1d_sol.get_dpsi_interp(r_p);
-
-        double pc_os_p = psi_p * psi_p * c_ * c_ - omega_p * omega_p * s_ * s_;
-            
-        // compare this to g_ll_1 above
-        helferLL[1][1] = psi_p * psi_p;
-        helferLL[2][2] = psi_p * psi_p;
-        helferLL[0][0] = pc_os_p;
-
-        double chi_inf = pow((2. - helferLL[0][0]) * (2. - helferLL[1][1]) *
-        (2. - helferLL[2][2]), -1./3.);
-        double h00_inf = (2. - helferLL[0][0]) * chi_inf; 
-        double h11_inf = (2. - helferLL[1][1]) * chi_inf;
-        double h22_inf = (2. - helferLL[2][2]) * chi_inf;
-        /*if (r<3){
-        std::cout << "h00 = " << h00_inf << ", h11 = " << h11_inf
-                            << ", h22 = " << h22_inf << ", chi inf = " <<
-                            chi_inf << std::endl;}*/
-
         //This is to be filled in with plain superposed metric components evaluated at x_BS
         double superpose[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};           
 
