@@ -66,7 +66,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double M = m_params_BlackHole.BlackHoleMass;
     double separation = m_params_BosonStar.binary_separation;
     double impact_parameter = m_params_BosonStar.BS_impact_parameter;
-    double q = m_params_BosonStar.mass_ratio;
+    double q = m_params_BosonStar.mass_ratio;       // q < 1 used by Tamara, meaning heavier star == Star 1 == on the right
     double radius_width1 = m_params_BosonStar.radius_width1;
     double radius_width2 = m_params_BosonStar.radius_width2;
     int conformal_power = m_params_BosonStar.conformal_factor_power;
@@ -77,7 +77,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
     //e.g. taking the centre of mass to be the origin, then STAR2 -------- (origin) -------- STAR1
     
-    // First star positioning
+    // First star positioning. Recall tanh(rapidity) = v/c, and x' = Lambda x with Lambda = ( c -s \\ -s c) 2x2 matrix.
     double c_ = cosh(rapidity);
     double s_ = sinh(rapidity);
     double v_ = tanh(rapidity);
@@ -105,7 +105,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double pc_os = psi_ * psi_ * c_ * c_ - omega_ * omega_ * s_ * s_;
     double lapse_1 = omega_ * psi_ / (sqrt(pc_os));
     double lapse_2 = 1.;
-    double w_ = m_1d_sol.get_w();
+    double w_ = m_1d_sol.get_w();       // frequency
 
     //Write in phase, shift, metric components of star 1 and initialise metric components of star 2
     double phase_ = m_params_BosonStar.phase * M_PI + w_ * t;
@@ -156,40 +156,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     
     // Here is the conformal factor that will be differently calculated depending on the choice of the initial data
     double chi_;
-    double chi_plain;
-
-    // This is the effect of object 1 on object 2 and hence represents the value to be substracted in the initial data from the position of object 2
-    // In the second block, stuff gets calculated at the position of the second star that got calculated before already. 
-    double t_p = (-separation) * s_; //set /tilde{t} to zero
-    double x_p = (-separation) * c_;
-    double z_p = 0.; //set /tilde{t} to zero
-    double y_p = impact_parameter;
-    double r_p = sqrt(x_p * x_p + y_p * y_p + z_p * z_p);
-
-    double p_p = m_1d_sol.get_p_interp(r_p);
-    double dp_p = m_1d_sol.get_dp_interp(r_p);
-    double omega_p = m_1d_sol.get_lapse_interp(r_p);
-    double omega_prime_p = m_1d_sol.get_dlapse_interp(r_p);
-    double psi_p = m_1d_sol.get_psi_interp(r_p);
-    double psi_prime_p = m_1d_sol.get_dpsi_interp(r_p);
-
-    double pc_os_p = psi_p * psi_p * c_ * c_ - omega_p * omega_p * s_ * s_;
-           
-    // compare this to g_ll_1 above
-    helferLL[1][1] = psi_p * psi_p;
-    helferLL[2][2] = psi_p * psi_p;
-    helferLL[0][0] = pc_os_p;
-
-    double chi_inf = pow((2. - helferLL[0][0]) * (2. - helferLL[1][1]) *
-    (2. - helferLL[2][2]), -1./3.);
-    double h00_inf = (2. - helferLL[0][0]) * chi_inf; 
-    double h11_inf = (2. - helferLL[1][1]) * chi_inf;
-    double h22_inf = (2. - helferLL[2][2]) * chi_inf;
-    /*if (r<3){
-    std::cout << "h00 = " << h00_inf << ", h11 = " << h11_inf
-                        << ", h22 = " << h22_inf << ", chi inf = " <<
-                        chi_inf << std::endl;}*/
-
+    double chi_plain;  
 
     // BH positioning
     c_ = cosh(-rapidity2);
@@ -251,6 +218,31 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     KLL_2[0][0] = lapse_2 * (x / r) * s_ * c_ * c_ * (psi_prime_ / psi_ - 2. * omega_prime_ / omega_ + v_ * v_ * omega_ * omega_prime_ * pow(psi_, -2));
     FOR2(i,j) K2 += gammaUU_2[i][j] * KLL_2[i][j];
 
+    //If one uses fixing conformal trick, we need to have the values of the metric of the BS at its centre
+    //In the solution stored in m_1d_sol, this is at the origin, as this is the single star solution
+    double r_11 = 0.;
+    double p_11 = m_1d_sol.get_p_interp(r_11);
+    double dp_11 = m_1d_sol.get_dp_interp(r_11);
+    double omega_11 = m_1d_sol.get_lapse_interp(r_11);
+    double omega_prime_11 = m_1d_sol.get_dlapse_interp(r_11);
+    double psi_11 = m_1d_sol.get_psi_interp(r_11);
+    double psi_prime_11 = m_1d_sol.get_dpsi_interp(r_11);
+    double pc_os_11 = psi_11 * psi_11 * cosh(rapidity) * cosh(rapidity) - omega_11 * omega_11 * sinh(rapidity) * sinh(rapidity);
+
+    // We need to calculate the influence of the BH at the BS centre.         
+    double x_p2 = separation * c_;
+    double z_p2 = 0.; //set /tilde{t} to zero
+    double y_p2 = -impact_parameter;
+    double r_p2 = sqrt(x_p2 * x_p2 + y_p2 * y_p2 + z_p2 * z_p2);
+            
+    double omega_p2 = (2. - M / r_p2) / (2. + M / r_p2);
+    double psi_p2 = pow(1. + M/ (2. * r_p2), 2);
+    double pc_os_p2 = psi_p2 * psi_p2 * c_ *c_ - omega_p2 * omega_p2 * s_ * s_;
+
+    helferLL2[1][1] = psi_p2 * psi_p2;
+    helferLL2[2][2] = psi_p2 * psi_p2;
+    helferLL2[0][0] = pc_os_p2;  
+
     //Plain superposition 
     if (initial_data_choice == 0)
     {
@@ -289,9 +281,9 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     //Thomas' trick
     if (initial_data_choice == 1)
     {
-        g_xx = g_xx_1 + g_xx_2 - helferLL[0][0];
-        g_yy = g_yy_1 + g_yy_2 - helferLL[1][1];
-        g_zz = g_zz_1 + g_zz_2 - helferLL[2][2];
+        g_xx = g_xx_1 + g_xx_2 - helferLL2[0][0];
+        g_yy = g_yy_1 + g_yy_2 - helferLL2[1][1];
+        g_zz = g_zz_1 + g_zz_2 - helferLL2[2][2];
 
         //Now, compute upper and lower components
         gammaLL[0][0] = g_xx;
@@ -322,33 +314,41 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     //Our new method of fixing the conformal factor (with arbitrary n power) to its central equilibrium value
     if (initial_data_choice == 2)
     {
+
+        // This is the effect of object 1 on object 2 and hence represents the value to be substracted in the initial data from the position of object 2
+        // In the second block, stuff gets calculated at the position of the second star that got calculated before already. 
+        double t_p = (-separation) * s_; //set /tilde{t} to zero
+        double x_p = (-separation) * c_;
+        double z_p = 0.; //set /tilde{t} to zero
+        double y_p = impact_parameter;
+        double r_p = sqrt(x_p * x_p + y_p * y_p + z_p * z_p);
+
+        double p_p = m_1d_sol.get_p_interp(r_p);    
+        double dp_p = m_1d_sol.get_dp_interp(r_p);
+        double omega_p = m_1d_sol.get_lapse_interp(r_p);
+        double omega_prime_p = m_1d_sol.get_dlapse_interp(r_p);
+        double psi_p = m_1d_sol.get_psi_interp(r_p);
+        double psi_prime_p = m_1d_sol.get_dpsi_interp(r_p);
+
+        double pc_os_p = psi_p * psi_p * c_ * c_ - omega_p * omega_p * s_ * s_;
+            
+        // compare this to g_ll_1 above
+        helferLL[1][1] = psi_p * psi_p;
+        helferLL[2][2] = psi_p * psi_p;
+        helferLL[0][0] = pc_os_p;
+
+        double chi_inf = pow((2. - helferLL[0][0]) * (2. - helferLL[1][1]) *
+        (2. - helferLL[2][2]), -1./3.);
+        double h00_inf = (2. - helferLL[0][0]) * chi_inf; 
+        double h11_inf = (2. - helferLL[1][1]) * chi_inf;
+        double h22_inf = (2. - helferLL[2][2]) * chi_inf;
+        /*if (r<3){
+        std::cout << "h00 = " << h00_inf << ", h11 = " << h11_inf
+                            << ", h22 = " << h22_inf << ", chi inf = " <<
+                            chi_inf << std::endl;}*/
+
         //This is to be filled in with plain superposed metric components evaluated at x_BS
-        double superpose[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
-        
-        //If one uses fixing conformal trick, we need to have the vales of the metric of star 1 at its centre
-        //In the solution stored in m_1d_sol, this is at the origin, as this is the single star solution
-        double r_11 = 0.;
-        double p_11 = m_1d_sol.get_p_interp(r_11);
-        double dp_11 = m_1d_sol.get_dp_interp(r_11);
-        double omega_11 = m_1d_sol.get_lapse_interp(r_11);
-        double omega_prime_11 = m_1d_sol.get_dlapse_interp(r_11);
-        double psi_11 = m_1d_sol.get_psi_interp(r_11);
-        double psi_prime_11 = m_1d_sol.get_dpsi_interp(r_11);
-        double pc_os_11 = psi_11 * psi_11 * cosh(rapidity) * cosh(rapidity) - omega_11 * omega_11 * sinh(rapidity) * sinh(rapidity);
-
-        // We need to calculate the influence of the BH at the BS centre.         
-        double x_p2 = separation * c_;
-        double z_p2 = 0.; //set /tilde{t} to zero
-        double y_p2 = -impact_parameter;
-        double r_p2 = sqrt(x_p2 * x_p2 + y_p2 * y_p2 + z_p2 * z_p2);
-               
-        double omega_p2 = (2. - M / r_p2) / (2. + M / r_p2);
-        double psi_p2 = pow(1. + M/ (2. * r_p2), 2);
-        double pc_os_p2 = psi_p2 * psi_p2 * c_ *c_ - omega_p2 * omega_p2 * s_ * s_;
-
-        helferLL2[1][1] = psi_p2 * psi_p2;
-        helferLL2[2][2] = psi_p2 * psi_p2;
-        helferLL2[0][0] = pc_os_p2;               
+        double superpose[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};           
 
         //Start with plain superposed metrics
         g_xx = g_xx_1 + g_xx_2 - 1.0;
