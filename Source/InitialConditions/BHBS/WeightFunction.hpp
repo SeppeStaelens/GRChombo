@@ -19,7 +19,7 @@ class WeightFunction
             m_order = n;
         }
 
-        double profile_chi(double coord_x, double coord_y, double coord_z)
+        double profile_chi()
         {
             double dist_BS = sqrt(m_x_BS*m_x_BS + m_y_BS*m_y_BS + m_z_BS*m_z_BS);
             double numer = m_separation * pow(m_separation - dist_BS, m_order);
@@ -27,10 +27,12 @@ class WeightFunction
             return numer / denom;
         }
 
-        // double profile_chi_2(double coord_x, double coord_y, double coord_z)
-        // {
-            
-        // }
+        double profile_chi_2(double x, double y, double z, double R)
+        {
+            double r = sqrt(x*x + y*y + z*z);
+            double ratio = r / R;
+            return 1 - tanh( pow(ratio, m_order) )
+        }
 };
 
 #endif /* WEIGHTFUNCTION_HPP_ */

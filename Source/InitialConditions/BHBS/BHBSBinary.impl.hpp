@@ -379,7 +379,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
         // Create the weight function
         WeightFunction weight(separation, x_star, y_star, z_star, m_params_BlackHole.weight_function_order);
-        double profile1 = weight.profile_chi((coords.x - q * separation / (q+1)) * cosh(rapidity), coords.y + q * impact_parameter / (q + 1.), coords.z);
+        double profile1 = weight.profile_chi();
        
         // Adapted conformal factor
         chi_ = chi_plain + profile1 * delta_1;
@@ -399,10 +399,49 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
         // Define initial trace of K and A_ij
         double one_third = 1./3.;
-        FOR2(i,j) vars.h[i][j] = pow(chi_plain, - 4.0 / conformal_power) * gammaLL[i][j];
+        FOR2(i,j) vars.h[i][j] = vars.chi * gammaLL[i][j];
         FOR4(i,j,k,l) KLL[i][j] += gammaLL[i][l] * (gammaUU_1[l][k] * KLL_1[k][j] + gammaUU_2[l][k] * KLL_2[k][j]);
         FOR2(i,j) vars.K += KLL[i][j] * gammaUU[i][j];
-        FOR2(i,j) vars.A[i][j] = pow(chi_plain, - 4.0 / conformal_power)  * (KLL[i][j] - one_third * vars.K * gammaLL[i][j]);
+        FOR2(i,j) vars.A[i][j] = vars.chi  * (KLL[i][j] - one_third * vars.K * gammaLL[i][j]);
+
+        current_cell.store_vars(vars);
+    }
+    
+    // weight functions on metric components
+    if (initial_data_choice == 3) 
+    {
+        // Create the weight function
+        WeightFunction weight(separation, x_star, y_star, z_star, m_params_BlackHole.weight_function_order);
+        double profile_star = weight.profile_chi_2(x_star, y_star, z_star, radius_width1);
+        double profile_hole = weight.profile_chi_2(x_BH, y_BH, z_BH, radius_width2);
+
+        //Start with plain superposed metrics
+        g_xx = g_xx_1 + g_xx_2 - 1.0 + profile_star * (1 - helferLL2[0][0]) + profile_hole * (1 - helferLL[0][0]);
+        g_yy = g_yy_1 + g_yy_2 - 1.0 + profile_star * (1 - helferLL2[1][1]) + profile_hole * (1 - helferLL[1][1]);
+        g_zz = g_zz_1 + g_zz_2 - 1.0 + profile_star * (1 - helferLL2[2][2]) + profile_hole * (1 - helferLL[2][2]);
+
+        // Now, compute upper and lower components
+        gammaLL[0][0] = g_xx;
+        gammaLL[1][1] = g_yy;
+        gammaLL[2][2] = g_zz;
+        gammaUU[0][0] = 1. / g_xx;
+        gammaUU[1][1] = 1. / g_yy;
+        gammaUU[2][2] = 1. / g_zz;
+
+        // Define initial conformal factor
+        chi_ = pow(g_xx * g_yy * g_zz, -1. / 3.);
+
+        vars.chi = chi_;
+
+        // Define initial lapse
+        vars.lapse += sqrt(vars.chi);
+
+        // Define initial trace of K and A_ij
+        double one_third = 1./3.;
+        FOR2(i,j) vars.h[i][j] = chi_ * gammaLL[i][j];
+        FOR4(i,j,k,l) KLL[i][j] += gammaLL[i][l] * (gammaUU_1[l][k] * KLL_1[k][j] + gammaUU_2[l][k] * KLL_2[k][j]);
+        FOR2(i,j) vars.K += KLL[i][j] * gammaUU[i][j];
+        FOR2(i,j) vars.A[i][j] = chi_ * (KLL[i][j] - one_third * vars.K * gammaLL[i][j]);
 
         current_cell.store_vars(vars);
     }
