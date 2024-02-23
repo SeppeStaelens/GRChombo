@@ -28,6 +28,8 @@ struct BosonStar_params_t
     int conformal_factor_power;
     bool antiboson;
     std::array<double, CH_SPACEDIM> star_centre; //!< coordinates of the centre of the star
+    double epsilon;
+    int weight_function_choice;
 };
 
 struct BlackHole_params_t

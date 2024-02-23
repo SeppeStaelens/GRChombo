@@ -65,6 +65,10 @@ public:
 	pp.load("BH_rapidity", blackhole_params.BH_rapidity, 0.0);
 	pp.load("weight_function_order", blackhole_params.weight_function_order, 4);
 
+        pp.load("epsilon", bosonstar_params.epsilon, 0.1);
+        pp.load("weight_function_choice", bosonstar_params.weight_function_choice, 1);
+        
+
 	//std::array<double, CH_SPACEDIM> positionA, positionB;
 
 	positionA[0] = (bosonstar_params.star_centre[0] + bosonstar_params.mass_ratio * bosonstar_params.binary_separation / (bosonstar_params.mass_ratio + 1.));
