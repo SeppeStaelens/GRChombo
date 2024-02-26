@@ -77,8 +77,8 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
     // Other parameters
     int conformal_power = m_params_BosonStar.conformal_factor_power;
-    double epsilon = m_params_BosonStar.epsilon
-    int weight_function_choice = m_params_BosonStar.weight_function_choice
+    double epsilon = m_params_BosonStar.epsilon;
+    int weight_function_choice = m_params_BosonStar.weight_function_choice;
 
     // Define boosts and coordinate objects, suppose star 1 is on the right of the centre of mass 
     // and star 2 is on the left of centre of mass
@@ -396,7 +396,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
             WeightFunction weight(separation, x_star, y_star, z_star, m_params_BlackHole.weight_function_order);
         }
         else if (weight_function_choice == 2){
-            WeightFunctionAngle weight(separation, impact_parameter, x_star, y_star, z_star , epsilon, radius_width1)
+            WeightFunctionAngle weight(separation, impact_parameter, x_star, y_star, z_star , epsilon, radius_width1);
         }
         double profile1 = weight.profile_chi();
        
