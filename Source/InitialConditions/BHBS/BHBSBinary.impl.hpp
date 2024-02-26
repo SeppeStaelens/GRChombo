@@ -391,14 +391,16 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         chi_plain = pow(g_xx * g_yy * g_zz, n_power);
 
         // Create the weight function
+	double profile1;
 
         if (weight_function_choice == 1){
             WeightFunction weight(separation, x_star, y_star, z_star, m_params_BlackHole.weight_function_order);
-        }
+            profile1 = weight.profile_chi();
+	}
         else if (weight_function_choice == 2){
             WeightFunctionAngle weight(separation, impact_parameter, x_star, y_star, z_star , epsilon, radius_width1);
-        }
-        double profile1 = weight.profile_chi();
+            profile1 = weight.profile_chi();
+	}
        
         // Adapted conformal factor
         chi_ = chi_plain + profile1 * delta_1;
