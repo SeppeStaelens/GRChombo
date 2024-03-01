@@ -398,7 +398,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
             profile1 = weight.profile_chi();
 	}
         else if (weight_function_choice == 2){
-            WeightFunctionAngle weight(separation, impact_parameter, x_star, y_star, z_star , epsilon, radius_width1);
+            WeightFunctionAngle weight(separation, impact_parameter, x_star, y_star, z_star, epsilon, radius_width1);
             profile1 = weight.profile_chi();
 	}
        
