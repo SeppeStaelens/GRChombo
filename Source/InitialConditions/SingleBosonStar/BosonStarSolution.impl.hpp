@@ -77,11 +77,11 @@ void BosonStarSolution::main()
                radius_array[gridsize - 1] * radius_array[gridsize - 1];
     aspect_mass =
         2. * radius_array[gridsize - 1] * (sqrt(psi[gridsize - 1]) - 1.);
-    std::cout << "Central Density : " << p[0] << ", ADM mass : " << adm_mass
-              << ", aspect mass : " << aspect_mass << ", w : " << sqrt(ww)
-              << ", r99 : " << get_r(0.99) << ", mass error : "
-              << fabs(2. * (aspect_mass - adm_mass) / (adm_mass + aspect_mass))
-              << std::endl;
+    // std::cout << "Central Density : " << p[0] << ", ADM mass : " << adm_mass
+    //           << ", aspect mass : " << aspect_mass << ", w : " << sqrt(ww)
+    //           << ", r99 : " << get_r(0.99) << ", mass error : "
+    //           << fabs(2. * (aspect_mass - adm_mass) / (adm_mass + aspect_mass))
+    //           << std::endl;
 }
 
 // initiaalises the 5 filed variables with their central values

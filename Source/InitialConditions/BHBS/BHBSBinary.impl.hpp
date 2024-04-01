@@ -391,9 +391,9 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         chi_plain = pow(g_xx * g_yy * g_zz, n_power);
 
         // Create the weight function
-	double profile1;
+	    double profile1;
 	
-	std::cout << "WF choice = " << weight_function_choice << ", eps = " << epsilon << ",rw1 = " << radius_width1 << std::endl;
+	    std::cout << "WF choice = " << weight_function_choice << ", eps = " << epsilon << ",rw1 = " << radius_width1 << std::endl;
 
         if (weight_function_choice == 1){
             WeightFunction weight(separation, x_star, y_star, z_star, m_params_BlackHole.weight_function_order);

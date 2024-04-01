@@ -35,15 +35,28 @@ class WeightFunction
         }
 };
 
+//! Weight function, depending on the angle between the separation vector and the position vector
 class WeightFunctionAngle
 {
     public:
 
-        double m_x_sep, m_y_sep, m_distance;
+        //! separation between the objects along two axes
+        double m_x_sep, m_y_sep;
+        //! distance between the objects
+        double m_distance;
+        //! coordinates and radius with respect to the center of the BS
         double m_x_BS, m_y_BS, m_z_BS, m_r_BS;
+        //! parameters for the weight function
         double m_epsilon, m_R;
-        int m_order;
 
+        //! Constructor
+        /*!
+            \param separation: separation between the two objects along the x-axis
+            \param impact_param: impact parameter, i.e. separation along the y-axis
+            \param x_BS, y_BS, z_BS: coordinates with respect to center of the BS
+            \param eps: determines the magnitude of the asymmetry
+            \param R: suppresion term for the weight function
+        */ 
         WeightFunctionAngle(double separation, double impact_param, 
                        double x_BS, double y_BS, double z_BS , 
                        double eps, double R){
@@ -58,11 +71,15 @@ class WeightFunctionAngle
             m_R = R;
         }
 
+        //! Weight function profile
+        /*!
+            \return value of the weight function
+        */
         double profile_chi()
         {
-            double correction = (-m_x_sep * m_x_BS + m_y_sep * m_y_BS) / m_distance;
+            double correction = (m_x_sep * m_x_BS + m_y_sep * m_y_BS) / m_distance;
             double arg = m_R*m_R + m_r_BS*m_r_BS + m_epsilon * correction;
-            return 1 / sqrt(arg);
+            return 1. / sqrt(arg);
         }
 };
 
