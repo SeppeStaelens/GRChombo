@@ -77,8 +77,9 @@ class WeightFunctionAngle
         */
         double profile_chi()
         {
+            // scalar product between the separation vector and the position vector
             double correction = (m_x_sep * m_x_BS + m_y_sep * m_y_BS) / m_distance;
-            double arg = m_R*m_R + m_r_BS*m_r_BS + m_epsilon * correction;
+            double arg = 1 + m_r_BS*m_r_BS / (m_R*m_R)+ m_epsilon * correction / (m_R*m_R);
             return 1. / sqrt(arg);
         }
 };
