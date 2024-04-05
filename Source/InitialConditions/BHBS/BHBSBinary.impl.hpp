@@ -460,9 +460,9 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
         chi_ = chi_Helfer + profile1 * diff;
 
-        g_xx = chi_Helfer * g_xx_plain / chi_;
-        g_yy = chi_Helfer * g_yy_plain / chi_;
-        g_zz = chi_Helfer * g_zz_plain / chi_;
+        g_xx = chi_Helfer * g_xx_H / chi_;
+        g_yy = chi_Helfer * g_yy_H / chi_;
+        g_zz = chi_Helfer * g_zz_H / chi_;
     }
 
     // Now, compute upper and lower components
