@@ -14,6 +14,8 @@
 #include "DebuggingTools.hpp"
 #include "Max.hpp"
 #include "WeightFunction.hpp"
+#include "TwoPunctures.hpp" //for TwoPunctures-based ID method
+#include "TPAMR.hpp"
 
 inline BHBSBinary::BHBSBinary(BosonStar_params_t a_params_BosonStar,
                               BlackHole_params_t a_params_BlackHole,
@@ -320,7 +322,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double x_p2 = separation * c_;
     double z_p2 = 0.; // set /tilde{t} to zero
     double y_p2 = -impact_parameter;
-    double r_p2 = sqrt(x_p2 * x_p2 + y_p2 * y_p2 + z_p2 * z_p2);
+    double r_p2 = sqrt(x_p2 * x_p2 + y_p2 * y_p2 + z_p2 * z_p2 + 10e-10); // add 1e-10 similar to r_tilde above
 
     double omega_p2 = (2. - M / r_p2) / (2. + M / r_p2);
     double psi_p2 = pow(1. + M / (2. * r_p2), 2);
@@ -491,5 +493,112 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
     current_cell.store_vars(vars);
 }
+
+#ifdef USE_TWOPUNCTURES
+    //TwoPunctures based approach
+    if (initial_data_choice == 6)
+    {
+	//pout() << "Started TP method" << endl;
+
+
+	//start with data corrected according to standard Thomas' trick as in id_choice = 1
+	g_xx = g_xx_1 + g_xx_2 - helferLL2[0][0];
+        g_yy = g_yy_1 + g_yy_2 - helferLL2[1][1];
+        g_zz = g_zz_1 + g_zz_2 - helferLL2[2][2];
+
+        //Now, compute upper and lower components
+        gammaLL[0][0] = g_xx;
+        gammaLL[1][1] = g_yy;
+        gammaLL[2][2] = g_zz;
+        gammaUU[0][0] = 1. / g_xx;
+        gammaUU[1][1] = 1. / g_yy;
+        gammaUU[2][2] = 1. / g_zz;
+
+        // Define initial conformal factor
+        double  chiThomas = pow(g_xx * g_yy * g_zz, -1. / 3.);
+
+
+        //pout() << "Started New Section" << endl;
+
+
+	double gammaThomas[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
+	double KLLThomas[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};	
+	
+	//physical metric and ext. curvature for thomas' trick	
+	FOR2(i,j) gammaThomas[i][j] = gammaLL[i][j];
+        FOR4(i,j,k,l) KLLThomas[i][j] += gammaLL[i][l] * (gammaUU_1[l][k] * KLL_1[k][j] + gammaUU_2[l][k] * KLL_2[k][j]);
+
+	//TwoPunctures and final versions of CCZ4 vars
+	Tensor<2, double> gamma_TP, K_TP, KLLFinal, gammaLLFinal, gammaUUFinal;
+    	Tensor<1, double> shiftTP, Z3TP;
+    	double lapseTP, ThetaTP;
+
+	double coords_array[CH_SPACEDIM];
+    	coords_array[0] = coords.x;
+    	coords_array[1] = coords.y;
+    	coords_array[2] = coords.z;
+
+	using namespace TP::Z4VectorShortcuts;
+        double TP_state[Qlen];
+	
+	//pout() << "Survived Pre-Interpolation" << endl;
+	    
+	//Read TwoPunctures data from the TPAMR initialized in Main
+	TPAMR_HPP_::bh_amr.m_two_punctures.Interpolate(coords_array, TP_state);	
+	
+	//pout() << "Survived Interpolation Step" << endl;
+
+	// TP metric
+        gamma_TP[0][0] = TP_state[g11];
+        gamma_TP[0][1] = gamma_TP[1][0] = TP_state[g12];
+        gamma_TP[0][2] = gamma_TP[2][0] = TP_state[g13];
+        gamma_TP[1][1] = TP_state[g22];
+        gamma_TP[1][2] = gamma_TP[2][1] = TP_state[g23];
+        gamma_TP[2][2] = TP_state[g33];
+
+        // TP extrinsic curvature
+        K_TP[0][0] = TP_state[K11];
+        K_TP[0][1] = K_TP[1][0] = TP_state[K12];
+        K_TP[0][2] = K_TP[2][0] = TP_state[K13];
+        K_TP[1][1] = TP_state[K22];
+        K_TP[1][2] = K_TP[2][1] = TP_state[K23];
+        K_TP[2][2] = TP_state[K33];
+	
+	lapseTP = TP_state[lapse];	
+
+	//radial distance to BH and weight function value
+        double r_hole = sqrt(pow(x_hole,2) + pow(y_hole,2) + pow (z_hole,2));
+	//double TPFactor = R_BH / sqrt(R_BH * R_BH + r_hole * r_hole);	
+
+	double TPFactor = 1 - tanh(r_hole * r_hole /( R_BH * R_BH));
+
+	//ensure TPFactor dies off entirely around BS center (where TP solution diverges)
+	double r_star = sqrt(pow(x_star,2) + pow(y_star,2) + pow(z_star,2) );
+	if (r_star < R_BS)
+	    TPFactor = 0;
+	
+	//apply TP correction to physical metric and extrinsic curvature
+	FOR2(i,j) gammaLLFinal[i][j] = gammaThomas[i][j] + TPFactor * (gamma_TP[i][j] - gammaThomas[i][j]);
+	FOR2(i,j) KLL[i][j] = KLLThomas[i][j] + TPFactor * (K_TP[i][j] - KLLThomas[i][j]);
+	//FOR2(i,j) KLL[i][j] = KLLThomas[i][j]; //test (remove me)
+	
+	//vars.lapse = vars.lapse + TPFactor * (lapseTP - vars.lapse); 
+
+	//get corrected chi and inverse metric
+	vars.chi = pow(TensorAlgebra::compute_determinant_sym(gammaLLFinal), -1.0 / 3.0);
+	gammaUUFinal = TensorAlgebra::compute_inverse_sym(gammaLLFinal);
+	 	
+	//initial lapse
+	vars.lapse += sqrt(vars.chi);
+
+	//finally reconstruct h and A vars
+	double one_third = 1./3.;
+	FOR2(i,j) vars.h[i][j] = vars.chi * gammaLLFinal[i][j];
+	FOR2(i,j) vars.K += KLL[i][j] * gammaUUFinal[i][j];
+        FOR2(i,j) vars.A[i][j] = vars.chi * (KLL[i][j] - one_third * vars.K * gammaLLFinal[i][j]);
+
+        current_cell.store_vars(vars);
+	}
+#endif
 
 #endif /* BHBS_IMPL_HPP_ */
