@@ -456,7 +456,8 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
         double diff = 1-chi_inf;
 
-        double profile1 = (tanh(pow(r_star / (separation * 5), 2.) - radius_width1) + tanh(radius_width1)) / (1+tanh(radius_width1));
+       	// double profile1 = (tanh(pow(r_star / (separation * 5), 2.) - radius_width1) + tanh(radius_width1)) / (1+tanh(radius_width1));
+	double profile1 = 1/radius_width1 - 1/sqrt(radius_width1*radius_width1 + r_star * r_star); 
 
         chi_ = chi_Helfer + profile1 * diff;
 
