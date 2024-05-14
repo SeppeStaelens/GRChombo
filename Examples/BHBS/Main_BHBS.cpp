@@ -16,10 +16,12 @@
 
 // Problem specific includes:
 #include "BHBSLevel.hpp"
+#include "TPAMR.hpp"
 
 // Star tracking
 #include "STAMR.hpp"
 
+TPAMR bh_amr;
 int runGRChombo(int argc, char *argv[])
 {
     // Load the parameter file and construct the SimulationParameter class
@@ -27,6 +29,16 @@ int runGRChombo(int argc, char *argv[])
     char *in_file = argv[1];
     GRParmParse pp(argc - 2, argv + 2, NULL, in_file);
     SimulationParameters sim_params(pp);
+
+    #ifdef USE_TWOPUNCTURES
+    /* Gareth's addition */
+
+	//TPAMR bh_amr;
+        bh_amr.set_two_punctures_parameters(sim_params.tp_params);
+        // Run TwoPunctures solver if id_choice is appropriate
+	if (sim_params.bosonstar_params.id_choice == 6)
+            bh_amr.m_two_punctures.Run();	
+    #endif
 
     // The line below selects the problem that is simulated
     // (To simulate a different problem, define a new child of AMRLevel
