@@ -12,7 +12,7 @@
 
 GRCHOMBO_SOURCE = ../../Source
 
-# TWOPUNCTURES_SOURCE = ../../../TwoPunctures/Source
+TWOPUNCTURES_SOURCE = ../../../TwoPunctures/Source
 
 ebase := Main_BHBS
 

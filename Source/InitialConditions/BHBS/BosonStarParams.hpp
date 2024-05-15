@@ -29,6 +29,7 @@ struct BosonStar_params_t
     bool antiboson;
     std::array<double, CH_SPACEDIM> star_centre; //!< coordinates of the centre of the star
     double epsilon;
+    int weight_function_choice;
     double BS_bump_radius; //parameter determining the width of the bump functions in BS_BH initial data methods
     double BH_bump_radius; //same but centered on the BH instead
 

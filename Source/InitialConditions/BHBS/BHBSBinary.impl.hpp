@@ -86,6 +86,8 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double separation = m_params_BosonStar.binary_separation;
     double impact_parameter = m_params_BosonStar.BS_impact_parameter;
     double q = m_params_BosonStar.mass_ratio;
+    double R_BS = m_params_BosonStar.BS_bump_radius;
+    double R_BH = m_params_BosonStar.BH_bump_radius;
 
     // Other parameters
     int conformal_power = m_params_BosonStar.conformal_factor_power;
@@ -468,6 +470,8 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         g_zz = chi_Helfer * g_zz_H / chi_;
     }
 
+    if (initial_data_choice != 6) 
+    {	    
     // Now, compute upper and lower components
     gammaLL[0][0] = g_xx;
     gammaLL[1][1] = g_yy;
@@ -492,10 +496,10 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     vars.A[i][j] = chi_ * (KLL[i][j] - one_third * vars.K * gammaLL[i][j]);
 
     current_cell.store_vars(vars);
-}
+    }
 
 #ifdef USE_TWOPUNCTURES
-    //TwoPunctures based approach
+     //TwoPunctures based approach
     if (initial_data_choice == 6)
     {
 	//pout() << "Started TP method" << endl;
@@ -567,7 +571,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 	lapseTP = TP_state[lapse];	
 
 	//radial distance to BH and weight function value
-        double r_hole = sqrt(pow(x_hole,2) + pow(y_hole,2) + pow (z_hole,2));
+        double r_hole = sqrt(pow(x_BH,2) + pow(y_BH,2) + pow (z_BH,2));
 	//double TPFactor = R_BH / sqrt(R_BH * R_BH + r_hole * r_hole);	
 
 	double TPFactor = 1 - tanh(r_hole * r_hole /( R_BH * R_BH));
@@ -600,5 +604,6 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         current_cell.store_vars(vars);
 	}
 #endif
+}
 
 #endif /* BHBS_IMPL_HPP_ */
