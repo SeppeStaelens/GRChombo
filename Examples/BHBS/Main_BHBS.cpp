@@ -32,12 +32,11 @@ int runGRChombo(int argc, char *argv[])
 
     #ifdef USE_TWOPUNCTURES
     /* Gareth's addition */
-
 	//TPAMR bh_amr;
         bh_amr.set_two_punctures_parameters(sim_params.tp_params);
         // Run TwoPunctures solver if id_choice is appropriate
 	if (sim_params.bosonstar_params.id_choice == 6)
-            bh_amr.m_two_punctures.Run();	
+            bh_amr.m_two_punctures.Run();
     #endif
 
     // The line below selects the problem that is simulated

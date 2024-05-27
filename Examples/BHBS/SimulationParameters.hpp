@@ -81,7 +81,6 @@ public:
         pp.load("epsilon", bosonstar_params.epsilon, 0.1);
         pp.load("weight_function_choice", bosonstar_params.weight_function_choice, 1);
         
-
 	//std::array<double, CH_SPACEDIM> positionA, positionB;
 
 	positionA[0] = (bosonstar_params.star_centre[0] + bosonstar_params.mass_ratio * bosonstar_params.binary_separation / (bosonstar_params.mass_ratio + 1.));
@@ -173,7 +172,7 @@ public:
         angmomflux_params.radii.resize(angmomflux_params.number_radii);
         pp.load("flux_extraction_radii", angmomflux_params.radii,
                                                 angmomflux_params.number_radii);*/
-
+	
                                                 #ifdef USE_TWOPUNCTURES
 
     	tp_params.verbose = (verbosity > 0);	
@@ -193,9 +192,9 @@ public:
                    << tp_params.target_M_minus << "\n";
             bh1_params.mass = tp_params.target_M_minus;
             bh2_params.mass = tp_params.target_M_plus;
-        }
-        else
-        {
+	}
+	else
+	{
             pp.load("TP_mass_plus", tp_params.par_m_plus);
             pp.load("TP_mass_minus", tp_params.par_m_minus);
             bh1_params.mass = tp_params.par_m_plus;
@@ -310,6 +309,7 @@ public:
         tp_params.mm = 0;
         tp_params.mp_adm = 0;
         tp_params.mm_adm = 0;
+	
 	#endif
     }
 
