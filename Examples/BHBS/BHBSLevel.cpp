@@ -21,7 +21,7 @@
 
 // For tag cells
 #include "ComplexPhiAndChiExtractionTaggingCriterion.hpp"
-#include "ChiandRhoTaggingCriterion.hpp"
+#include "ChiAndRhoTaggingCriterion.hpp"
 #include "BosonChiPunctureExtractionTaggingCriterion.hpp"
 
 // Problem specific includes
