@@ -177,6 +177,7 @@ void GRAMRLevel::postTimeStep()
     }
 
     specificPostTimeStep();
+    doAnalysis();
 
     // enforce solution BCs - this is required after the averaging
     // and postentially after specificPostTimeStep actions
