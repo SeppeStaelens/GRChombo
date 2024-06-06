@@ -322,16 +322,19 @@ void BHBSLevel::doAnalysis()
 
     if (m_p.do_star_track && m_level == m_p.star_track_level)
     {
-	pout() << "Running a star tracker now" << endl;
+	    pout() << "Running a star tracker now" << endl;
         // if at restart time read data from dat file,
         // will default to param file if restart time is 0
+        
+        std::string centres_filename = m_p.data_path + "StarCentres";
+
         if (fabs(m_time - m_restart_time) < m_dt * 1.1)
         {
             m_st_amr.m_star_tracker.read_old_centre_from_dat(
-                "StarCentres", m_dt, m_time, m_restart_time, first_step);
+                centres_filename, m_dt, m_time, m_restart_time, first_step);
         }
         m_st_amr.m_star_tracker.update_star_centres(m_dt);
-        m_st_amr.m_star_tracker.write_to_dat("StarCentres", m_dt, m_time,
+        m_st_amr.m_star_tracker.write_to_dat(centres_filename, m_dt, m_time,
                                              m_restart_time, first_step);
     }
 
@@ -477,9 +480,9 @@ void BHBSLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                const FArrayBox &current_state)
 {
 
-BoxLoops::loop(ComplexPhiAndChiExtractionTaggingCriterion(m_dx, m_level,
-                   m_p.mass_extraction_params, m_p.regrid_threshold_phi,
-                   m_p.regrid_threshold_chi), current_state, tagging_criterion);
+// BoxLoops::loop(ComplexPhiAndChiExtractionTaggingCriterion(m_dx, m_level,
+//                    m_p.mass_extraction_params, m_p.regrid_threshold_phi,
+//                    m_p.regrid_threshold_chi), current_state, tagging_criterion);
 
 //    BoxLoops::loop(ChiandRhoTaggingCriterion(m_dx, m_level,
 //                    m_p.mass_extraction_params, m_p.regrid_threshold_rho,
@@ -487,28 +490,28 @@ BoxLoops::loop(ComplexPhiAndChiExtractionTaggingCriterion(m_dx, m_level,
 
 // Be aware of the tagging here, you may want to change it, depending on your problem of interest. Below tagging for when the tracking is activated is 'intense' and specific to binary inspirals. 	
     
-//     if (m_p.do_star_track == true)
-//    {
-//        const vector<double> puncture_radii = {m_p.tag_radius_A,
-//                                                m_p.tag_radius_B};
-//        const vector<double> puncture_masses = {m_p.bosonstar_params.mass,
-//                                                m_p.bosonstar2_params.mass};
-//
-//        const std::vector<double> star_coords =
-//            m_st_amr.m_star_tracker.get_puncture_coords();
-//	
-//        BoxLoops::loop(BosonChiPunctureExtractionTaggingCriterion(
-//                           m_dx, m_level, m_p.tag_horizons_max_levels,
-//                       m_p.tag_punctures_max_levels, m_p.extraction_params,
-//                           star_coords, m_p.activate_extraction,
-//                           m_p.do_star_track, puncture_radii, puncture_masses, m_p.tag_buffer),
-//                      current_state, tagging_criterion);	
-//   }
-//    else
-//   {
-//        BoxLoops::loop(ChiandRhoTaggingCriterion(m_dx, m_level,
-//                   m_p.mass_extraction_params, m_p.regrid_threshold_rho,
-//                   m_p.regrid_threshold_chi), current_state, tagging_criterion);
-//   }
+    if (m_p.do_star_track == true)
+   {
+       const vector<double> puncture_radii = {m_p.tag_radius_A,
+                                               m_p.tag_radius_B};
+       const vector<double> puncture_masses = {m_p.bosonstar_params.mass,
+                                               m_p.bosonstar2_params.mass};
+
+       const std::vector<double> star_coords =
+           m_st_amr.m_star_tracker.get_puncture_coords();
+	
+       BoxLoops::loop(BosonChiPunctureExtractionTaggingCriterion(
+                          m_dx, m_level, m_p.tag_horizons_max_levels,
+                      m_p.tag_punctures_max_levels, m_p.extraction_params,
+                          star_coords, m_p.activate_extraction,
+                          m_p.do_star_track, puncture_radii, puncture_masses, m_p.tag_buffer),
+                     current_state, tagging_criterion);	
+  }
+   else
+  {
+       BoxLoops::loop(ComplexPhiAndChiExtractionTaggingCriterion(m_dx, m_level,
+                   m_p.mass_extraction_params, m_p.regrid_threshold_phi,
+                   m_p.regrid_threshold_chi), current_state, tagging_criterion);
+  }
 
 }
