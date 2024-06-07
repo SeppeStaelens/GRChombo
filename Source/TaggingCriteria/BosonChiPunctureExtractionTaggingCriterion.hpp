@@ -27,7 +27,7 @@ class BosonChiPunctureExtractionTaggingCriterion
     const bool m_track_punctures;
     const bool m_activate_extraction;
     const FourthOrderDerivatives m_deriv;
-    const SphericalExtraction::spherical_extraction_params_t m_params;
+    const spherical_extraction_params_t m_params;
     const std::vector<double> m_puncture_radii;
     const std::vector<double> m_puncture_masses;
     const std::vector<double> &m_puncture_coords;
@@ -52,7 +52,7 @@ class BosonChiPunctureExtractionTaggingCriterion
         const double dx, const int a_level,
 	const std::array<int, 2> a_horizon_max_levels,
         const std::array<int, 2> a_puncture_max_levels,
-        const SphericalExtraction::params_t a_params,
+        const spherical_extraction_params_t a_params,
         const std::vector<double> &a_puncture_coords,
         const bool activate_extraction = false,
         const bool track_punctures = false,

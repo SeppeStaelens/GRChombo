@@ -28,11 +28,11 @@ class AngMomFlux : SphericalExtraction
     string m_filename = "AngMomFlux";
     double m_time;
     bool m_first_step;
-    SphericalExtraction::params_t m_params;
+    spherical_extraction_params_t m_params;
 
   public:
 
-      AngMomFlux(SphericalExtraction::params_t &a_params, double a_time,
+      AngMomFlux(spherical_extraction_params_t &a_params, double a_time,
                          double a_dt, double a_restart_time, bool a_first_step)
                          : SphericalExtraction(a_params, a_dt, a_time, a_first_step,
                                                a_restart_time),

@@ -13,7 +13,7 @@
 #include "DiagnosticVariables.hpp"
 #include "Tensor.hpp"
 
-class ChiandRhoTaggingCriterion
+class ChiAndRhoTaggingCriterion
 {
   protected:
     const double m_dx;
@@ -43,7 +43,7 @@ class ChiandRhoTaggingCriterion
     };
 
   public:
-    ChiandRhoTaggingCriterion(const double a_dx,
+    ChiAndRhoTaggingCriterion(const double a_dx,
         const int a_level, const extraction_params_t a_params,
         const double a_threshold_rho, const double a_threshold_chi)
         : m_dx(a_dx), m_deriv(a_dx), m_params(a_params), m_level(a_level),
