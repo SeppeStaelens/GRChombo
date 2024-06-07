@@ -12,10 +12,12 @@
 #include "GRParmParse.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
-#include "CallDoAnalysis.hpp"
+// #include "CallDoAnalysis.hpp"
 
 // Problem specific includes:
 #include "BHBSLevel.hpp"
+
+// TwoPunctures
 #include "TPAMR.hpp"
 
 // Star tracking
@@ -60,10 +62,10 @@ int runGRChombo(int argc, char *argv[])
 
     // Add a scheduler to GRAMR which just calls doAnalysis on every AMRLevel
     // at time 0. It is called later in postTimeStep
-    RefCountedPtr<CallDoAnalysis> call_do_analysis_ptr(new CallDoAnalysis);
-    RefCountedPtr<Scheduler> scheduler_ptr(new Scheduler);
-    scheduler_ptr->schedule(call_do_analysis_ptr, sim_params.max_steps);
-    st_amr.schedule(scheduler_ptr);
+    // RefCountedPtr<CallDoAnalysis> call_do_analysis_ptr(new CallDoAnalysis);
+    // RefCountedPtr<Scheduler> scheduler_ptr(new Scheduler);
+    // scheduler_ptr->schedule(call_do_analysis_ptr, sim_params.max_steps);
+    // st_amr.schedule(scheduler_ptr);
 
     using Clock = std::chrono::steady_clock;
     using Minutes = std::chrono::duration<double, std::ratio<60, 1>>;

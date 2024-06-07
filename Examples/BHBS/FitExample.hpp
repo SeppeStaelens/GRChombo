@@ -18,4 +18,3 @@ void fgauss(const double x, std::vector<double> &a, double &y, std::vector<doubl
 		dyda[i+2]=fac*arg/a[i+2];
 	}
 }
-
