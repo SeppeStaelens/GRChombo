@@ -77,8 +77,9 @@ void BHBSLevel::initialData()
         pout() << "BHBSLevel::initialData " << m_level << endl;
 
     // First initalise a BHBSBinary object
-    BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, m_p.potential_params,
-                         m_p.G_Newton, m_dx, m_verbosity);
+    BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, 
+                            m_p.binary_params, m_p.potential_params,
+                            m_p.G_Newton, m_dx, m_verbosity);
 
 
     // the max radius the code might need to calculate out to is L*sqrt(3)
@@ -95,7 +96,7 @@ void BHBSLevel::initialData()
                    disable_simd());
 
     // Check this one
-    BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.blackhole_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
+    BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.blackhole_params, m_p.binary_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
 
     fillAllGhosts();
     BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params),

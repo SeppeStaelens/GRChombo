@@ -78,10 +78,11 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     bool antiboson = m_params_BosonStar.antiboson;
 
     double BS_radius_width = m_params_BosonStar.radius_width;
-    double R_BS = m_params_BosonStar.BS_bump_radius;
+    double R_BS = m_params_BosonStar.bump_radius;
 
     // Import BH parameters
     double BH_rapidity = m_params_BlackHole.rapidity;
+    double M = m_params_BlackHole.mass;
 
     double BH_radius_width = m_params_BlackHole.radius_width;
     double R_BH = m_params_BlackHole.bump_radius;
@@ -408,7 +409,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         if (weight_function_choice == 1)
         {
             WeightFunction weight(separation, x_star, y_star, z_star,
-                                  m_params_BlackHole.weight_function_order);
+                                  m_params_Binary.weight_function_order);
             profile1 = weight.profile_chi();
         }
         else if (weight_function_choice == 2)
@@ -431,7 +432,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     {
         // Create the weight function
         WeightFunction weight(separation, x_star, y_star, z_star,
-                              m_params_BlackHole.weight_function_order);
+                              m_params_Binary.weight_function_order);
         double profile_star =
             weight.profile_chi_2(x_star, y_star, z_star, BS_radius_width);
         double profile_hole =
