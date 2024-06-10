@@ -60,7 +60,7 @@ class BHBSLevel : public GRAMRLevel
                                          override;
 
     //! Things to do for analysis after each timestep and at the start
-    virtual void doAnalysis() override;
+    virtual void specificPostTimeStep() override;
 };
 
 #endif /* BHBSLevel_HPP_ */

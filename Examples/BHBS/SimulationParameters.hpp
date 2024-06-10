@@ -180,8 +180,11 @@ public:
         angmomflux_params.radii.resize(angmomflux_params.number_radii);
         pp.load("flux_extraction_radii", angmomflux_params.radii,
                                                 angmomflux_params.number_radii);*/
+        #ifdef USE_AHFINDER
+        pp.load("AH_initial_guess", AH_initial_guess, 0.5 * blackhole_params.mass);
+        #endif
 	
-                                                #ifdef USE_TWOPUNCTURES
+        #ifdef USE_TWOPUNCTURES
 
     	tp_params.verbose = (verbosity > 0);	
 	 
@@ -367,6 +370,10 @@ public:
     std::array<double, CH_SPACEDIM> position_BS, position_BH;
 
     int flux_extraction_level; // specifies times (level) to do angmom flux extraction
+
+    #ifdef USE_AHFINDER
+    double AH_initial_guess;
+    #endif
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

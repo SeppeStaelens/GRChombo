@@ -54,6 +54,16 @@ int runGRChombo(int argc, char *argv[])
         sim_params.verbosity);
     bhbs_amr.set_interpolator(&interpolator);
 
+    #ifdef USE_AHFINDER
+    if (sim_params.AH_activate)
+    {
+        AHSurfaceGeometry sphere(sim_params.blackhole_params.position_BH);
+
+        bhbs_amr.m_ah_finder.add_ah(sphere, sim_params.AH_initial_guess,
+                                  sim_params.AH_params);
+    }
+    #endif
+
     using Clock = std::chrono::steady_clock;
     using Minutes = std::chrono::duration<double, std::ratio<60, 1>>;
 

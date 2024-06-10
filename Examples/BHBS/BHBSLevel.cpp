@@ -183,7 +183,7 @@ void BHBSLevel::specificUpdateODE(GRLevelData &a_soln,
 }
 
 // Things to do for analysis after each timestep and at the start
-void BHBSLevel::doAnalysis()
+void BHBSLevel::specificPostTimeStep()
 {
     CH_TIME("BHBSLevel::specificPostTimeStep");
 
@@ -206,7 +206,7 @@ void BHBSLevel::doAnalysis()
     if (m_p.activate_weyl_extraction == 1 &&
        at_level_timestep_multiple(m_p.extraction_params.min_extraction_level()))
     {
-        CH_TIME("BHBSLevel::doAnalysis::Weyl4&ADMMass");
+        CH_TIME("BHBSLevel::specificPostTimeStep::Weyl4&ADMMass");
         
         // Do the extraction on the min extraction level
         if (m_level == m_p.extraction_params.min_extraction_level())
@@ -340,8 +340,13 @@ void BHBSLevel::doAnalysis()
                                              m_restart_time, first_step);
     }
 
+    #ifdef USE_AHFINDER
+    if (m_p.AH_activate && m_level == m_p.AH_params.level_to_run)
+        m_bh_amr.m_ah_finder.solve(m_dt, m_time, m_restart_time);
+    #endif
+
     //if (m_p.do_flux_integration && m_level==m_p.angmomflux_params.extraction_level)
-    double temp_dx;
+    // double temp_dx;
     // if (m_p.do_flux_integration && at_level_timestep_multiple(m_p.flux_extraction_level))
     // {
     //     CH_TIME("BHBSLevel::doAnalysis::FphiSphi");
