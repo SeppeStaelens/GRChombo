@@ -37,7 +37,7 @@ int runGRChombo(int argc, char *argv[])
 	//TPAMR bh_amr;
         bh_amr.set_two_punctures_parameters(sim_params.tp_params);
         // Run TwoPunctures solver if id_choice is appropriate
-	if (sim_params.bosonstar_params.id_choice == 6)
+	if (sim_params.binary_params.id_choice == 6)
             bh_amr.m_two_punctures.Run();
     #endif
 
@@ -48,8 +48,8 @@ int runGRChombo(int argc, char *argv[])
 
     // !!!! Seems like this assumes the existence of two boson stars...
     st_amr.m_star_tracker.initial_setup(sim_params.do_star_track,
-        sim_params.number_of_stars, {sim_params.positionA, sim_params.positionB},
-        sim_params.star_points, sim_params.star_track_width_A, sim_params.star_track_width_B, sim_params.star_track_direction_of_motion);
+        sim_params.number_of_stars, {sim_params.position_BS, sim_params.position_BH},
+        sim_params.star_points, sim_params.star_track_width_BS, sim_params.star_track_width_BH, sim_params.star_track_direction_of_motion);
     DefaultLevelFactory<BHBSLevel> bh_bs_level_fact(st_amr,
                                                                   sim_params);
     setupAMRObject(st_amr, bh_bs_level_fact);

@@ -42,7 +42,7 @@ void BHBSBinary::compute_1d_BS_solution(const double max_r)
         pout() << "Setting initial conditions for Star 1" << endl;
         m_1d_sol.set_initialcondition_params(m_params_BosonStar,
                                              m_params_potential, max_r);
-        int initial_data_construction = m_params_BosonStar.id_choice;
+        int initial_data_construction = m_params_Binary.id_choice;
         pout() << "I am running initial data choice No: "
                << initial_data_construction << endl;
         pout() << "Running the solver for Star 1" << endl;

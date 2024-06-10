@@ -364,7 +364,7 @@ public:
     std::string star_track_direction_of_motion;
     int star_track_level;
 
-    std::array<double, CH_SPACEDIM> positionA, positionB;
+    std::array<double, CH_SPACEDIM> position_BS, position_BH;
 
     int flux_extraction_level; // specifies times (level) to do angmom flux extraction
 };

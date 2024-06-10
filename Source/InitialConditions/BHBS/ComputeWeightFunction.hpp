@@ -10,7 +10,7 @@
 #include "Cell.hpp"
 #include "Coordinates.hpp"
 #include "DebuggingTools.hpp"
-#include "BosonStarParams.hpp"
+#include "BHBSBinaryParams.hpp"
 #include "WeightFunction.hpp"
 #include "simd.hpp"
 
