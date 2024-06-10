@@ -19,16 +19,18 @@
 
 inline BHBSBinary::BHBSBinary(BosonStar_params_t a_params_BosonStar,
                               BlackHole_params_t a_params_BlackHole,
+                              Binary_params_t a_params_Binary,
                               Potential::params_t a_params_potential,
                               double a_G_Newton, double a_dx, int a_verbosity)
     : m_dx(a_dx), m_G_Newton(a_G_Newton),
       m_params_BosonStar(a_params_BosonStar),
       m_params_BlackHole(a_params_BlackHole),
+      m_params_Binary(a_params_Binary),
       m_params_potential(a_params_potential), m_verbosity(a_verbosity)
 {
 }
 
-void BHBSBinary::compute_1d_solution(const double max_r)
+void BHBSBinary::compute_1d_BS_solution(const double max_r)
 /** This function computes the 1d solution for the BS in the binary
  */
 {
@@ -68,31 +70,32 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
     // Coordinates for centre of mass
     Coordinates<data_t> coords(current_cell, m_dx,
-                               m_params_BosonStar.star_centre);
+                               m_params_Binary.centre_of_mass);
 
     // Import BS parameters
-    double rapidity = m_params_BosonStar.BS_rapidity;
+    double BS_rapidity = m_params_BosonStar.rapidity;
+
     bool antiboson = m_params_BosonStar.antiboson;
-    double radius_width1 = m_params_BosonStar.radius_width1;
+
+    double BS_radius_width = m_params_BosonStar.radius_width;
+    double R_BS = m_params_BosonStar.BS_bump_radius;
 
     // Import BH parameters
-    double rapidity2 = m_params_BlackHole.BH_rapidity;
-    double M = m_params_BlackHole.BlackHoleMass;
-    double radius_width2 = m_params_BosonStar.radius_width2;
+    double BH_rapidity = m_params_BlackHole.rapidity;
+
+    double BH_radius_width = m_params_BlackHole.radius_width;
+    double R_BH = m_params_BlackHole.bump_radius;
 
     // Import binary parameters. Note that the mass ratio is defined as q =
-    // mBS/mBH
-    int initial_data_choice = m_params_BosonStar.id_choice;
-    double separation = m_params_BosonStar.binary_separation;
-    double impact_parameter = m_params_BosonStar.BS_impact_parameter;
-    double q = m_params_BosonStar.mass_ratio;
-    double R_BS = m_params_BosonStar.BS_bump_radius;
-    double R_BH = m_params_BosonStar.BH_bump_radius;
+    // mBH/mBS
+    int initial_data_choice = m_params_Binary.id_choice;
+    double separation = m_params_Binary.separation;
+    double impact_parameter = m_params_Binary.impact_parameter;
+    double q = m_params_Binary.mass_ratio;
 
-    // Other parameters
-    int conformal_power = m_params_BosonStar.conformal_factor_power;
-    double epsilon = m_params_BosonStar.epsilon;
-    int weight_function_choice = m_params_BosonStar.weight_function_choice;
+    int conformal_power = m_params_Binary.conformal_factor_power;
+    double epsilon = m_params_Binary.epsilon;
+    int weight_function_choice = m_params_Binary.weight_function_choice;
 
     // Initialise extrinsic curvature and metric with upper indices
     double KLL_1[3][3] = {{0., 0., 0.}, {0., 0., 0.}, {0., 0., 0.}};
@@ -108,17 +111,17 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
      *            SET UP OF THE BOSON STAR
      */
 
-    /* Define boosts and coordinate objects, suppose star 1 is on the right of
-     * the centre of mass and star 2 is on the left of centre of mass,
-     * i.e.taking the centre of mass to be the origin, then STAR2 --------
-     * (origin) -------- STAR1 */
+    /* Define boosts and coordinate objects, suppose BS is on the right of
+     * the centre of mass and BH is on the left of centre of mass,
+     * i.e.taking the centre of mass to be the origin, then BH --------
+     * (origin) -------- BS */
 
-    // First star positioning. Recall tanh(rapidity) = v/c, and x' = Lambda x
+    // Boson star positioning. Recall tanh(rapidity) = v/c, and x' = Lambda x
     // with Lambda = ( c -s \\ -s c) 2x2 matrix. We determine (x,y,z,t) wrt to
     // the star centre
-    double c_ = cosh(rapidity);
-    double s_ = sinh(rapidity);
-    double v_ = tanh(rapidity);
+    double c_ = cosh(BS_rapidity);
+    double s_ = sinh(BS_rapidity);
+    double v_ = tanh(BS_rapidity);
 
     double t =
         (coords.x - q * separation / (q + 1.)) * s_; // set /tilde{t} to zero
@@ -244,9 +247,9 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
      */
 
     // BH positioning
-    c_ = cosh(-rapidity2);
-    s_ = sinh(-rapidity2);
-    v_ = tanh(-rapidity2);
+    c_ = cosh(-BH_rapidity);
+    s_ = sinh(-BH_rapidity);
+    v_ = tanh(-BH_rapidity);
     t = (coords.x + separation / (q + 1.)) * s_; // set /tilde{t} to zero
     x = (coords.x + separation / (q + 1.)) * c_;
     z = coords.z;
@@ -317,8 +320,8 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double omega_prime_11 = m_1d_sol.get_dlapse_interp(r_11);
     double psi_11 = m_1d_sol.get_psi_interp(r_11);
     double psi_prime_11 = m_1d_sol.get_dpsi_interp(r_11);
-    double pc_os_11 = psi_11 * psi_11 * cosh(rapidity) * cosh(rapidity) -
-                      omega_11 * omega_11 * sinh(rapidity) * sinh(rapidity);
+    double pc_os_11 = psi_11 * psi_11 * cosh(BS_rapidity) * cosh(BS_rapidity) -
+                      omega_11 * omega_11 * sinh(BS_rapidity) * sinh(BS_rapidity);
 
     // We need to calculate the influence of the BH at the BS centre.
     double x_p2 = separation * c_;
@@ -411,7 +414,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         else if (weight_function_choice == 2)
         {
             WeightFunctionAngle weight(separation, impact_parameter, x_star,
-                                       y_star, z_star, epsilon, radius_width1);
+                                       y_star, z_star, epsilon, BS_radius_width);
             profile1 = weight.profile_chi();
         }
 
@@ -430,9 +433,9 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         WeightFunction weight(separation, x_star, y_star, z_star,
                               m_params_BlackHole.weight_function_order);
         double profile_star =
-            weight.profile_chi_2(x_star, y_star, z_star, radius_width1);
+            weight.profile_chi_2(x_star, y_star, z_star, BS_radius_width);
         double profile_hole =
-            weight.profile_chi_2(x_BH, y_BH, z_BH, radius_width2);
+            weight.profile_chi_2(x_BH, y_BH, z_BH, BH_radius_width);
 
         // Start with plain superposed metrics
         g_xx = g_xx_1 + g_xx_2 - 1.0 + profile_star * (1 - helferLL2[0][0]) +
@@ -460,8 +463,8 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
         double diff = 1-chi_inf;
 
-       	// double profile1 = (tanh(pow(r_star / (separation * 5), 2.) - radius_width1) + tanh(radius_width1)) / (1+tanh(radius_width1));
-	double profile1 = 1/radius_width1 - 1/sqrt(radius_width1*radius_width1 + r_star * r_star); 
+       	// double profile1 = (tanh(pow(r_star / (separation * 5), 2.) - BS_radius_width) + tanh(BS_radius_width)) / (1+tanh(BS_radius_width));
+	double profile1 = 1/BS_radius_width - 1/sqrt(BS_radius_width*BS_radius_width + r_star * r_star); 
 
         chi_ = chi_Helfer + profile1 * diff;
 

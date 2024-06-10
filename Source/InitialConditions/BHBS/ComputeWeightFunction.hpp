@@ -20,6 +20,7 @@ class ComputeWeightFunction
 
     BosonStar_params_t m_params_BosonStar;
     BlackHole_params_t m_params_BlackHole;
+    Binary_params_t m_params_Binary;
     double m_dx;
 
     public:
@@ -32,10 +33,12 @@ class ComputeWeightFunction
 
     ComputeWeightFunction(BosonStar_params_t a_params_BosonStar,
                    BlackHole_params_t a_params_BlackHole, 
+                   Binary_params_t a_params_Binary,
                    const double a_dx)
                     : m_dx(a_dx), 
                     m_params_BosonStar(a_params_BosonStar), 
-                    m_params_BlackHole(a_params_BlackHole)
+                    m_params_BlackHole(a_params_BlackHole),
+                    m_params_Binary(a_params_Binary)
     {   
     }
 
@@ -46,26 +49,23 @@ class ComputeWeightFunction
         weightfunc_t<data_t> out;
 
         Coordinates<double> coords(current_cell, m_dx,
-        m_params_BosonStar.star_centre);
+        m_params_Binary.centre_of_mass);
 	
-	    double separation = m_params_BosonStar.binary_separation;
-    	double impact_parameter = m_params_BosonStar.BS_impact_parameter;
-	    double q = m_params_BosonStar.mass_ratio;
-        double rapidity = m_params_BosonStar.BS_rapidity;
-        double rapidity2 = m_params_BlackHole.BH_rapidity;
-        double radius_width1 = m_params_BosonStar.radius_width1;
-        double radius_width2 = m_params_BosonStar.radius_width2;
+	    double separation = m_params_Binary.separation;
+    	double impact_parameter = m_params_Binary.impact_parameter;
+	    double q = m_params_Binary.mass_ratio;
+        double BS_rapidity = m_params_BosonStar.rapidity;
+        double BH_rapidity = m_params_BlackHole.rapidity;
 
-	    double x_p2 = (separation) * cosh(rapidity);
+	    double x_p2 = (separation) * cosh(BS_rapidity);
         double z_p2 = 0.; //set /tilde{t} to zero
         double y_p2 = -impact_parameter;
 
-        WeightFunction weightfunction(separation, x_p2, y_p2, z_p2, m_params_BlackHole.weight_function_order);
+        WeightFunction weightfunction(separation, x_p2, y_p2, z_p2, m_params_Binary.weight_function_order);
 
         double profile_func1 = weightfunction.profile_chi();
 
         current_cell.store_vars(profile_func1, c_profile1);
-    
     }
 
     

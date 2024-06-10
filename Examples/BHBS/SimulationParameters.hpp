@@ -12,7 +12,7 @@
 
 // Problem specific includes:
 #include "ComplexPotential.hpp"
-#include "BosonStarParams.hpp"
+#include "BHBSBinaryParams.hpp"
 #include "AngMomFluxParams.hpp"
 #include  "BoostedBH.hpp"
 #include "TP_Parameters.hpp"
@@ -45,72 +45,80 @@ public:
         // Gravitional constant
         pp.load("G_Newton", G_Newton, 1.0);
 
-        // Boson Star initial data params
+        // Boson Star params
+        pp.load("BS_mass", bosonstar_params.mass, 1.0);
+        pp.load("BS_rapidity", bosonstar_params.rapidity, 0.0);
+
+        pp.load("gridpoints",bosonstar_params.gridpoints, 400000);
         pp.load("central_amplitude_CSF",
-                bosonstar_params.central_amplitude_CSF);
+                bosonstar_params.central_amplitude_CSF, 0.2);
         pp.load("phase", bosonstar_params.phase, 0.0);
         pp.load("eigen", bosonstar_params.eigen, 0);
-        pp.load("gridpoints",bosonstar_params.gridpoints,400000);
+        pp.load("antiboson", bosonstar_params.antiboson, false);
 
-        pp.load("star_centre", bosonstar_params.star_centre, center);
+        pp.load("BS_radius_width", bosonstar_params.radius_width, 10.);
+        pp.load("BS_bump_radius", bosonstar_params.bump_radius, 10.0);
+
+        // Black Hole parameters
+        pp.load("BH_mass", blackhole_params.mass, 1.0);
+	pp.load("BH_rapidity", blackhole_params.rapidity, 0.0);
+
+        pp.load("BH_radius_width", bosonstar_params.radius_width, 10.0);
+        pp.load("BH_bump_radius", bosonstar_params.bump_radius, 10.0);   
+
+        // Binary parameters
+        pp.load("centre_of_mass", binary_params.centre_of_mass, center);
+        pp.load("binary_separation", binary_params.separation, 16.0);
+        pp.load("impact_parameter", binary_params.impact_parameter, 0.0);
+        // pp.load("mass_ratio", binary_params.mass_ratio, 1.0);
+        binary_params.mass_ratio = blackhole_params.mass / bosonstar_params.mass;
+        
+        pout() << "The BH/BS mass ratio is " << binary_params.mass_ratio << endl;
+
+        pp.load("id_choice", binary_params.id_choice, 0);
+        pp.load("epsilon", binary_params.epsilon, 0.1);
+        pp.load("weight_function_choice", binary_params.weight_function_choice, 1);
+	pp.load("weight_function_order", binary_params.weight_function_order, 4);
+
+        pp.load("conformal_factor_power", binary_params.conformal_factor_power, -4);
+        bosonstar_params.Newtons_constant = G_Newton;
 
         // Potential params
         pp.load("scalar_mass", potential_params.scalar_mass, 1.0);
         pp.load("phi4_coeff", potential_params.phi4_coeff, 0.0);
         pp.load("solitonic", potential_params.solitonic, false);
         pp.load("sigma_soliton", potential_params.sigma_soliton, 0.02);
-        pp.load("antiboson", bosonstar_params.antiboson, false);
-        pp.load("BS_rapidity", bosonstar_params.BS_rapidity, 0.0);
-        pp.load("binary_separation", bosonstar_params.binary_separation, 0.0);
-        pp.load("BS_mass", bosonstar_params.mass);
-        pp.load("BS_impact_parameter", bosonstar_params.BS_impact_parameter, 0.0);
-        pp.load("id_choice", bosonstar_params.id_choice, 2);
-        pp.load("mass_ratio", bosonstar_params.mass_ratio, 1.0);
-        pp.load("radius_width1", bosonstar_params.radius_width1, 10.);
-        pp.load("radius_width2", bosonstar_params.radius_width2, 20.);
-        pp.load("conformal_factor_power", bosonstar_params.conformal_factor_power, -4);
-        pp.load("G_Newton", bosonstar_params.Newtons_constant, 1.0);
-	pp.load("BS_bump_radius", bosonstar_params.BS_bump_radius, 10.0);
-	pp.load("BH_bump_radius", bosonstar_params.BH_bump_radius, 10.0);   
-        
-        // BH parameters
-        pp.load("BlackHoleMass", blackhole_params.BlackHoleMass, 0.);
-	pp.load("BH_rapidity", blackhole_params.BH_rapidity, 0.0);
-	pp.load("weight_function_order", blackhole_params.weight_function_order, 4);
-
-        pp.load("epsilon", bosonstar_params.epsilon, 0.1);
-        pp.load("weight_function_choice", bosonstar_params.weight_function_choice, 1);
         
 	//std::array<double, CH_SPACEDIM> positionA, positionB;
 
-	positionA[0] = (bosonstar_params.star_centre[0] + bosonstar_params.mass_ratio * bosonstar_params.binary_separation / (bosonstar_params.mass_ratio + 1.));
-	positionA[1] = bosonstar_params.star_centre[1] - bosonstar_params.mass_ratio * bosonstar_params.BS_impact_parameter / (bosonstar_params.mass_ratio + 1.);
-	positionA[2] = bosonstar_params.star_centre[2];
+	position_BS[0] = (binary_params.centre_of_mass[0] + binary_params.mass_ratio * binary_params.separation / (binary_params.mass_ratio + 1.));
+	position_BS[1] = binary_params.centre_of_mass[1] - binary_params.mass_ratio * binary_params.impact_parameter / (binary_params.mass_ratio + 1.);
+	position_BS[2] = binary_params.centre_of_mass[2];
 
-	positionB[0] = (bosonstar_params.star_centre[0] - bosonstar_params.binary_separation / (bosonstar_params.mass_ratio + 1.));
-	positionB[1] = bosonstar_params.star_centre[1] + bosonstar_params.BS_impact_parameter / (bosonstar_params.mass_ratio + 1.);
-        positionB[2] = bosonstar_params.star_centre[2];
+	position_BH[0] = (binary_params.centre_of_mass[0] - binary_params.separation / (binary_params.mass_ratio + 1.));
+	position_BH[1] = binary_params.centre_of_mass[1] + binary_params.impact_parameter / (binary_params.mass_ratio + 1.);
+        position_BH[2] = binary_params.centre_of_mass[2];
 
-	pout() << "Star A is at x-position " << positionA[0] << endl;
-        pout() << "Star A is at y-position " << positionA[1] << endl;
-        pout() << "Star A is at z-position " << positionA[2] << endl;	
+	pout() << "Boson star is at x-position " << position_BS[0] << endl;
+        pout() << "Boson star is at y-position " << position_BS[1] << endl;
+        pout() << "Boson star is at z-position " << position_BS[2] << endl;	
 
-	pout() << "Star B is at x-position " << positionB[0] << endl;
-        pout() << "Star B is at y-position " << positionB[1] << endl;	
-	pout() << "Star B is at z-position " << positionB[2] << endl;
+	pout() << "Black hole is at x-position " << position_BH[0] << endl;
+        pout() << "Black hole is at y-position " << position_BH[1] << endl;	
+	pout() << "Black hole is at z-position " << position_BH[2] << endl;
 	
 	// Star Tracking
         pp.load("do_star_track", do_star_track, false);
         pp.load("number_of_stars", number_of_stars, 1);
         pp.load("star_points", star_points, 81);
-        pp.load("star_track_width_A", star_track_width_A, 4.);
-	pp.load("star_track_width_B", star_track_width_B, 4.);
+        pp.load("star_track_width_BS", star_track_width_BS, 4.);
+	pp.load("star_track_width_BH", star_track_width_BH, 4.);
         pp.load("direction_of_motion", star_track_direction_of_motion);
         pp.load("star_track_level", star_track_level, 5);
         
         //Tagging
-        pp.load("tag_radius_A", tag_radius_A, 4.);
-	pp.load("tag_radius_B", tag_radius_B, 4.);
+        pp.load("tag_radius_BS", tag_radius_BS, 4.);
+	pp.load("tag_radius_BH", tag_radius_BH, 4.);
         pp.load("tag_buffer", tag_buffer, 0.5);
 	pp.load("tag_punctures_max_levels", tag_punctures_max_levels,
                 {max_level, max_level});
@@ -315,7 +323,7 @@ public:
 
     // Tagging thresholds
     Real regrid_threshold_phi, regrid_threshold_chi, regrid_threshold_rho;
-    Real tag_radius_A, tag_radius_B, tag_buffer;
+    Real tag_radius_BS, tag_radius_BH, tag_buffer;
 
     std::array<int, 2> tag_punctures_max_levels;
     std::array<int, 2> tag_horizons_max_levels;
@@ -325,6 +333,7 @@ public:
 
     BosonStar_params_t bosonstar_params;
     BlackHole_params_t blackhole_params;
+    Binary_params_t binary_params;
     Potential::params_t potential_params;
 
     // Mass extraction
@@ -350,8 +359,8 @@ public:
     bool do_star_track;
     int number_of_stars;
     int star_points;
-    double star_track_width_A;
-    double star_track_width_B;
+    double star_track_width_BS;
+    double star_track_width_BH;
     std::string star_track_direction_of_motion;
     int star_track_level;
 

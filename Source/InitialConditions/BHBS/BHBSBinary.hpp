@@ -15,7 +15,7 @@
 #include "VarsTools.hpp"
 #include "simd.hpp"
 #include "ComplexPotential.hpp"
-#include "BosonStarParams.hpp"
+#include "BHBSBinaryParams.hpp"
 #include "BosonStarSolution.hpp"
 #include "WeightFunction.hpp"
 #include <vector>
@@ -29,10 +29,11 @@ class BHBSBinary
 public:
     //! The constructor
     BHBSBinary(BosonStar_params_t a_params_BosonStar, BlackHole_params_t a_params_BlackHole,
-        Potential::params_t a_params_potential, double a_G_Newton, double a_dx, int a_verbosity);
+                Binary_params_t a_params_Binary, Potential::params_t a_params_potential, 
+                double a_G_Newton, double a_dx, int a_verbosity);
 
-    //! Computes the 1d solution and stores in m_1d_sol
-    void compute_1d_solution(const double max_r);
+    //!  This function computes the 1d solution for the BS in the binary
+    void compute_1d_BS_solution(const double max_r);
 
     //! Function to compute the value of all the initial vars on the grid
     template <class data_t>
@@ -46,6 +47,7 @@ protected:
     double m_G_Newton;
     BosonStar_params_t m_params_BosonStar;
     BlackHole_params_t m_params_BlackHole;
+    Binary_params_t m_params_Binary;
     Potential::params_t m_params_potential; //!< The potential params
     int m_verbosity;
 };
