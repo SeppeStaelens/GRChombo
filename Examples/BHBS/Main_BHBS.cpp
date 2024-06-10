@@ -12,7 +12,6 @@
 #include "GRParmParse.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
-// #include "CallDoAnalysis.hpp"
 
 // Problem specific includes:
 #include "BHBSLevel.hpp"
@@ -32,7 +31,6 @@ int runGRChombo(int argc, char *argv[])
     // (To simulate a different problem, define a new child of AMRLevel
     // and an associated LevelFactory)
     BHBSAMR bhbs_amr;
-    // STAMR st_amr;
 
     #ifdef USE_TWOPUNCTURES
     /* Gareth's addition */

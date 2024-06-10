@@ -544,7 +544,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         double TP_state[Qlen];	
 	    
         //Read TwoPunctures data from the TPAMR initialized in Main
-        TPAMR_HPP_::bh_amr.m_two_punctures.Interpolate(coords_array, TP_state);	
+        bhbs_amr.m_two_punctures.Interpolate(coords_array, TP_state);	
 	
 
 	    // TP metric

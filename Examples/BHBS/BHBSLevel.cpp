@@ -96,7 +96,7 @@ void BHBSLevel::initialData()
                    disable_simd());
 
     // Check this one
-    BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.blackhole_params, m_p.binary_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
+    // BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.blackhole_params, m_p.binary_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
 
     fillAllGhosts();
     BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params),
@@ -332,11 +332,11 @@ void BHBSLevel::doAnalysis()
 
         if (fabs(m_time - m_restart_time) < m_dt * 1.1)
         {
-            m_st_amr.m_star_tracker.read_old_centre_from_dat(
+            m_bhbs_amr.m_star_tracker.read_old_centre_from_dat(
                 centres_filename, m_dt, m_time, m_restart_time, first_step);
         }
-        m_st_amr.m_star_tracker.update_star_centres(m_dt);
-        m_st_amr.m_star_tracker.write_to_dat(centres_filename, m_dt, m_time,
+        m_bhbs_amr.m_star_tracker.update_star_centres(m_dt);
+        m_bhbs_amr.m_star_tracker.write_to_dat(centres_filename, m_dt, m_time,
                                              m_restart_time, first_step);
     }
 
@@ -502,7 +502,7 @@ void BHBSLevel::computeTaggingCriterion(
                                                 m_p.blackhole_params.mass};
 
         const std::vector<double> star_coords =
-            m_st_amr.m_star_tracker.get_puncture_coords();
+            m_bhbs_amr.m_star_tracker.get_puncture_coords();
 
         BoxLoops::loop(BosonChiPunctureExtractionTaggingCriterion(
                             m_dx, m_level, m_p.tag_horizons_max_levels,

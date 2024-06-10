@@ -14,7 +14,7 @@
 #include "ComplexPotential.hpp"
 #include "BHBSBinaryParams.hpp"
 #include "AngMomFluxParams.hpp"
-#include  "BoostedBH.hpp"
+#include "BoostedBH.hpp"
 #include "TP_Parameters.hpp"
 
 class SimulationParameters : public SimulationParametersBase

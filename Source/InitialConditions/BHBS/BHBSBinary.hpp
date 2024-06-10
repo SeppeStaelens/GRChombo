@@ -21,6 +21,10 @@
 #include <vector>
 #include "parstream.H" //gives pout
 
+#ifdef USE_TWOPUNCTURES
+#include "TwoPunctures.hpp"
+#endif
+
 //! Class which solves for the initial data for a spherically symmetric boson
 //! star with phi^4 coupling
 class BHBSBinary
