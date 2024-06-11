@@ -26,15 +26,6 @@ public:
         readParams(pp);
     }
 
-     #ifdef USE_TWOPUNCTURES
-    double tp_offset_plus, tp_offset_minus;
-   
-    //param sets for TP data and each boosted BH
-    TP::Parameters tp_params;
-    BoostedBH::params_t bh2_params;
-    BoostedBH::params_t bh1_params;
-    #endif
-
     void readParams(GRParmParse &pp)
     {
         // for regridding
@@ -370,6 +361,15 @@ public:
     std::array<double, CH_SPACEDIM> position_BS, position_BH;
 
     int flux_extraction_level; // specifies times (level) to do angmom flux extraction
+
+    #ifdef USE_TWOPUNCTURES
+    double tp_offset_plus, tp_offset_minus;
+   
+    //param sets for TP data and each boosted BH
+    TP::Parameters tp_params;
+    BoostedBH::params_t bh2_params;
+    BoostedBH::params_t bh1_params;
+    #endif
 
     #ifdef USE_AHFINDER
     double AH_initial_guess;

@@ -246,7 +246,7 @@ void BHBSLevel::specificPostTimeStep()
         ADMMassExtraction mass_extraction(m_p.mass_extraction_params, m_dt,
                                     m_time, first_step,
                                     m_restart_time);
-        mass_extraction.execute_query(m_gr_amr.m_interpolator);
+        mass_extraction.execute_query(m_gr_amr.m_interpolator, m_p.data_path);
     }
 
     // noether charge, max mod phi, min chi, constraint violations

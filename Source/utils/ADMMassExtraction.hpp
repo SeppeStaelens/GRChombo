@@ -24,7 +24,7 @@ class ADMMassExtraction : public SphericalExtraction
     }
 
     //! Execute the query
-    void execute_query(AMRInterpolator<Lagrange<4>> *a_interpolator)
+    void execute_query(AMRInterpolator<Lagrange<4>> *a_interpolator, std::string data_path)
     {
         extract(a_interpolator);
 
@@ -41,7 +41,7 @@ class ADMMassExtraction : public SphericalExtraction
         integrate();
 
         // write integrals
-        std::string integrals_filename = "ADMmass";
+        std::string integrals_filename = data_path + "ADMmass";
         write_integral(integrals_filename, integrals, "ADM mass");
     }
 };
