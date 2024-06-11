@@ -77,10 +77,16 @@ void BHBSLevel::initialData()
         pout() << "BHBSLevel::initialData " << m_level << endl;
 
     // First initalise a BHBSBinary object
+
+    #ifdef USE_TWOPUNCTURES
+    BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, 
+                            m_p.binary_params, m_p.potential_params,
+                            m_p.G_Newton, m_dx, m_verbosity, m_bhbs_amr.m_two_punctures);
+    #else
     BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, 
                             m_p.binary_params, m_p.potential_params,
                             m_p.G_Newton, m_dx, m_verbosity);
-
+    #endif
 
     // the max radius the code might need to calculate out to is L*sqrt(3)
     bh_bs_binary.compute_1d_BS_solution(2.*m_p.L);
@@ -342,7 +348,7 @@ void BHBSLevel::specificPostTimeStep()
 
     #ifdef USE_AHFINDER
     if (m_p.AH_activate && m_level == m_p.AH_params.level_to_run)
-        m_bh_amr.m_ah_finder.solve(m_dt, m_time, m_restart_time);
+        m_bhbs_amr.m_ah_finder.solve(m_dt, m_time, m_restart_time);
     #endif
 
     //if (m_p.do_flux_integration && m_level==m_p.angmomflux_params.extraction_level)

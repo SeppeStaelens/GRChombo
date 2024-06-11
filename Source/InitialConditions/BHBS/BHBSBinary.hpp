@@ -34,7 +34,14 @@ public:
     //! The constructor
     BHBSBinary(BosonStar_params_t a_params_BosonStar, BlackHole_params_t a_params_BlackHole,
                 Binary_params_t a_params_Binary, Potential::params_t a_params_potential, 
-                double a_G_Newton, double a_dx, int a_verbosity);
+                double a_G_Newton, double a_dx, int a_verbosity);\
+    
+    #ifdef USE_TWOPUNCTURES
+    //! Constructor in case of Two Punctures being used
+    BHBSBinary(BosonStar_params_t a_params_BosonStar, BlackHole_params_t a_params_BlackHole,
+                Binary_params_t a_params_Binary, Potential::params_t a_params_potential, 
+                double a_G_Newton, double a_dx, int a_verbosity, TP::TwoPunctures a_two_punctures);
+    #endif
 
     //!  This function computes the 1d solution for the BS in the binary
     void compute_1d_BS_solution(const double max_r);
@@ -45,6 +52,11 @@ public:
 
     //!The object that stores the solution found by the 1d ODE integrator
     BosonStarSolution m_1d_sol;
+
+    #ifdef USE_TWOPUNCTURES
+    //! The TwoPunctures object
+    TP::TwoPunctures m_two_punctures;
+    #endif
 
 protected:
     double m_dx;
