@@ -333,10 +333,10 @@ void BHBSLevel::specificPostTimeStep()
 	    pout() << "Running a star tracker now" << endl;
         // if at restart time read data from dat file,
         // will default to param file if restart time is 0
-        
+
         std::string centres_filename = m_p.data_path + "StarCentres";
 
-        if (fabs(m_time - m_restart_time) < m_dt * 1.1)
+        if ((m_time != 0) && (fabs(m_time - m_restart_time) < m_dt * 1.1))
         {
             m_bhbs_amr.m_star_tracker.read_old_centre_from_dat(
                 centres_filename, m_dt, m_time, m_restart_time, first_step);
