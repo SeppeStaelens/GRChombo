@@ -81,7 +81,7 @@ void BHBSLevel::initialData()
     #ifdef USE_TWOPUNCTURES
     BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, 
                             m_p.binary_params, m_p.potential_params,
-                            m_p.G_Newton, m_dx, m_verbosity, m_bhbs_amr.m_two_punctures);
+                            m_p.G_Newton, m_dx, m_verbosity, &m_bhbs_amr.m_two_punctures);
     #else
     BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, 
                             m_p.binary_params, m_p.potential_params,

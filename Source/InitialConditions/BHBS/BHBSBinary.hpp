@@ -40,7 +40,7 @@ public:
     //! Constructor in case of Two Punctures being used
     BHBSBinary(BosonStar_params_t a_params_BosonStar, BlackHole_params_t a_params_BlackHole,
                 Binary_params_t a_params_Binary, Potential::params_t a_params_potential, 
-                double a_G_Newton, double a_dx, int a_verbosity, TP::TwoPunctures &a_two_punctures);
+                double a_G_Newton, double a_dx, int a_verbosity, TP::TwoPunctures *a_two_punctures);
     #endif
 
     //!  This function computes the 1d solution for the BS in the binary
