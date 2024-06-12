@@ -15,7 +15,7 @@
 #include "Max.hpp"
 #include "WeightFunction.hpp"
 #include "TwoPunctures.hpp" //for TwoPunctures-based ID method
-#include "TPAMR.hpp"
+// #include "TPAMR.hpp"
 
 inline BHBSBinary::BHBSBinary(BosonStar_params_t a_params_BosonStar,
                               BlackHole_params_t a_params_BlackHole,
@@ -36,7 +36,7 @@ inline BHBSBinary::BHBSBinary(BosonStar_params_t a_params_BosonStar,
                               Binary_params_t a_params_Binary,
                               Potential::params_t a_params_potential,
                               double a_G_Newton, double a_dx, int a_verbosity,
-                              TP::TwoPunctures a_two_punctures)
+                              TP::TwoPunctures *a_two_punctures)
     : m_dx(a_dx), m_G_Newton(a_G_Newton),
       m_params_BosonStar(a_params_BosonStar),
       m_params_BlackHole(a_params_BlackHole),
@@ -81,6 +81,8 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
      *            INITIALIZATION OF THE PARAMETERS
      */
 
+    pout() << "Starting initial data calculation" << endl;
+
     // Load variables (should be set to zero if this is a single BS)
     MatterCCZ4<ComplexScalarField<>>::Vars<data_t> vars;
     current_cell.load_vars(vars);
@@ -97,12 +99,22 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double BS_radius_width = m_params_BosonStar.radius_width;
     double R_BS = m_params_BosonStar.bump_radius;
 
+    pout() << "Boson star parameters:" << endl;
+    pout() << "BS mass = " << m_params_BosonStar.mass << endl;
+    pout() << "BS_rapidity = " << BS_rapidity << endl;
+    pout() << "R_BS = " << R_BS << endl;
+
     // Import BH parameters
     double BH_rapidity = m_params_BlackHole.rapidity;
     double M = m_params_BlackHole.mass;
 
     double BH_radius_width = m_params_BlackHole.radius_width;
     double R_BH = m_params_BlackHole.bump_radius;
+
+    pout() << "Black hole parameters:" << endl;
+    pout() << "BH mass = " << M << endl;
+    pout() << "BH_rapidity = " << BH_rapidity << endl;
+    pout() << "R_BH = " << R_BH << endl;
 
     // Import binary parameters. Note that the mass ratio is defined as q =
     // mBH/mBS
@@ -301,7 +313,6 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
         w_ = m_1d_sol.get_w();
     }
 
-    phase_ = w_ * t;
     beta_x = s_ * c_ * (psi_ * psi_ - omega_ * omega_) / (pc_os);
     vars.shift[0] += beta_x;
     double g_zz_2 = psi_ * psi_;
@@ -559,10 +570,13 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
 	    using namespace TP::Z4VectorShortcuts;
         double TP_state[Qlen];	
+
+        pout() << "masses: " << (*m_two_punctures).mp << " " << (*m_two_punctures).mp << " " << (*m_two_punctures).mm_adm << " " << (*m_two_punctures).mp_adm << endl;
 	    
         //Read TwoPunctures data from the TPAMR initialized in Main
-        m_two_punctures.Interpolate(coords_array, TP_state);	
+        (*m_two_punctures).Interpolate(coords_array, TP_state);	
 	
+        pout() << "gamma_TP[0][0]" << gamma_TP[0][0] << ", TP_state[g11] " << TP_state[g11] << endl;
 
 	    // TP metric
         gamma_TP[0][0] = TP_state[g11];
@@ -590,7 +604,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 	    //ensure TPFactor dies off entirely around BS center (where TP solution diverges)
 	    double r_star = sqrt(pow(x_star,2) + pow(y_star,2) + pow(z_star,2) );
 	    if (r_star < R_BS)
-	        TPFactor = 0;
+	        TPFactor = 0.;
 	
         //apply TP correction to physical metric and extrinsic curvature
         FOR2(i,j) gammaLLFinal[i][j] = gammaThomas[i][j] + TPFactor * (gamma_TP[i][j] - gammaThomas[i][j]);

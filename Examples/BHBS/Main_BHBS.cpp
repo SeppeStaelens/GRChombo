@@ -27,6 +27,10 @@ int runGRChombo(int argc, char *argv[])
     GRParmParse pp(argc - 2, argv + 2, NULL, in_file);
     SimulationParameters sim_params(pp);
 
+    pout() << "#################################" << endl;
+    pout() << "# Parameters succesfully loaded #" << endl;
+    pout() << "#################################" << endl;
+
     // The line below selects the problem that is simulated
     // (To simulate a different problem, define a new child of AMRLevel
     // and an associated LevelFactory)
@@ -34,10 +38,12 @@ int runGRChombo(int argc, char *argv[])
 
     #ifdef USE_TWOPUNCTURES
     /* Gareth's addition */
-        bhbs_amr.set_two_punctures_parameters(sim_params.tp_params);
-        // Run TwoPunctures solver if id_choice is appropriate
-	    if (sim_params.binary_params.id_choice == 6)
-            bhbs_amr.m_two_punctures.Run();
+    bhbs_amr.set_two_punctures_parameters(sim_params.tp_params);
+    // Run TwoPunctures solver if id_choice is appropriate
+	if (sim_params.binary_params.id_choice == 6)
+        pout() << "Running TwoPunctures solver..." << endl;
+        bhbs_amr.m_two_punctures.Run();
+        pout() << "TwoPunctures solver finished." << endl;
     #endif
 
     // !!!! Seems like this assumes the existence of two boson stars...

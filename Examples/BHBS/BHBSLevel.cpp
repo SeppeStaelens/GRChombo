@@ -266,7 +266,7 @@ void BHBSLevel::specificPostTimeStep()
             // compute integrated volume weighted noether charge integral
 
             double noether_charge = amr_reductions.sum(c_N);
-            std::string noether_charge_filename = m_p.data_path + "NoetherCharge"; 
+            std::string noether_charge_filename = m_p.data_path + "noether_charge"; 
             SmallDataIO noether_charge_file(noether_charge_filename, m_dt, m_time,
                                             m_restart_time,
                                             SmallDataIO::APPEND,
@@ -274,6 +274,7 @@ void BHBSLevel::specificPostTimeStep()
             noether_charge_file.remove_duplicate_time_data();
             if (m_time == 0.)
             {
+                
                 noether_charge_file.write_header_line({"Noether Charge"});
             }
             noether_charge_file.write_time_data_line({noether_charge});

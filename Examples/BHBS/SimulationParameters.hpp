@@ -54,8 +54,8 @@ public:
         pp.load("BH_mass", blackhole_params.mass, 1.0);
 	pp.load("BH_rapidity", blackhole_params.rapidity, 0.0);
 
-        pp.load("BH_radius_width", bosonstar_params.radius_width, 10.0);
-        pp.load("BH_bump_radius", bosonstar_params.bump_radius, 10.0);   
+        pp.load("BH_radius_width", blackhole_params.radius_width, 10.0);
+        pp.load("BH_bump_radius", blackhole_params.bump_radius, 10.0);   
 
         // Binary parameters
         pp.load("centre_of_mass", binary_params.centre_of_mass, center);
@@ -82,11 +82,11 @@ public:
         
 	//std::array<double, CH_SPACEDIM> positionA, positionB;
 
-	position_BS[0] = (binary_params.centre_of_mass[0] + binary_params.mass_ratio * binary_params.separation / (binary_params.mass_ratio + 1.));
+	position_BS[0] = binary_params.centre_of_mass[0] + binary_params.mass_ratio * binary_params.separation / (binary_params.mass_ratio + 1.);
 	position_BS[1] = binary_params.centre_of_mass[1] - binary_params.mass_ratio * binary_params.impact_parameter / (binary_params.mass_ratio + 1.);
 	position_BS[2] = binary_params.centre_of_mass[2];
 
-	position_BH[0] = (binary_params.centre_of_mass[0] - binary_params.separation / (binary_params.mass_ratio + 1.));
+	position_BH[0] = binary_params.centre_of_mass[0] - binary_params.separation / (binary_params.mass_ratio + 1.);
 	position_BH[1] = binary_params.centre_of_mass[1] + binary_params.impact_parameter / (binary_params.mass_ratio + 1.);
         position_BH[2] = binary_params.centre_of_mass[2];
 
