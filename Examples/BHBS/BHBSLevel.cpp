@@ -495,7 +495,7 @@ void BHBSLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
        const vector<double> puncture_radii = {m_p.tag_radius_A,
                                                m_p.tag_radius_B};
        const vector<double> puncture_masses = {m_p.bosonstar_params.mass,
-                                               m_p.blackhole_params.BlackHoleMass};
+                                               m_p.bosonstar2_params.mass};
 
        const std::vector<double> star_coords =
            m_st_amr.m_star_tracker.get_puncture_coords();
