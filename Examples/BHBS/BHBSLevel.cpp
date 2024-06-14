@@ -258,8 +258,7 @@ void BHBSLevel::doAnalysis()
             // compute integrated volume weighted noether charge integral
 
             double noether_charge = amr_reductions.sum(c_N);
-            std::string noether_charge_filename = m_p.data_path + "NoetherCharge"; 
-            SmallDataIO noether_charge_file(noether_charge_filename, m_dt, m_time,
+            SmallDataIO noether_charge_file("NoetherCharge", m_dt, m_time,
                                             m_restart_time,
                                             SmallDataIO::APPEND,
                                             first_step);
@@ -273,8 +272,7 @@ void BHBSLevel::doAnalysis()
 
         // Compute the maximum of mod_phi and write it to a file
         double mod_phi_max = amr_reductions.max(c_mod_phi);
-        std::string mod_phi_max_filename = m_p.data_path + "mod_phi_max"; 
-        SmallDataIO mod_phi_max_file(mod_phi_max_filename, m_dt, m_time,
+        SmallDataIO mod_phi_max_file("mod_phi_max", m_dt, m_time,
                                      m_restart_time,
                                      SmallDataIO::APPEND,
                                      first_step);
@@ -288,8 +286,7 @@ void BHBSLevel::doAnalysis()
 
         // Compute the min of chi and write it to a file
         double min_chi = amr_reductions.min(c_chi);
-        std::string min_chi_filename = m_p.data_path + "mod_phi_max";
-        SmallDataIO min_chi_file(min_chi_filename, m_dt, m_time,
+        SmallDataIO min_chi_file("min_chi", m_dt, m_time,
                                      m_restart_time,
                                      SmallDataIO::APPEND,
                                      first_step);
@@ -307,9 +304,7 @@ void BHBSLevel::doAnalysis()
         double L2_Mom = amr_reductions.norm(Interval(c_Mom1, c_Mom3), 2, true);
         double L1_Ham = amr_reductions.norm(c_Ham, 1, true);
         double L1_Mom = amr_reductions.norm(Interval(c_Mom1, c_Mom3), 1, true);
-
-        std::string constraints_filename = m_p.data_path + "constraint_norms";
-        SmallDataIO constraints_file(constraints_filename, m_dt, m_time,
+        SmallDataIO constraints_file("constraint_norms", m_dt, m_time,
                                      m_restart_time, SmallDataIO::APPEND,
                                      first_step);
         constraints_file.remove_duplicate_time_data();
@@ -422,8 +417,7 @@ void BHBSLevel::doAnalysis()
                 title_line[j] = dummy_string;
             }
 
-            std::string angmomsource_filename = m_p.data_path + "AngMomSource";        
-            SmallDataIO angmomsource_file(angmomsource_filename, m_dt, m_time,
+            SmallDataIO angmomsource_file("AngMomSource", m_dt, m_time,
                                           m_restart_time,
                                           SmallDataIO::APPEND,
                                           first_step);
@@ -447,8 +441,7 @@ void BHBSLevel::doAnalysis()
                 title_line2[j] = dummy_string2;
             }
 
-            std::string density_filename = m_p.data_path + "AngMomDensity";
-            SmallDataIO density_file(density_filename, m_dt, m_time,
+            SmallDataIO density_file("AngMomDensity", m_dt, m_time,
                                           m_restart_time,
                                           SmallDataIO::APPEND,
                                           first_step);
