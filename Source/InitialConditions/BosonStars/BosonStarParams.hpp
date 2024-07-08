@@ -25,14 +25,12 @@ struct BosonStar_params_t
     double BS_rapidity;
     double mass_ratio;
     int n_power;
-    int id_choice; // initial data choice: 0 - plain superposition, 1 - Thomas'
-                   // trick, 2 - fixing conformal factor method
+    int id_choice; // initial data choice: 0 - plain superposition, 1 - Thomas' trick, 2 - fixing conformal factor method
     double radius_width1;
     double radius_width2;
     int conformal_factor_power;
     bool antiboson;
-    std::array<double, CH_SPACEDIM>
-        star_centre; //!< coordinates of the centre of the star
+    std::array<double, CH_SPACEDIM> star_centre; //!< coordinates of the centre of the star
 };
 
 #endif /* BOSONSTARPARAMS_HPP_ */

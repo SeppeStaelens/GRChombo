@@ -26,7 +26,7 @@ void BosonStarSolution::main()
     // the lapse and shift
     force_flat(mid_int);
     rk4_asymp(mid_int - 1, false, ww);
-    // fix();
+    //fix();
     rk4_asymp(mid_int, true,
               ww); // (true) uses large radius adaptive stepsize to get
                    // asymptotics (integrates vacuum metric out to huge radius ~
@@ -205,7 +205,7 @@ double BosonStarSolution::find_WW_soliton()
         crossed = soliton_eigen();
         if (crossed)
             return WW_;
-        if (WW_ > 10e10)
+        if (WW_>10e10)
         {
             return WW_;
         }
@@ -326,11 +326,11 @@ double BosonStarSolution::ww_IB_soliton(double lower_ww_, double upper_ww_)
 
 bool BosonStarSolution::soliton_eigen()
 {
-    for (int i = 2; i < gridsize - 6; i++)
+    for (int i = 2; i < gridsize-6; i++)
     {
         if (p[i] * p[i + 1] < 0.)
             return true;
-        if (p[i - 2] * p[i + 2] < 0.)
+        if (p[i-2] * p[i + 2] < 0.)
             return true;
         if (p[i] > p[i - 1])
             return false;
@@ -450,8 +450,8 @@ void BosonStarSolution::rk4(const double ww_)
 void BosonStarSolution::rk4_asymp(const int iter, const bool adaptive,
                                   const double ww_)
 {
-    double k1 = 0., k2 = 0., k3 = 0., k4 = 0., q1 = 0., q2 = 0., q3 = 0.,
-           q4 = 0., x_ = iter * dx, h, delta = (double)gridsize;
+    double k1=0., k2=0., k3=0., k4=0., q1=0., q2=0., q3=0., q4=0., x_ = iter * dx, h,
+                                           delta = (double)gridsize;
     const double DX = dx;
     double DX_ = DX;
     double o1, o2, o3, o4, s1, s2, s3, s4, r1, r2, r3, r4;
