@@ -95,8 +95,8 @@ void BosonStar::compute(Cell<data_t> current_cell) const
     double r = sqrt(x * x + y * y + z * z);
 
     // First star physical variables
-    double p_ = m_1d_sol.get_p_interp(r);
-    double dp_ = m_1d_sol.get_dp_interp(r);
+    double p_ = m_1d_sol.get_A_interp(r);
+    double dp_ = m_1d_sol.get_dA_interp(r);
     double omega_ = m_1d_sol.get_lapse_interp(r);
     double omega_prime_ = m_1d_sol.get_dlapse_interp(r);
     double psi_ = m_1d_sol.get_psi_interp(r);
@@ -164,8 +164,8 @@ void BosonStar::compute(Cell<data_t> current_cell) const
     double z_p = 0.; //set /tilde{t} to zero
     double y_p = impact_parameter;
     double r_p = sqrt(x_p * x_p + y_p * y_p + z_p * z_p);
-    double p_p = m_1d_sol.get_p_interp(r_p);
-    double dp_p = m_1d_sol.get_dp_interp(r_p);
+    double p_p = m_1d_sol.get_A_interp(r_p);
+    double dp_p = m_1d_sol.get_dA_interp(r_p);
     double omega_p = m_1d_sol.get_lapse_interp(r_p);
     double omega_prime_p = m_1d_sol.get_dlapse_interp(r_p);
     double psi_p = m_1d_sol.get_psi_interp(r_p);
@@ -203,8 +203,8 @@ void BosonStar::compute(Cell<data_t> current_cell) const
         r = sqrt(x * x + y * y + z * z);
 
         //Second star physical variables
-        p_ = m_1d_sol2.get_p_interp(r);
-        dp_ = m_1d_sol2.get_dp_interp(r);
+        p_ = m_1d_sol2.get_A_interp(r);
+        dp_ = m_1d_sol2.get_dA_interp(r);
         omega_ = m_1d_sol2.get_lapse_interp(r);
         omega_prime_ = m_1d_sol2.get_dlapse_interp(r);
         psi_ = m_1d_sol2.get_psi_interp(r);
@@ -270,8 +270,8 @@ void BosonStar::compute(Cell<data_t> current_cell) const
         double r_p2 = sqrt(x_p2 * x_p2 + y_p2 * y_p2 + z_p2 * z_p2);
 
         // Get physical variables needed for the metric
-        double p_p2 = m_1d_sol2.get_p_interp(r_p2);
-        double dp_p2 = m_1d_sol2.get_dp_interp(r_p2);
+        double p_p2 = m_1d_sol2.get_A_interp(r_p2);
+        double dp_p2 = m_1d_sol2.get_dA_interp(r_p2);
         double omega_p2 = m_1d_sol2.get_lapse_interp(r_p2);
         double omega_prime_p2 = m_1d_sol2.get_dlapse_interp(r_p2);
         double psi_p2 = m_1d_sol2.get_psi_interp(r_p2);
@@ -369,8 +369,8 @@ void BosonStar::compute(Cell<data_t> current_cell) const
     {
         //If one uses fixing conformal trick, we need to have the vales of the metric of star 1 at its centre
         double r_11 = 0.;
-        double p_11 = m_1d_sol.get_p_interp(r_11);
-        double dp_11 = m_1d_sol.get_dp_interp(r_11);
+        double p_11 = m_1d_sol.get_A_interp(r_11);
+        double dp_11 = m_1d_sol.get_dA_interp(r_11);
         double omega_11 = m_1d_sol.get_lapse_interp(r_11);
         double omega_prime_11 = m_1d_sol.get_dlapse_interp(r_11);
         double psi_11 = m_1d_sol.get_psi_interp(r_11);
@@ -379,8 +379,8 @@ void BosonStar::compute(Cell<data_t> current_cell) const
 
         //If one uses fixing conformal trick, we need to have the vales of the metric of star 2 at its centre
         double r_22 = 0.;
-        double p_22 = m_1d_sol2.get_p_interp(r_22);
-        double dp_22 = m_1d_sol2.get_dp_interp(r_22);
+        double p_22 = m_1d_sol2.get_A_interp(r_22);
+        double dp_22 = m_1d_sol2.get_dA_interp(r_22);
         double omega_22 = m_1d_sol2.get_lapse_interp(r_22);
         double omega_prime_22 = m_1d_sol2.get_dlapse_interp(r_22);
         double psi_22 = m_1d_sol2.get_psi_interp(r_22);

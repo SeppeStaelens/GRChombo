@@ -11,8 +11,15 @@
 //! A structure for the input params for the boson star
 struct BosonStar_params_t
 {
-    int gridpoints; // numer of gridpoints used to create boson star
-    double central_amplitude_CSF; //!< Central amplitude of the star
+    int gridpoints = 1000000;
+	double central_amplitude_CSF = 0.078; // 0.17  (ulis soliton) ;//0.050777063;//0.07683 (kaup limit) ;//0.0278 (old production run star);
+	double scalar_mass = 1.;
+	double phi4_coeff = 0.;
+	bool solitonic = true;
+	double sigma_soliton = 0.09;//0.0499;
+	double PSC = 2.14024448963261;
+	double OMC = 0.23354251320076;
+	bool BS_solver_verbosity = 1;
     double phase;
     int eigen; // radial eigenstate of the boson star (0=ground)
     double BS_separation;
@@ -34,3 +41,4 @@ struct BosonStar_params_t
 };
 
 #endif /* BOSONSTARPARAMS_HPP_ */
+
