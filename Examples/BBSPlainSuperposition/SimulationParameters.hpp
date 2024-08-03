@@ -34,12 +34,17 @@ public:
         // Gravitional constant
         pp.load("G_Newton", G_Newton, 1.0);
 
+        //######################################
+        // Single Boson Star Solver Parameters
+        //######################################
+
         // Boson Star initial data params
         pp.load("central_amplitude_CSF",
                 bosonstar_params.central_amplitude_CSF);
         pp.load("phase", bosonstar_params.phase, 0.0);
-        pp.load("eigen", bosonstar_params.eigen, 0);
-        pp.load("gridpoints",bosonstar_params.gridpoints,400000);
+        pp.load("gridpoints",bosonstar_params.gridpoints, 1000000);
+        pp.load("BS_solver_psc",bosonstar_params.PSC, 2.0);
+        pp.load("BS_solver_omc",bosonstar_params.PSC, 0.5);
 
         pp.load("star_centre", bosonstar_params.star_centre, center);
 
@@ -48,27 +53,21 @@ public:
         pp.load("phi4_coeff", potential_params.phi4_coeff, 0.0);
         pp.load("solitonic", potential_params.solitonic, false);
         pp.load("sigma_solitonic", potential_params.sigma_solitonic, 0.02);
-        pp.load("BS_binary", bosonstar_params.BS_binary, false);
-        pp.load("BS_BH_binary", bosonstar_params.BS_BH_binary, false);
+        
+        //######################################
+        // Binary Boson Star Parameters
+        //######################################
+
         pp.load("antiboson", bosonstar_params.antiboson, false);
-        pp.load("BlackHoleMass", bosonstar_params.BlackHoleMass, 0.);
         pp.load("BS_rapidity", bosonstar_params.BS_rapidity, 0.0);
         pp.load("BS_separation", bosonstar_params.BS_separation, 0.0);
-        pp.load("BS_mass", bosonstar_params.mass);
+        pp.load("BS_mass", bosonstar_params.mass, 1.0);
         pp.load("BS_impact_parameter", bosonstar_params.BS_impact_parameter, 0.0);
-        pp.load("id_choice", bosonstar_params.id_choice, 2);
         pp.load("mass_ratio", bosonstar_params.mass_ratio, 1.0);
-        pp.load("radius_width1", bosonstar_params.radius_width1, 10.);
-        pp.load("radius_width2", bosonstar_params.radius_width2, 20.);
-        pp.load("conformal_factor_power", bosonstar_params.conformal_factor_power, -4);
-        pp.load("G_Newton", bosonstar_params.Newtons_constant, 1.0);
         
 	// Initialize values for bosonstar2_params to same as bosonstar_params
         // and then assign that ones that should differ below
         bosonstar2_params = bosonstar_params;
-
-        // Are the two stars' profiles identical
-        pp.load("identical", identical, false);
 
         // Boson Star 2 parameters
         if (!identical)
@@ -77,7 +76,7 @@ public:
                     bosonstar2_params.central_amplitude_CSF);
             pp.load("BS_rapidity2",
                     bosonstar2_params.BS_rapidity);
-            pp.load("BS_mass2", bosonstar2_params.mass);
+            pp.load("BS_mass2", bosonstar2_params.mass, 1.0);
         }
 
 	//std::array<double, CH_SPACEDIM> positionA, positionB;

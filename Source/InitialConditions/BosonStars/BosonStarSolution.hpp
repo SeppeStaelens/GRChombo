@@ -11,7 +11,6 @@ class BosonStarSolution
 
 private: // private member variables/arrays
     double MM, A0; //Klein Gordon mass squared, KG scalr field central amplitude
-    const double G = 1;// 1./(M_PI*4.); // rescales KG field in ODE's
     double PSC, OMC;
     // double PSC=2.52749283231717, OMC=0.160056080542207; // central density of scalar field (0.272 for kaup)  PSC and OMC are central values of conformal factor and lapse, not important as long as they are sensible (i.e. order 1)
     // PSC=2.0, OMC=0.5
@@ -19,7 +18,7 @@ private: // private member variables/arrays
     double sigma; // 0.2 works with PC = 0.05 // parameter for solitonic stars
     bool solitonic; // false fro mini/lambda star. true for solitonic star
     bool BS_verbosity; // outputs more messages whilst finding the solution 
-    double EIGEN; // the desired eigenstate, 0 for ground
+    double EIGEN = 0; // the desired eigenstate, 0 for ground
     int gridsize, adaptive_buffer; // anywhere from 2k-200k is ok
     const int adaptive_stepsize_repetitions = 20;//50; // 0 for no adaptive
   	double L, dx, omega_ansatz, omega_true; // L, length of domain, dx.
@@ -58,7 +57,7 @@ private: // private member fucntions functions
     void truncate_solution();
     void force_flat(const int iter_crit);
     double bisect_omega(double omega_min, double omega_max);
-    double found_zero_crossing();
+    bool found_zero_crossing();
     double find_upper_omega();
     int find_matching_index();
     int iofr(double rtarget);
@@ -80,7 +79,6 @@ public:
     double get_dlapse_interp(const double r) const;
     double get_mass() const;
     double get_w() const;
-    double get_r(const double frac) const;
     void shout() const;
     void output_csv();
     void main();

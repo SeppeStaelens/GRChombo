@@ -252,13 +252,17 @@ double BosonStarSolution::bisect_omega(double omega_min, double omega_max)
 }
 
 // Check is the amplitudes has a zero crossing 
-double BosonStarSolution::found_zero_crossing()
+bool BosonStarSolution::found_zero_crossing()
 {
+    bool any_zero_crossings;
+
     for (int i=1; i<gridsize; i++)
     {
-        if (A[i]*A[i+1]<0.) return true;
-        if (A[i]>A[i-1]) return false;
+        if (A[i]*A[i+1]<0.) any_zero_crossings=true;
+        if (A[i]>A[i-1]) any_zero_crossings=false;
     }
+
+    return any_zero_crossings;
 }
 
 
@@ -532,13 +536,13 @@ double BosonStarSolution::PSI_RHS(const double x, const double A, const double D
 double BosonStarSolution::DPSI_RHS(const double x, const double A, const double DA, const double PSI, const double DPSI, const double OM, const double ww_)
 {
     double r = ((x==0.)?eps:x);
-    return 0.5*DPSI*DPSI/PSI - 2.*DPSI/r - 2.*M_PI*G*PSI*( PSI*PSI*V(A) + DA*DA + ww_*A*A*PSI*PSI/(OM*OM) );
+    return 0.5*DPSI*DPSI/PSI - 2.*DPSI/r - 2.*M_PI*PSI*( PSI*PSI*V(A) + DA*DA + ww_*A*A*PSI*PSI/(OM*OM) );
 }
 
 double BosonStarSolution::OMEGA_RHS(const double x, const double A, const double DA, const double PSI, const double DPSI, const double OM, const double ww_)
 {
     double r = ((x==0.)?eps:x);
-  	return (OM/(x*DPSI + PSI))*(    2.*M_PI*G*x*PSI*(DA*DA - PSI*PSI*V(A) + ww_*A*A*PSI*PSI/(OM*OM) ) - DPSI - 0.5*x*DPSI*DPSI/PSI );
+  	return (OM/(x*DPSI + PSI))*(    2.*M_PI*x*PSI*(DA*DA - PSI*PSI*V(A) + ww_*A*A*PSI*PSI/(OM*OM) ) - DPSI - 0.5*x*DPSI*DPSI/PSI );
 }
 
 
@@ -723,19 +727,6 @@ double BosonStarSolution::get_w() const
     return sqrt(omega_true);
 }
 
-double BosonStarSolution::get_r(const double frac) const
-{
-    if ( (frac-0.5)*(frac-0.5) >= 0.25) {return -1.;}
-
-    for (int i = 0; i < gridsize; ++i)
-    {
-        if (A[i]/A[0] < frac)
-        {
-            return radius_array[i];
-        }
-    }
-}
-
 void BosonStarSolution::set_initialcondition_params(
     BosonStar_params_t m_params_BosonStar,
     Potential::params_t m_params_potential, const double max_r)
@@ -754,13 +745,11 @@ void BosonStarSolution::set_initialcondition_params(
 	compactness.resize(gridsize); // compactness of a BS 
 
     A0 = m_params_BosonStar.central_amplitude_CSF;
-    EIGEN = m_params_BosonStar.eigen;
     MM = m_params_potential.scalar_mass * m_params_potential.scalar_mass;
     lambda = m_params_potential.phi4_coeff;
     solitonic = m_params_potential.solitonic;
-    sigma = m_params_potential.sigma_soliton;
+    sigma = m_params_potential.sigma_solitonic;
 	BS_verbosity = m_params_BosonStar.BS_solver_verbosity;
-    sigma = m_params_BosonStar.sigma_soliton;
 	PSC = m_params_BosonStar.PSC;
 	OMC = m_params_BosonStar.OMC;
     L = max_r*1.05; //just to make sure the function domain is slightly larger than the required cube
