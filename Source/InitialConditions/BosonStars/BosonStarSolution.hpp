@@ -57,7 +57,7 @@ private: // private member fucntions functions
     void truncate_solution();
     void force_flat(const int iter_crit);
     double bisect_omega(double omega_min, double omega_max);
-    bool found_zero_crossing();
+    int found_zero_crossing();
     double find_upper_omega();
     int find_matching_index();
     int iofr(double rtarget);

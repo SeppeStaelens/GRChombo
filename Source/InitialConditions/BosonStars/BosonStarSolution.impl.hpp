@@ -252,14 +252,22 @@ double BosonStarSolution::bisect_omega(double omega_min, double omega_max)
 }
 
 // Check is the amplitudes has a zero crossing 
-bool BosonStarSolution::found_zero_crossing()
+int BosonStarSolution::found_zero_crossing()
 {
-    bool any_zero_crossings;
+    int any_zero_crossings;
 
     for (int i=1; i<gridsize; i++)
     {
-        if (A[i]*A[i+1]<0.) any_zero_crossings=true;
-        if (A[i]>A[i-1]) any_zero_crossings=false;
+        if (A[i]*A[i+1]<0.) 
+        {
+            any_zero_crossings = 1;
+            break;
+        }
+        if (A[i]>A[i-1]) 
+        {
+            any_zero_crossings = 0;
+            break;
+        }
     }
 
     return any_zero_crossings;
