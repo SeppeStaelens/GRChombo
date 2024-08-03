@@ -42,9 +42,10 @@ public:
         pp.load("central_amplitude_CSF",
                 bosonstar_params.central_amplitude_CSF);
         pp.load("phase", bosonstar_params.phase, 0.0);
-        pp.load("gridpoints",bosonstar_params.gridpoints, 1000000);
-        pp.load("BS_solver_psc",bosonstar_params.PSC, 2.0);
-        pp.load("BS_solver_omc",bosonstar_params.PSC, 0.5);
+        pp.load("gridpoints", bosonstar_params.gridpoints, 1000000);
+        pp.load("BS_solver_psc", bosonstar_params.PSC, 2.0);
+        pp.load("BS_solver_omc", bosonstar_params.OMC, 0.5);
+        pp.load("BS_solver_verbosity", bosonstar_params.BS_solver_verbosity, false);
 
         pp.load("star_centre", bosonstar_params.star_centre, center);
 
@@ -52,7 +53,7 @@ public:
         pp.load("scalar_mass", potential_params.scalar_mass, 1.0);
         pp.load("phi4_coeff", potential_params.phi4_coeff, 0.0);
         pp.load("solitonic", potential_params.solitonic, false);
-        pp.load("sigma_solitonic", potential_params.sigma_solitonic, 0.02);
+        pp.load("sigma_solitonic", potential_params.sigma_solitonic, 0.2);
         
         //######################################
         // Binary Boson Star Parameters
