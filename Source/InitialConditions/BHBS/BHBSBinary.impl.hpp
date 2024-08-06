@@ -14,8 +14,9 @@
 #include "DebuggingTools.hpp"
 #include "Max.hpp"
 #include "WeightFunction.hpp"
+#ifdef USE_TWOPUNCTURES
 #include "TwoPunctures.hpp" //for TwoPunctures-based ID method
-// #include "TPAMR.hpp"
+#endif
 
 inline BHBSBinary::BHBSBinary(BosonStar_params_t a_params_BosonStar,
                               BlackHole_params_t a_params_BlackHole,
@@ -81,7 +82,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
      *            INITIALIZATION OF THE PARAMETERS
      */
 
-    pout() << "Starting initial data calculation" << endl;
+    //pout() << "Starting initial data calculation" << endl;
 
     // Load variables (should be set to zero if this is a single BS)
     MatterCCZ4<ComplexScalarField<>>::Vars<data_t> vars;
@@ -99,10 +100,10 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double BS_radius_width = m_params_BosonStar.radius_width;
     double R_BS = m_params_BosonStar.bump_radius;
 
-    pout() << "Boson star parameters:" << endl;
-    pout() << "BS mass = " << m_params_BosonStar.mass << endl;
-    pout() << "BS_rapidity = " << BS_rapidity << endl;
-    pout() << "R_BS = " << R_BS << endl;
+    // pout() << "Boson star parameters:" << endl;
+    // pout() << "BS mass = " << m_params_BosonStar.mass << endl;
+    // pout() << "BS_rapidity = " << BS_rapidity << endl;
+    // pout() << "R_BS = " << R_BS << endl;
 
     // Import BH parameters
     double BH_rapidity = m_params_BlackHole.rapidity;
@@ -111,10 +112,10 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double BH_radius_width = m_params_BlackHole.radius_width;
     double R_BH = m_params_BlackHole.bump_radius;
 
-    pout() << "Black hole parameters:" << endl;
-    pout() << "BH mass = " << M << endl;
-    pout() << "BH_rapidity = " << BH_rapidity << endl;
-    pout() << "R_BH = " << R_BH << endl;
+    // pout() << "Black hole parameters:" << endl;
+    // pout() << "BH mass = " << M << endl;
+    // pout() << "BH_rapidity = " << BH_rapidity << endl;
+    // pout() << "R_BH = " << R_BH << endl;
 
     // Import binary parameters. Note that the mass ratio is defined as q =
     // mBH/mBS
@@ -563,20 +564,41 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     	Tensor<1, double> shiftTP, Z3TP;
     	double lapseTP, ThetaTP;
 
+        //radial distance to BH and weight function value
+        double r_hole = sqrt(pow(x_BH,2) + pow(y_BH,2) + pow (z_BH,2));
+
+    	double TPFactor = 1 - tanh(r_hole * r_hole /( R_BH * R_BH));
+
+	    //ensure TPFactor dies off entirely around BS center (where TP solution diverges)
+	    double r_star = sqrt(pow(x_star,2) + pow(y_star,2) + pow(z_star,2) );
+	    if (r_star < R_BS)
+	        TPFactor = 0.;
+
+	    // rotated coordinates to extract data from BHBSAMR
 	    double coords_array[CH_SPACEDIM];
     	coords_array[0] = coords.x;
     	coords_array[1] = coords.y;
     	coords_array[2] = coords.z;
 
+        //amount the original configuration has been  rotated relative to x-axis parallel config. assumes impact param/ separation > 0
+        double rotation_angle = asin(impact_parameter / sqrt(separation * separation + impact_parameter * impact_parameter ));
+
+        //rotate by rotation_angle to obtain coordinates of source point in TP system
+        if (m_params_Binary.do_rotation)
+        {
+            coords_array[0] = cos(rotation_angle) * coords.x - sin(rotation_angle) * coords.y;
+            coords_array[1] = sin(rotation_angle) * coords.x + cos(rotation_angle) * coords.y;
+        }
+
 	    using namespace TP::Z4VectorShortcuts;
         double TP_state[Qlen];	
 
-        pout() << "masses: " << (*m_two_punctures).mp << " " << (*m_two_punctures).mp << " " << (*m_two_punctures).mm_adm << " " << (*m_two_punctures).mp_adm << endl;
+        // pout() << "masses: " << (*m_two_punctures).mp << " " << (*m_two_punctures).mp << " " << (*m_two_punctures).mm_adm << " " << (*m_two_punctures).mp_adm << endl;
 	    
         //Read TwoPunctures data from the TPAMR initialized in Main
         (*m_two_punctures).Interpolate(coords_array, TP_state);	
 	
-        pout() << "gamma_TP[0][0]" << gamma_TP[0][0] << ", TP_state[g11] " << TP_state[g11] << endl;
+        // pout() << "gamma_TP[0][0]" << gamma_TP[0][0] << ", TP_state[g11] " << TP_state[g11] << endl;
 
 	    // TP metric
         gamma_TP[0][0] = TP_state[g11];
@@ -596,20 +618,10 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 	
 	    lapseTP = TP_state[lapse];	
 
-	    //radial distance to BH and weight function value
-        double r_hole = sqrt(pow(x_BH,2) + pow(y_BH,2) + pow (z_BH,2));
-
-    	double TPFactor = 1 - tanh(r_hole * r_hole /( R_BH * R_BH));
-
-	    //ensure TPFactor dies off entirely around BS center (where TP solution diverges)
-	    double r_star = sqrt(pow(x_star,2) + pow(y_star,2) + pow(z_star,2) );
-	    if (r_star < R_BS)
-	        TPFactor = 0.;
-	
         //apply TP correction to physical metric and extrinsic curvature
         FOR2(i,j) gammaLLFinal[i][j] = gammaThomas[i][j] + TPFactor * (gamma_TP[i][j] - gammaThomas[i][j]);
-        FOR2(i,j) KLL[i][j] = KLLThomas[i][j] + TPFactor * (K_TP[i][j] - KLLThomas[i][j]);
-        //FOR2(i,j) KLL[i][j] = KLLThomas[i][j]; //test (remove me)
+        //FOR2(i,j) KLL[i][j] = KLLThomas[i][j] + TPFactor * (K_TP[i][j] - KLLThomas[i][j]);
+        FOR2(i,j) KLL[i][j] = KLLThomas[i][j]; // seems to work better without K fix
         
         //vars.lapse = vars.lapse + TPFactor * (lapseTP - vars.lapse); 
 
