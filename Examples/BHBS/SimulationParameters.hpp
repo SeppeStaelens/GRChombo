@@ -16,7 +16,7 @@
 #include "AngMomFluxParams.hpp"
 #include "BoostedBH.hpp"
 
-#ifded USE_TWOPUNCTURES
+#ifdef USE_TWOPUNCTURES
 #include "TP_Parameters.hpp"
 #endif
 
@@ -66,7 +66,7 @@ public:
         pp.load("impact_parameter", binary_params.impact_parameter, 0.0);
         // pp.load("mass_ratio", binary_params.mass_ratio, 1.0);
         binary_params.mass_ratio = blackhole_params.mass / bosonstar_params.mass;
-        pp.load ("do_rotation", bosonstar_params.do_rotation, false);
+        pp.load ("do_rotation", binary_params.do_rotation, false);
         
         pout() << "The BH/BS mass ratio is " << binary_params.mass_ratio << endl;
 
@@ -231,7 +231,7 @@ public:
         double p2 = blackhole_params.mass * gamma_BH * v_BH;
         std::array<double, CH_SPACEDIM> momentum_BS{p1, 0, 0};
 	std::array<double, CH_SPACEDIM> momentum_BH{p2, 0, 0};
-        if (bosonstar_params.do_rotation)
+        if (binary_params.do_rotation)
 	{
 	    pout() << "Doing TP coordinate rotation by angle " << rotation_angle << endl;
 	    
