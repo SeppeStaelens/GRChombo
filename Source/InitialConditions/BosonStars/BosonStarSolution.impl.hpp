@@ -23,9 +23,9 @@ void BosonStarSolution::main()
 	for (int iter=0; iter<17; iter++)
     {
 
-	std::cout << "-----------------------------------------------" << std::endl;
-	std::cout << "I am running iteration # " << iter << std::endl;
-	std::cout << "-----------------------------------------------" << std::endl;
+	pout() << "-----------------------------------------------" << endl;
+	pout() << "I am running iteration # " << iter << endl;
+	pout() << "-----------------------------------------------" << endl;
 
 	// Set the initial conditions
 	initialise();
@@ -41,7 +41,7 @@ void BosonStarSolution::main()
 
 	if (BS_verbosity)
 	{
-    	std::cout << "I will use the matching index of " << matching_index << " and the matching radius at " << matching_index*dx << std::endl;
+    	pout() << "I will use the matching index of " << matching_index << " and the matching radius at " << matching_index*dx << endl;
 	}
 
     // Force the scalar field to zero after the point the amplitude diverges 
@@ -54,8 +54,8 @@ void BosonStarSolution::main()
 
 	if (BS_verbosity)
 	{
-		std::cout << "PSI_INF " << PSI_INF << std::endl;
-		std::cout << "OM_INF " << OM_INF << std::endl;
+		pout() << "PSI_INF " << PSI_INF << endl;
+		pout() << "OM_INF " << OM_INF << endl;
 	}
 
 	// if (fabs(PSI_INF - 1.) < 1e-05)
@@ -77,7 +77,7 @@ void BosonStarSolution::main()
 	// Useful, when you may want to iterate through the for loop a few times. 
 	 if (fabs(PSI_INF - 1.) < 1e-05 && fabs(OM_INF - 1.) < 1e-05)
 	 {
-		std::cout << "Central Density : " << A[0] << ", PSI0 : " << psi[0] << ", OM0 : " << omega[0] << ", w : "  << sqrt(omega_true) << std::endl; 
+		pout() << "Central Density : " << A[0] << ", PSI0 : " << psi[0] << ", OM0 : " << omega[0] << ", w : "  << sqrt(omega_true) << endl; 
 		break;
 	 }
 
@@ -85,19 +85,19 @@ void BosonStarSolution::main()
 	 PSC/=PSI_INF;
      OMC/=OM_INF;
 
-	std::cout << "Central Density : " << A[0] << ", PSI0 : " << PSC << ", OM0 : " << OMC << ", w : "  << sqrt(omega_true) << std::endl; 
+	pout() << "Central Density : " << A[0] << ", PSI0 : " << PSC << ", OM0 : " << OMC << ", w : "  << sqrt(omega_true) << endl; 
 
 	if (iter == 16)
 	{
-		std::cout << "Ooopsies... I have reached 16 iterations now, did not find a BS solution  ¯|_(ツ)_|¯ " << std::endl;
+		pout() << "Ooopsies... I have reached 16 iterations now, did not find a BS solution  ¯|_(ツ)_|¯ " << endl;
 		exit(0);
 	}
 
 	}	
 
-	std::cout << "-----------------------------------------------" << std::endl;
-	std::cout << "Computing the diagnostics of the solution" << std::endl;
-	std::cout << "-----------------------------------------------" << std::endl;
+	pout() << "-----------------------------------------------" << endl;
+	pout() << "Computing the diagnostics of the solution" << endl;
+	pout() << "-----------------------------------------------" << endl;
 	rk4_match(matching_index,false,omega_true);
 	
 	// Calculate the aspect mass and the ADM mass at the boundary of the physical domain. They shoud be similar, but not equal!
@@ -106,13 +106,13 @@ void BosonStarSolution::main()
 	radius = calculate_radius();
 	compactness_value = boson_mass[gridsize-1]/radius;
 
-	std::cout << "-----------------------------------------------" << std::endl;
-    std::cout << "Central Density : " << A[0] << std::endl; 
-	std::cout << "ADM mass : " << adm_mass[gridsize-1] << std::endl;
-	std::cout << "Aspect mass : " << boson_mass[gridsize-1] << std::endl;
-	std::cout << "Radius : " << radius << std::endl;
-	std::cout << "Compactness : " << compactness_value << std::endl;
-	std::cout << "W : "  << sqrt(omega_true) << std::endl;
+	pout() << "-----------------------------------------------" << endl;
+    pout() << "Central Density : " << A[0] << endl; 
+	pout() << "ADM mass : " << adm_mass[gridsize-1] << endl;
+	pout() << "Aspect mass : " << boson_mass[gridsize-1] << endl;
+	pout() << "Radius : " << radius << endl;
+	pout() << "Compactness : " << compactness_value << endl;
+	pout() << "W : "  << sqrt(omega_true) << endl;
 }
 
 // Initialise the 5 filed variables with their central values
@@ -244,7 +244,7 @@ double BosonStarSolution::bisect_omega(double omega_min, double omega_max)
 	  {
 		if (BS_verbosity)
 		{
-			std::cout << "BosonStarSolution::bisect_omega -- I have reached the maximum number of iterations in the bisection algorithm" << std::endl;
+			pout() << "BosonStarSolution::bisect_omega -- I have reached the maximum number of iterations in the bisection algorithm" << endl;
 		}
 		return upper_omega;
 	  }	
@@ -406,8 +406,8 @@ void BosonStarSolution::rk4_asymp(const int iter, const bool adaptive, const dou
 
   	if (adaptive and x_ < 8e7)
   	{
-  	        std::cout << "\33[30;41m" << " Asymptotic Radius Too Small" << "\x1B[0m" << std::endl;
-                std::cout << x_ << std::endl;
+  	        pout() << "\33[30;41m" << " Asymptotic Radius Too Small" << "\x1B[0m" << endl;
+                pout() << x_ << endl;
   	}
 }
 
@@ -441,8 +441,8 @@ void BosonStarSolution::rk4_match(const int iter, const bool adaptive, const dou
 
 	if (BS_verbosity)
 	{
-		std::cout << "Constant A " << c1 << std::endl;
-		std::cout << "Constant B " << c2 << std::endl;
+		pout() << "Constant A " << c1 << endl;
+		pout() << "Constant B " << c2 << endl;
 	}
 
   	for (int i = iter+1; i < gridsize; ++i)
@@ -603,7 +603,7 @@ double BosonStarSolution::calculate_radius()
     if(boson_mass[i] < 99.9 / 100.0 * boson_mass[gridsize-1])
       break;
 
-  std::cout << "radius = " << radius_array[i+1] << std::endl;
+  pout() << "radius = " << radius_array[i+1] << endl;
 
   return radius_array[i+1];
   }
@@ -633,7 +633,7 @@ double BosonStarSolution::get_A_interp(const double r) const
     f3 = A[iter+1];
     f4 = A[iter+2];
 
-    if (iter>gridsize-3){std::cout << "FArrayBox domain exceeding star radius!" << std::endl;}
+    if (iter>gridsize-3){pout() << "FArrayBox domain exceeding star radius!" << endl;}
 
     // do the cubic spline, from mathematica script written by Robin (rc634@cam.ac.uk)
     interpolated_value = (1./48.)*(f1 *(-3.+2.*a+12.*a*a-8.*a*a*a) +(3.+2.*a)*(-(1.+2.*a)*(-9.*f3+f4+6.*f3*a-2*f4*a)+3.*f2*(3.-8.*a+4.*a*a)));
@@ -650,7 +650,7 @@ double BosonStarSolution::get_dA_interp(const double r) const
     f3 = dA[iter+1];
     f4 = dA[iter+2];
 
-    if (iter>gridsize-3){std::cout << "FArrayBox domain exceeding star radius!" << std::endl;}
+    if (iter>gridsize-3){pout() << "FArrayBox domain exceeding star radius!" << endl;}
 
     // do the cubic spline, from mathematica script written by Robin (rc634@cam.ac.uk)
     interpolated_value = (1./48.)*(f1 *(-3.+2.*a+12.*a*a-8.*a*a*a) +(3.+2.*a)*(-(1.+2.*a)*(-9.*f3+f4+6.*f3*a-2*f4*a)+3.*f2*(3.-8.*a+4.*a*a)));
@@ -667,7 +667,7 @@ double BosonStarSolution::get_lapse_interp(const double r) const
     f3 = omega[iter+1];
     f4 = omega[iter+2];
 
-    if (iter>gridsize-3){std::cout << "FArrayBox domain exceeding star radius!" << std::endl;}
+    if (iter>gridsize-3){pout() << "FArrayBox domain exceeding star radius!" << endl;}
 
     // do the cubic spline, from mathematica script written by Robin (rc634@cam.ac.uk)
     interpolated_value = (1./48.)*(f1 *(-3.+2.*a+12.*a*a-8.*a*a*a) +(3.+2.*a)*(-(1.+2.*a)*(-9.*f3+f4+6.*f3*a-2*f4*a)+3.*f2*(3.-8.*a+4.*a*a)));
@@ -684,7 +684,7 @@ double BosonStarSolution::get_psi_interp(const double r) const
     f3 = psi[iter+1];
     f4 = psi[iter+2];
 
-    if (iter>gridsize-3){std::cout << "FArrayBox domain exceeding star radius!" << std::endl;}
+    if (iter>gridsize-3){pout() << "FArrayBox domain exceeding star radius!" << endl;}
 
     // do the cubic spline, from mathematica script written by Robin (rc634@cam.ac.uk)
     interpolated_value = (1./48.)*(f1 *(-3.+2.*a+12.*a*a-8.*a*a*a) +(3.+2.*a)*(-(1.+2.*a)*(-9.*f3+f4+6.*f3*a-2*f4*a)+3.*f2*(3.-8.*a+4.*a*a)));
@@ -701,7 +701,7 @@ double BosonStarSolution::get_dpsi_interp(const double r) const
     f3 = dpsi[iter+1];
     f4 = dpsi[iter+2];
 
-    if (iter>gridsize-3){std::cout << "FArrayBox domain exceeding star radius!" << std::endl;}
+    if (iter>gridsize-3){pout() << "FArrayBox domain exceeding star radius!" << endl;}
 
     // do the cubic spline, from mathematica script written by Robin (rc634@cam.ac.uk)
     interpolated_value = (1./48.)*(f1 *(-3.+2.*a+12.*a*a-8.*a*a*a) +(3.+2.*a)*(-(1.+2.*a)*(-9.*f3+f4+6.*f3*a-2*f4*a)+3.*f2*(3.-8.*a+4.*a*a)));
@@ -718,7 +718,7 @@ double BosonStarSolution::get_dlapse_interp(const double r) const
     f3 = omega[iter+1];
     f4 = omega[iter+2];
 
-    if (iter>gridsize-3){std::cout << "FArrayBox domain exceeding star radius!" << std::endl;}
+    if (iter>gridsize-3){pout() << "FArrayBox domain exceeding star radius!" << endl;}
 
     // do the cubic spline (for gradient now), from mathematica script written by Robin (rc634@cam.ac.uk)
     interpolated_value = (1./(24.*dx))*( (f1-27.*f2+27.*f3-f4)  +  12.*a*(f1-f2-f3+f4)  -  12.*a*a*(f1-3.*f2+3.*f3-f4)  );
@@ -766,7 +766,7 @@ void BosonStarSolution::set_initialcondition_params(
 
 void BosonStarSolution::shout() const
 {
-    std::cout << "Haliboombah!" << std::endl;
+    pout() << "Haliboombah!" << endl;
 }
 
 void BosonStarSolution::output_csv()
@@ -782,13 +782,13 @@ void BosonStarSolution::output_csv()
 
     for (int i=0; i<gridsize; i++)
     {
-        A_file << A[i] << "," << std::endl;
-		dA_file << dA[i] << "," << std::endl;
-        psi_file << psi[i] << "," << std::endl;
-		dpsi_file << dpsi[i] << "," << std::endl;
-        omega_file << omega[i] << "," << std::endl;
-        r_file << radius_array[i] << "," << std::endl;
-		mass_file << boson_mass[i] << "," << std::endl;
+        A_file << A[i] << "," << endl;
+		dA_file << dA[i] << "," << endl;
+        psi_file << psi[i] << "," << endl;
+		dpsi_file << dpsi[i] << "," << endl;
+        omega_file << omega[i] << "," << endl;
+        r_file << radius_array[i] << "," << endl;
+		mass_file << boson_mass[i] << "," << endl;
 
     }
 

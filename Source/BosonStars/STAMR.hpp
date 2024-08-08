@@ -33,7 +33,6 @@ class STAMR : public GRAMR
     {
         GRAMR::set_interpolator(a_interpolator);
         m_star_tracker.set_interpolator(a_interpolator);
-
 #ifdef USE_AHFINDER
         m_ah_finder.set_interpolator(a_interpolator);
 #endif
