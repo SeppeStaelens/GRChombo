@@ -15,7 +15,10 @@
 #include "BosonStarParams.hpp"
 #include "AngMomFluxParams.hpp"
 #include  "BoostedBH.hpp"
+
+#ifdef USE_TWOPUNCTURES
 #include "TP_Parameters.hpp"
+#endif
 
 class SimulationParameters : public SimulationParametersBase
 {

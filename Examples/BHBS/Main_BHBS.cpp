@@ -16,12 +16,18 @@
 
 // Problem specific includes:
 #include "BHBSLevel.hpp"
+
+#ifdef USE_TWOPUNCTURES
 #include "TPAMR.hpp"
+#endif
 
 // Star tracking
 #include "STAMR.hpp"
 
+#ifdef USE_TWOPUNCTURES
 TPAMR bh_amr;
+#endif
+
 int runGRChombo(int argc, char *argv[])
 {
     // Load the parameter file and construct the SimulationParameter class
