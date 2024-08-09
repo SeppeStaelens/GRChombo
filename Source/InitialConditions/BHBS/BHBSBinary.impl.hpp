@@ -14,8 +14,11 @@
 #include "DebuggingTools.hpp"
 #include "Max.hpp"
 #include "WeightFunction.hpp"
+
+#ifdef USE_TWOPUNCTURES
 #include "TwoPunctures.hpp" //for TwoPunctures-based ID method
 #include "TPAMR.hpp"
+#endif
 
 inline BHBSBinary::BHBSBinary(BosonStar_params_t a_params_BosonStar,
                               BlackHole_params_t a_params_BlackHole,
