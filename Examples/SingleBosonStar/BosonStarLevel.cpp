@@ -13,6 +13,7 @@
 
 // For RHS update
 #include "MatterCCZ4.hpp"
+#include "IntegratedMovingPunctureGauge.hpp"
 
 // For constraints calculation
 #include "NewMatterConstraints.hpp"
@@ -20,18 +21,20 @@
 
 // For tag cells
 #include "ComplexPhiAndChiExtractionTaggingCriterion.hpp"
-#include "ChiandRhoTaggingCriterion.hpp"
-#include "BosonChiPunctureExtractionTaggingCriterion.hpp"
 
 // Problem specific includes
 #include "ComputePack.hpp"
 #include "ComplexPotential.hpp"
-#include "BinaryEqualMassFix.hpp"
+#include "SingleBosonStar.hpp"
 #include "ComplexScalarField.hpp"
 #include "SetValue.hpp"
 
 // For mass extraction
 #include "ADMMass.hpp"
+//#include "Density.hpp"
+#include "EMTensor.hpp"
+#include "MomFluxCalc.hpp"
+#include "SourceIntPreconditioner.hpp"
 #include "ADMMassExtraction.hpp"
 
 // For GW extraction
@@ -41,6 +44,9 @@
 // For Noether Charge calculation
 #include "SmallDataIO.hpp"
 #include "NoetherCharge.hpp"
+
+// For Ang Mom Integrating
+#include "AngMomFlux.hpp"
 
 // for chombo grid Functions
 #include "AMRReductions.hpp"
@@ -67,7 +73,7 @@ void BosonStarLevel::initialData()
         pout() << "BosonStarLevel::initialData " << m_level << endl;
 
     // First initalise a BosonStar object
-    BinaryEqualMassFix boson_star(m_p.bosonstar_params, m_p.bosonstar2_params, m_p.potential_params, m_dx);
+    SingleBosonStar boson_star(m_p.bosonstar_params, m_p.potential_params, m_dx);
 
     // the max radius the code might need to calculate out to is L*sqrt(3)
     boson_star.compute_1d_solution(4.*m_p.L);
@@ -77,11 +83,14 @@ void BosonStarLevel::initialData()
     BoxLoops::loop(make_compute_pack(SetValue(0.0), boson_star),
                    m_state_new, m_state_new, INCLUDE_GHOST_CELLS,
                    disable_simd());
-    
-    fillAllGhosts();
+ 
     BoxLoops::loop(GammaCalculator(m_dx),
                    m_state_new, m_state_new, EXCLUDE_GHOST_CELLS,
                    disable_simd());
+
+    fillAllGhosts();
+    BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params),
+                 m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
     
 }
 
@@ -94,9 +103,6 @@ void BosonStarLevel::preCheckpointLevel()
      Potential potential(m_p.potential_params);
      ComplexScalarFieldWithPotential complex_scalar_field(potential);
      BoxLoops::loop(make_compute_pack(
-                     MatterWeyl4<ComplexScalarFieldWithPotential>(
-                     complex_scalar_field,m_p.extraction_params.extraction_center,
-                     m_dx, m_p.formulation, m_p.G_Newton),
                      MatterConstraints<ComplexScalarFieldWithPotential>(
                      complex_scalar_field, m_dx, m_p.G_Newton, c_Ham,
                      Interval(c_Mom1, c_Mom3)), NoetherCharge()),
@@ -113,9 +119,6 @@ void BosonStarLevel::prePlotLevel()
       Potential potential(m_p.potential_params);
       ComplexScalarFieldWithPotential complex_scalar_field(potential);
       BoxLoops::loop(make_compute_pack(
-                      MatterWeyl4<ComplexScalarFieldWithPotential>(
-                      complex_scalar_field,m_p.extraction_params.extraction_center,
-                      m_dx, m_p.formulation, m_p.G_Newton),
                       MatterConstraints<ComplexScalarFieldWithPotential>(
                       complex_scalar_field, m_dx, m_p.G_Newton, c_Ham,
                       Interval(c_Mom1, c_Mom3)), NoetherCharge()),
@@ -133,11 +136,17 @@ void BosonStarLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
         a_soln, INCLUDE_GHOST_CELLS);
 
     // Calculate MatterCCZ4 right hand side with matter_t = ComplexScalarField
+    // We don't want undefined values floating around in the constraints so
+    // zero these
     Potential potential(m_p.potential_params);
     ComplexScalarFieldWithPotential complex_scalar_field(potential);
-    BoxLoops::loop(MatterCCZ4RHS<ComplexScalarFieldWithPotential>(
+    MatterCCZ4RHS<ComplexScalarFieldWithPotential> my_ccz4_matter(
        complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
-       m_p.G_Newton), a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+       m_p.G_Newton);
+    SetValue set_analysis_vars_zero(0.0, Interval(c_Pi_Im + 1, NUM_VARS - 1));
+    auto compute_pack =
+        make_compute_pack(my_ccz4_matter, set_analysis_vars_zero);
+    BoxLoops::loop(compute_pack, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
 
 // Things to do at ODE update, after soln + rhs
@@ -158,38 +167,9 @@ void BosonStarLevel::specificPostTimeStep()
     fillAllGhosts();
     Potential potential(m_p.potential_params);
     ComplexScalarFieldWithPotential complex_scalar_field(potential);
-    auto weyl4_adm_compute_pack =
-               make_compute_pack(MatterWeyl4<ComplexScalarFieldWithPotential>(
-               complex_scalar_field,m_p.extraction_params.extraction_center,
-               m_dx, m_p.formulation, m_p.G_Newton), ADMMass(m_p.center, m_dx));
-    BoxLoops::loop(weyl4_adm_compute_pack, m_state_new, m_state_diagnostics,
-                        EXCLUDE_GHOST_CELLS);
     BoxLoops::loop(MatterConstraints<ComplexScalarFieldWithPotential>(
                         complex_scalar_field, m_dx, m_p.G_Newton, c_Ham,
                         Interval(c_Mom1, c_Mom3)), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-    
-    if (m_p.activate_weyl_extraction == 1 &&
-       at_level_timestep_multiple(m_p.extraction_params.min_extraction_level()))
-    {
-        CH_TIME("BosonStarLevel::doAnalysis::Weyl4&ADMMass");
-        
-        // Do the extraction on the min extraction level
-        if (m_level == m_p.extraction_params.min_extraction_level())
-        {
-            if (m_verbosity)
-            {
-                pout() << "BinaryBSLevel::specificPostTimeStep:"
-                          " Extracting gravitational waves." << endl;
-            }
-
-
-            // Refresh the interpolator and do the interpolation
-            m_gr_amr.m_interpolator->refresh();
-            WeylExtraction gw_extraction(m_p.extraction_params, m_dt, m_time,
-                                         first_step, m_restart_time);
-            gw_extraction.execute_query(m_gr_amr.m_interpolator);
-        }
-    }
 
     if (m_p.activate_mass_extraction == 1 &&
         m_level == m_p.mass_extraction_params.min_extraction_level())
@@ -315,38 +295,8 @@ void BosonStarLevel::computeTaggingCriterion(
     const FArrayBox &current_state_diagnostics)
 {
 
-//BoxLoops::loop(ComplexPhiAndChiExtractionTaggingCriterion(m_dx, m_level,
-//                   m_p.mass_extraction_params, m_p.regrid_threshold_phi,
-//                   m_p.regrid_threshold_chi), current_state, tagging_criterion);
-
-//    BoxLoops::loop(ChiandRhoTaggingCriterion(m_dx, m_level,
-//                    m_p.mass_extraction_params, m_p.regrid_threshold_rho,
-//                    m_p.regrid_threshold_chi), current_state, tagging_criterion);
-
-// Be aware of the tagging here, you may want to change it, depending on your problem of interest. Below tagging for when the tracking is activated is 'intense' and specific to binary inspirals. 	
-    
-     if (m_p.do_star_track == true)
-    {
-        const vector<double> puncture_radii = {m_p.tag_radius_A,
-                                                m_p.tag_radius_B};
-        const vector<double> puncture_masses = {m_p.bosonstar_params.mass,
-                                                m_p.bosonstar2_params.mass};
-
-        const std::vector<double> star_coords =
-            m_st_amr.m_star_tracker.get_puncture_coords();
-	
-        BoxLoops::loop(BosonChiPunctureExtractionTaggingCriterion(
-                           m_dx, m_level, m_p.tag_horizons_max_levels,
-                       m_p.tag_punctures_max_levels, m_p.extraction_params,
-                           star_coords, m_p.activate_extraction,
-                           m_p.do_star_track, puncture_radii, puncture_masses, m_p.tag_buffer),
-                      current_state, tagging_criterion);	
-   }
-    else
-   {
-        BoxLoops::loop(ChiandRhoTaggingCriterion(m_dx, m_level,
-                   m_p.mass_extraction_params, m_p.regrid_threshold_rho,
-                   m_p.regrid_threshold_chi), current_state, tagging_criterion);
-   }
+BoxLoops::loop(ComplexPhiAndChiExtractionTaggingCriterion(m_dx, m_level,
+                  m_p.mass_extraction_params, m_p.regrid_threshold_phi,
+                  m_p.regrid_threshold_chi), current_state, tagging_criterion);
 
 }

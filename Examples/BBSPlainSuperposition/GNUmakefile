@@ -24,6 +24,7 @@ src_dirs := $(GRCHOMBO_SOURCE)/utils \
             $(GRCHOMBO_SOURCE)/GRChomboCore  \
             $(GRCHOMBO_SOURCE)/TaggingCriteria  \
             $(GRCHOMBO_SOURCE)/AMRInterpolator  \
+            $(GRCHOMBO_SOURCE)/BosonStars \
             $(GRCHOMBO_SOURCE)/InitialConditions/BosonStars \
             $(GRCHOMBO_SOURCE)/InitialConditions/BosonStars/PlainSuperposition \
             $(GRCHOMBO_SOURCE)/ApparentHorizonFinder 

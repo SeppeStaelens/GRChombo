@@ -26,11 +26,6 @@ public:
 
     void readParams(GRParmParse &pp)
     {
-        // for regridding
-        pp.load("regrid_threshold_phi", regrid_threshold_phi);
-	pp.load("regrid_threshold_rho", regrid_threshold_rho, 0.5);
-        pp.load("regrid_threshold_chi", regrid_threshold_chi);
-
         // Gravitional constant
         pp.load("G_Newton", G_Newton, 1.0);
 
@@ -64,18 +59,11 @@ public:
         // and then assign that ones that should differ below
         bosonstar2_params = bosonstar_params;
 
-        // Are the two stars' profiles identical
-        pp.load("identical", identical, false);
-
-        // Boson Star 2 parameters
-        if (!identical)
-        {
             pp.load("central_amplitude_CSF2",
                     bosonstar2_params.central_amplitude_CSF);
             pp.load("BS_rapidity2",
                     bosonstar2_params.BS_rapidity);
             pp.load("BS_mass2", bosonstar2_params.mass);
-        }
 
 	//std::array<double, CH_SPACEDIM> positionA, positionB;
 
@@ -114,6 +102,10 @@ public:
 #endif
         
         //Tagging
+        pp.load("regrid_threshold_phi", regrid_threshold_phi);
+	pp.load("regrid_threshold_rho", regrid_threshold_rho, 0.5);
+        pp.load("regrid_threshold_chi", regrid_threshold_chi);
+
         pp.load("tag_radius_A", tag_radius_A, 4.);
 	pp.load("tag_radius_B", tag_radius_B, 4.);
         pp.load("tag_buffer", tag_buffer, 0.5);
@@ -155,28 +147,6 @@ public:
 
         // Do we want to calculate and write the Noether Charge to a file
         pp.load("calculate_noether_charge", calculate_noether_charge, false);
-
-        // Variables for outputting to plot files
-        //pp.load("num_plot_vars", num_plot_vars, 0);
-        //pp.load("plot_vars", plot_vars, num_plot_vars, 0);
-
-        // Variables for outputting inf-norm
-        pp.load("num_vars_inf_norm", num_vars_inf_norm, 0);
-        pp.load("vars_inf_norm", vars_inf_norm, num_vars_inf_norm, 0);
-
-
-        // pp.load("flux_extraction_level", flux_extraction_level, 0);
-        // pp.load("flux_number_of_radii", angmomflux_params.number_radii,1);
-        // pp.load("flux_do", do_flux_integration,false);
-        // pp.load("flux_extraction_level", angmomflux_params.extraction_level,0);
-        // pp.load("flux_num_theta", angmomflux_params.num_theta,10);
-        // pp.load("flux_num_phi", angmomflux_params.num_phi,10);
-        // pp.load("flux_extraction_centre", angmomflux_params.centre,
-        //                                          {0.5 * L, 0.5 * L, 0.5 * L});
-
-        // angmomflux_params.radii.resize(angmomflux_params.number_radii);
-        // pp.load("flux_extraction_radii", angmomflux_params.radii,
-        //                                          angmomflux_params.number_radii);
     }
 
     // Tagging thresholds
@@ -188,7 +158,6 @@ public:
 
     // Initial data for matter and potential
     double G_Newton;
-    bool identical; // whether or not the 2 boson stars have the same profile
 
     BosonStar_params_t bosonstar_params;
     BosonStar_params_t bosonstar2_params;
@@ -206,14 +175,6 @@ public:
     // Do we want to write the Noether Charge to a file
     bool calculate_noether_charge;
 
-    // Vars for outputting in plot files
-    //int num_plot_vars;
-    //std::vector<int> plot_vars;
-
-    // Vars for outputting inf-norms
-    int num_vars_inf_norm;
-    std::vector<int> vars_inf_norm;
-
     bool do_star_track;
     int number_of_stars;
     int star_points;
@@ -230,8 +191,6 @@ public:
     bool AH_set_origins_to_punctures;
 #endif
 
-//     int flux_extraction_level; // specifies times (level) to do angmom flux extraction
-//     bool do_flux_integration;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

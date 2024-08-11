@@ -28,18 +28,23 @@ public:
     {
         // for regridding
         pp.load("regrid_threshold_phi", regrid_threshold_phi);
-	pp.load("regrid_threshold_rho", regrid_threshold_rho);
         pp.load("regrid_threshold_chi", regrid_threshold_chi);
 
         // Gravitional constant
         pp.load("G_Newton", G_Newton, 1.0);
 
+        //######################################
+        // Single Boson Star Solver Parameters
+        //######################################
+
         // Boson Star initial data params
         pp.load("central_amplitude_CSF",
                 bosonstar_params.central_amplitude_CSF);
         pp.load("phase", bosonstar_params.phase, 0.0);
-        pp.load("eigen", bosonstar_params.eigen, 0);
-        pp.load("gridpoints",bosonstar_params.gridpoints,400000);
+        pp.load("gridpoints", bosonstar_params.gridpoints, 1000000);
+        pp.load("BS_solver_psc", bosonstar_params.PSC, 2.0);
+        pp.load("BS_solver_omc", bosonstar_params.OMC, 0.5);
+        pp.load("BS_solver_verbosity", bosonstar_params.BS_solver_verbosity, false);
 
         pp.load("star_centre", bosonstar_params.star_centre, center);
 
@@ -47,57 +52,16 @@ public:
         pp.load("scalar_mass", potential_params.scalar_mass, 1.0);
         pp.load("phi4_coeff", potential_params.phi4_coeff, 0.0);
         pp.load("solitonic", potential_params.solitonic, false);
-        pp.load("sigma_solitonic", potential_params.sigma_solitonic, 0.02);
-        pp.load("BS_binary", bosonstar_params.BS_binary, false);
-        pp.load("BS_BH_binary", bosonstar_params.BS_BH_binary, false);
-        pp.load("antiboson", bosonstar_params.antiboson, false);
-        pp.load("BlackHoleMass", bosonstar_params.BlackHoleMass, 0.);
-        pp.load("BS_rapidity", bosonstar_params.BS_rapidity, 0.0);
-        pp.load("BS_separation", bosonstar_params.BS_separation, 0.0);
-        pp.load("BS_mass", bosonstar_params.mass);
-        pp.load("BS_impact_parameter", bosonstar_params.BS_impact_parameter, 0.0);
-        pp.load("id_choice", bosonstar_params.id_choice, 2);
-        pp.load("mass_ratio", bosonstar_params.mass_ratio, 1.0);
-        pp.load("radius_width1", bosonstar_params.radius_width1, 10.);
-        pp.load("radius_width2", bosonstar_params.radius_width2, 20.);
-        pp.load("conformal_factor_power", bosonstar_params.conformal_factor_power, -4);
-        pp.load("G_Newton", bosonstar_params.Newtons_constant, 1.0);
-        
-	// Initialize values for bosonstar2_params to same as bosonstar_params
-        // and then assign that ones that should differ below
-        bosonstar2_params = bosonstar_params;
+        pp.load("sigma_solitonic", potential_params.sigma_solitonic, 0.2);
 
-        // Are the two stars' profiles identical
-        pp.load("identical", identical, false);
-
-        // Boson Star 2 parameters
-        if (!identical)
-        {
-            pp.load("central_amplitude_CSF2",
-                    bosonstar2_params.central_amplitude_CSF);
-            pp.load("BS_rapidity2",
-                    bosonstar2_params.BS_rapidity);
-            pp.load("BS_mass2", bosonstar2_params.mass);
-        }
-
-	//std::array<double, CH_SPACEDIM> positionA, positionB;
-
-	positionA[0] = (bosonstar_params.star_centre[0] + bosonstar_params.mass_ratio * bosonstar_params.BS_separation / (bosonstar_params.mass_ratio + 1.));
-	positionA[1] = bosonstar_params.star_centre[1] - bosonstar_params.mass_ratio * bosonstar_params.BS_impact_parameter / (bosonstar_params.mass_ratio + 1.);
+	positionA[0] = bosonstar_params.star_centre[0];
+	positionA[1] = bosonstar_params.star_centre[1];
 	positionA[2] = bosonstar_params.star_centre[2];
-
-	positionB[0] = (bosonstar_params.star_centre[0] - bosonstar_params.BS_separation / (bosonstar_params.mass_ratio + 1.));
-	positionB[1] = bosonstar_params.star_centre[1] + bosonstar_params.BS_impact_parameter / (bosonstar_params.mass_ratio + 1.);
-        positionB[2] = bosonstar_params.star_centre[2];
 
 	pout() << "Star A is at x-position " << positionA[0] << endl;
         pout() << "Star A is at y-position " << positionA[1] << endl;
         pout() << "Star A is at z-position " << positionA[2] << endl;	
 
-	pout() << "Star B is at x-position " << positionB[0] << endl;
-        pout() << "Star B is at y-position " << positionB[1] << endl;	
-	pout() << "Star B is at z-position " << positionB[2] << endl;
-	
 	// Star Tracking
         pp.load("do_star_track", do_star_track, false);
         pp.load("number_of_stars", number_of_stars, 1);
@@ -115,15 +79,6 @@ public:
         pp.load("AH_set_origins_to_punctures", AH_set_origins_to_punctures,
                 false);
 #endif
-        
-        //Tagging
-        pp.load("tag_radius_A", tag_radius_A, 4.);
-	pp.load("tag_radius_B", tag_radius_B, 4.);
-        pp.load("tag_buffer", tag_buffer, 0.5);
-	pp.load("tag_punctures_max_levels", tag_punctures_max_levels,
-                {max_level, max_level});
-        pp.load("tag_horizons_max_levels", tag_horizons_max_levels,
-                {max_level, max_level});
 
         // Mass extraction
         pp.load("activate_mass_extraction", activate_mass_extraction, 0);

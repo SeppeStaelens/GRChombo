@@ -13,7 +13,6 @@
 
 // For RHS update
 #include "MatterCCZ4.hpp"
-#include "IntegratedMovingPunctureGauge.hpp"
 
 // For constraints calculation
 #include "NewMatterConstraints.hpp"
@@ -34,9 +33,6 @@
 // For mass extraction
 #include "ADMMass.hpp"
 //#include "Density.hpp"
-#include "EMTensor.hpp"
-#include "MomFluxCalc.hpp"
-#include "SourceIntPreconditioner.hpp"
 #include "ADMMassExtraction.hpp"
 
 // For GW extraction
@@ -46,9 +42,6 @@
 // For Noether Charge calculation
 #include "SmallDataIO.hpp"
 #include "NoetherCharge.hpp"
-
-// For Ang Mom Integrating
-#include "AngMomFlux.hpp"
 
 // for chombo grid Functions
 #include "AMRReductions.hpp"
@@ -85,15 +78,11 @@ void BosonStarLevel::initialData()
     BoxLoops::loop(make_compute_pack(SetValue(0.0), boson_star),
                    m_state_new, m_state_new, INCLUDE_GHOST_CELLS,
                    disable_simd());
- 
+
+    fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx),
                    m_state_new, m_state_new, EXCLUDE_GHOST_CELLS,
                    disable_simd());
-
-    fillAllGhosts();
-    BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params),
-                 m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
-    
 }
 
 // Things to do before outputting a checkpoint file
@@ -110,10 +99,7 @@ void BosonStarLevel::preCheckpointLevel()
                      m_dx, m_p.formulation, m_p.G_Newton),
                      MatterConstraints<ComplexScalarFieldWithPotential>(
                      complex_scalar_field, m_dx, m_p.G_Newton, c_Ham,
-                     Interval(c_Mom1, c_Mom3)), NoetherCharge(),
-                     EMTensor<ComplexScalarFieldWithPotential>(
-                     complex_scalar_field, m_dx, c_rho, Interval(c_s1,c_s3),
-                     Interval(c_s11,c_s33))),
+                     Interval(c_Mom1, c_Mom3)), NoetherCharge()),
                      m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
 }
@@ -132,10 +118,7 @@ void BosonStarLevel::prePlotLevel()
                       m_dx, m_p.formulation, m_p.G_Newton),
                       MatterConstraints<ComplexScalarFieldWithPotential>(
                       complex_scalar_field, m_dx, m_p.G_Newton, c_Ham,
-                      Interval(c_Mom1, c_Mom3)), NoetherCharge(),
-                      EMTensor<ComplexScalarFieldWithPotential>(
-                      complex_scalar_field, m_dx, c_rho, Interval(c_s1,c_s3),
-                      Interval(c_s11,c_s33))),
+                      Interval(c_Mom1, c_Mom3)), NoetherCharge()),
                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
 }
@@ -150,20 +133,14 @@ void BosonStarLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
         a_soln, INCLUDE_GHOST_CELLS);
 
     // Calculate MatterCCZ4 right hand side with matter_t = ComplexScalarField
-    // We don't want undefined values floating around in the constraints so
-    // zero these
     Potential potential(m_p.potential_params);
     ComplexScalarFieldWithPotential complex_scalar_field(potential);
-    //MatterCCZ4RHS<ComplexScalarFieldWithPotential> my_ccz4_matter(
-    //    complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
-    //    m_p.G_Newton);
-    MatterCCZ4RHS<ComplexScalarFieldWithPotential, IntegratedMovingPunctureGauge, FourthOrderDerivatives> my_ccz4_matter(
-         complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
-         m_p.G_Newton);
-    SetValue set_analysis_vars_zero(0.0, Interval(c_Pi_Im + 1, NUM_VARS - 1));
-    auto compute_pack =
-        make_compute_pack(my_ccz4_matter, set_analysis_vars_zero);
-    BoxLoops::loop(compute_pack, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    MatterCCZ4RHS<ComplexScalarFieldWithPotential> my_ccz4_matter(
+       complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
+       m_p.G_Newton);
+    BoxLoops::loop(MatterCCZ4RHS<ComplexScalarFieldWithPotential>(
+       complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
+       m_p.G_Newton), a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
 
 // Things to do at ODE update, after soln + rhs
