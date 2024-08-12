@@ -75,9 +75,15 @@ void BHBSLevel::initialData()
     if (m_verbosity)
         pout() << "BHBSLevel::initialData " << m_level << endl;
 
-    // First initalise a BosonStar object
+    // First initalise a BHBSBinary object
+    #ifdef USE_TWOPUNCTURES
     BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, m_p.potential_params,
-                         m_p.G_Newton, m_dx, m_verbosity);
+                            m_p.G_Newton, m_dx, m_verbosity, &m_bhbs_amr.m_two_punctures);
+    #else
+    BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, m_p.potential_params,
+                            m_p.G_Newton, m_dx, m_verbosity);
+    
+    #endif
 
 
     // the max radius the code might need to calculate out to is L*sqrt(3)
@@ -322,11 +328,11 @@ void BHBSLevel::doAnalysis()
         // will default to param file if restart time is 0
         if (fabs(m_time - m_restart_time) < m_dt * 1.1)
         {
-            m_st_amr.m_star_tracker.read_old_centre_from_dat(
+            m_bhbs_amr.m_star_tracker.read_old_centre_from_dat(
                 "StarCentres", m_dt, m_time, m_restart_time, first_step);
         }
-        m_st_amr.m_star_tracker.update_star_centres(m_dt);
-        m_st_amr.m_star_tracker.write_to_dat("StarCentres", m_dt, m_time,
+        m_bhbs_amr.m_star_tracker.update_star_centres(m_dt);
+        m_bhbs_amr.m_star_tracker.write_to_dat("StarCentres", m_dt, m_time,
                                              m_restart_time, first_step);
     }
 
@@ -489,7 +495,7 @@ void BHBSLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                m_p.blackhole_params.BlackHoleMass};
 
        const std::vector<double> star_coords =
-           m_st_amr.m_star_tracker.get_puncture_coords();
+           m_bhbs_amr.m_star_tracker.get_puncture_coords();
 	
        BoxLoops::loop(BosonChiPunctureExtractionTaggingCriterion(
                           m_dx, m_level, m_p.tag_horizons_max_levels,
