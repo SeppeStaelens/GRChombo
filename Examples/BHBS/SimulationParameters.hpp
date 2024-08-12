@@ -32,9 +32,9 @@ public:
     void readParams(GRParmParse &pp)
     {
         // for regridding
-        pp.load("regrid_threshold_phi", regrid_threshold_phi);
-	pp.load("regrid_threshold_rho", regrid_threshold_rho);
-        pp.load("regrid_threshold_chi", regrid_threshold_chi);
+        pp.load("regrid_threshold_phi", regrid_threshold_phi, 0.25);
+	pp.load("regrid_threshold_rho", regrid_threshold_rho, 0.1);
+        pp.load("regrid_threshold_chi", regrid_threshold_chi, 0.125);
 
         // Gravitional constant
         pp.load("G_Newton", G_Newton, 1.0);
@@ -50,7 +50,7 @@ public:
         pp.load("eigen", bosonstar_params.eigen, 0);
         pp.load("antiboson", bosonstar_params.antiboson, false);
 
-        pp.load("BS_radius_width", bosonstar_params.radius_width, 10.);
+        pp.load("BS_radius_width", bosonstar_params.radius_width, 10.0);
         pp.load("BS_bump_radius", bosonstar_params.bump_radius, 10.0);
 
         // Black Hole parameters
@@ -64,8 +64,7 @@ public:
         pp.load("centre_of_mass", binary_params.centre_of_mass, center);
         pp.load("binary_separation", binary_params.separation, 16.0);
         pp.load("impact_parameter", binary_params.impact_parameter, 0.0);
-        // pp.load("mass_ratio", binary_params.mass_ratio, 1.0);
-        binary_params.mass_ratio = blackhole_params.mass / bosonstar_params.mass;
+        binary_params.mass_ratio = blackhole_params.mass / bosonstar_params.mass;       // Calculated as BH / BS
         pp.load ("do_rotation", binary_params.do_rotation, false);
         
         pout() << "The BH/BS mass ratio is " << binary_params.mass_ratio << endl;
