@@ -27,7 +27,7 @@ class BHBSLevel : public GRAMRLevel
     // Inherit the contructors from GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
 
-    BHBSAMR &m_bhbs_amr = dynamic_cast<BHBSAMR &>(m_bhbs_amr);
+    BHBSAMR &m_bhbs_amr = dynamic_cast<BHBSAMR &>(m_gr_amr);
 
     // Typedef for scalar field
     typedef ComplexScalarField<Potential> ComplexScalarFieldWithPotential;

@@ -12,6 +12,7 @@
 #include "GRParmParse.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
+#include "CallDoAnalysis.hpp"
 
 // Problem specific includes:
 #include "BHBSLevel.hpp"
@@ -52,6 +53,15 @@ int runGRChombo(int argc, char *argv[])
     AMRInterpolator<Lagrange<4>> interpolator(
         bhbs_amr, sim_params.origin, sim_params.dx, sim_params.boundary_params,
         sim_params.verbosity);
+
+    // Add a scheduler to GRAMR which just calls doAnalysis on every AMRLevel
+    // at time 0. It is called later in postTimeStep
+    RefCountedPtr<CallDoAnalysis> call_do_analysis_ptr(new CallDoAnalysis);
+    RefCountedPtr<Scheduler> scheduler_ptr(new Scheduler);
+    scheduler_ptr->schedule(call_do_analysis_ptr, sim_params.max_steps);
+    bhbs_amr.schedule(scheduler_ptr);
+
+
     bhbs_amr.set_interpolator(&interpolator);
 
     using Clock = std::chrono::steady_clock;
