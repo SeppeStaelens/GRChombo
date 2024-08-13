@@ -55,12 +55,13 @@ class BHBSLevel : public GRAMRLevel
 
     //! Tell Chombo how to tag cells for regridding
     virtual void computeTaggingCriterion(FArrayBox &tagging_criterion,
-                                         const FArrayBox &current_state, 
-                                         const FArrayBox &current_state_diagnostics)
+                                         const FArrayBox &current_state)
                                          override;
 
+    virtual void doAnalysis() override;
+
     //! Things to do for analysis after each timestep and at the start
-    virtual void specificPostTimeStep() override;
+    //virtual void specificPostTimeStep() override;
 };
 
 #endif /* BHBSLevel_HPP_ */

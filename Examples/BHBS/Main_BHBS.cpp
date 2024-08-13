@@ -17,7 +17,6 @@
 #include "BHBSLevel.hpp"
 #include "BHBSAMR.hpp"
 
-TPAMR bh_amr;
 int runGRChombo(int argc, char *argv[])
 {
     // Load the parameter file and construct the SimulationParameter class
