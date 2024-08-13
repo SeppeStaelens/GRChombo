@@ -13,7 +13,7 @@
 
 // For RHS update
 #include "MatterCCZ4.hpp"
-#include "IntegratedMovingPunctureGauge.hpp"
+#include "MovingPunctureGauge.hpp"
 
 // For constraints calculation
 #include "NewMatterConstraints.hpp"
@@ -105,7 +105,7 @@ void BHBSLevel::initialData()
     // BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.blackhole_params, m_p.binary_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
 
     fillAllGhosts();
-    BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params),
+    BoxLoops::loop(MovingPunctureGauge(m_p.ccz4_params),
                  m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
     
 }
@@ -171,7 +171,7 @@ void BHBSLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     //MatterCCZ4RHS<ComplexScalarFieldWithPotential> my_ccz4_matter(
     //    complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
     //    m_p.G_Newton);
-    MatterCCZ4RHS<ComplexScalarFieldWithPotential, IntegratedMovingPunctureGauge, FourthOrderDerivatives> my_ccz4_matter(
+    MatterCCZ4RHS<ComplexScalarFieldWithPotential, MovingPunctureGauge, FourthOrderDerivatives> my_ccz4_matter(
          complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
          m_p.G_Newton);
     SetValue set_analysis_vars_zero(0.0, Interval(c_Pi_Im + 1, NUM_VARS - 1));
