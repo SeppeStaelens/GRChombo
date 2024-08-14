@@ -123,34 +123,34 @@ void SingleBosonStar::compute(Cell<data_t> current_cell) const
     // Here is the conformal factor that will be differently calculated depending on the choice of the initial data
     double chi_;
 
-        g_xx = g_xx_1 - 1.0;
-        g_yy = g_yy_1 - 1.0;
-        g_zz = g_zz_1 - 1.0;
+    g_xx = g_xx_1;
+    g_yy = g_yy_1;
+    g_zz = g_zz_1;
 
-        //Now, compute upper and lower components
-        gammaLL[0][0] = g_xx;
-        gammaLL[1][1] = g_yy;
-        gammaLL[2][2] = g_zz;
-        gammaUU[0][0] = 1. / g_xx;
-        gammaUU[1][1] = 1. / g_yy;
-        gammaUU[2][2] = 1. / g_zz;
+    //Now, compute upper and lower components
+    gammaLL[0][0] = g_xx;
+    gammaLL[1][1] = g_yy;
+    gammaLL[2][2] = g_zz;
+    gammaUU[0][0] = 1. / g_xx;
+    gammaUU[1][1] = 1. / g_yy;
+    gammaUU[2][2] = 1. / g_zz;
         
-        // Define initial conformal factor
-        chi_ = pow(g_xx * g_yy * g_zz, -1. / 3.);
+    // Define initial conformal factor
+    chi_ = pow(g_xx * g_yy * g_zz, -1. / 3.);
 
-        vars.chi = chi_;
+    vars.chi = chi_;
 
-        // Define initial lapse
-        vars.lapse += lapse_1;
+    // Define initial lapse
+    vars.lapse += lapse_1;
 
-        // Define initial trace of K and A_ij
-        double one_third = 1./3.;
-        FOR2(i,j) vars.h[i][j] = vars.chi * gammaLL[i][j];
-        FOR4(i,j,k,l) KLL[i][j] += gammaLL[i][l] * (gammaUU_1[l][k] * KLL_1[k][j]);
-        FOR2(i,j) vars.K += KLL[i][j] * gammaUU[i][j];
-        FOR2(i,j) vars.A[i][j] = vars.chi * (KLL[i][j] - one_third * vars.K * gammaLL[i][j]);
+    // Define initial trace of K and A_ij
+    double one_third = 1./3.;
+    FOR2(i,j) vars.h[i][j] = vars.chi * gammaLL[i][j];
+    FOR4(i,j,k,l) KLL[i][j] += gammaLL[i][l] * (gammaUU_1[l][k] * KLL_1[k][j]);
+    FOR2(i,j) vars.K += KLL[i][j] * gammaUU[i][j];
+    FOR2(i,j) vars.A[i][j] = vars.chi * (KLL[i][j] - one_third * vars.K * gammaLL[i][j]);
 
-        current_cell.store_vars(vars);
+    current_cell.store_vars(vars);
 }
 
 #endif /* SINGLEBOSONSTAR_IMPL_HPP_ */
