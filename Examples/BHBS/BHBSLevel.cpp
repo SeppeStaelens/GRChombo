@@ -6,37 +6,33 @@
 // General includes common to most GR problems
 #include "BHBSLevel.hpp"
 #include "BoxLoops.hpp"
+#include "GammaCalculator.hpp"
 #include "NanCheck.hpp"
 #include "PositiveChiAndAlpha.hpp"
 #include "TraceARemoval.hpp"
-#include "GammaCalculator.hpp"
 
 // For RHS update
 #include "MatterCCZ4.hpp"
-#include "MovingPunctureGauge.hpp"
 
 // For constraints calculation
-#include "NewMatterConstraints.hpp"
 #include "NewConstraints.hpp"
+#include "NewMatterConstraints.hpp"
 
 // For tag cells
-#include "ComplexPhiAndChiExtractionTaggingCriterion.hpp"
-#include "ChiAndRhoTaggingCriterion.hpp"
 #include "BosonChiPunctureExtractionTaggingCriterion.hpp"
+#include "ChiandRhoTaggingCriterion.hpp"
+#include "ComplexPhiAndChiExtractionTaggingCriterion.hpp"
 
 // Problem specific includes
-#include "ComputePack.hpp"
-#include "ComplexPotential.hpp"
 #include "BHBSBinary.hpp"
 #include "ComplexScalarField.hpp"
+#include "ComplexPotential.hpp"
+#include "ComputePack.hpp"
+#include "ComputeWeightFunction.hpp"
 #include "SetValue.hpp"
 
 // For mass extraction
 #include "ADMMass.hpp"
-//#include "Density.hpp"
-#include "EMTensor.hpp"
-#include "MomFluxCalc.hpp"
-#include "SourceIntPreconditioner.hpp"
 #include "ADMMassExtraction.hpp"
 
 // For GW extraction
@@ -44,16 +40,17 @@
 #include "WeylExtraction.hpp"
 
 // For Noether Charge calculation
-#include "SmallDataIO.hpp"
 #include "NoetherCharge.hpp"
-
-// For Ang Mom Integrating
-#include "AngMomFlux.hpp"
-
-#include "ComputeWeightFunction.hpp"
+#include "SmallDataIO.hpp"
 
 // for chombo grid Functions
 #include "AMRReductions.hpp"
+
+// For Ang Mom Integrating - redundant for now?
+#include "AngMomFlux.hpp"
+#include "EMTensor.hpp"
+#include "MomFluxCalc.hpp"
+#include "SourceIntPreconditioner.hpp"
 
 // Things to do at each advance step, after the RK4 is calculated
 void BHBSLevel::specificAdvance()
@@ -77,7 +74,6 @@ void BHBSLevel::initialData()
         pout() << "BHBSLevel::initialData " << m_level << endl;
 
     // First initalise a BHBSBinary object
-
     #ifdef USE_TWOPUNCTURES
     BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, 
                             m_p.binary_params, m_p.potential_params,
@@ -96,7 +92,8 @@ void BHBSLevel::initialData()
     BoxLoops::loop(make_compute_pack(SetValue(0.0), bh_bs_binary),
                    m_state_new, m_state_new, INCLUDE_GHOST_CELLS,
                    disable_simd());
- 
+    
+    fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx),
                    m_state_new, m_state_new, EXCLUDE_GHOST_CELLS,
                    disable_simd());
@@ -104,7 +101,6 @@ void BHBSLevel::initialData()
     // Check this one
     // BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.blackhole_params, m_p.binary_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
 
-    fillAllGhosts();
     // BoxLoops::loop(MovingPunctureGauge(m_p.ccz4_params),
     //              m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
     
@@ -129,7 +125,6 @@ void BHBSLevel::preCheckpointLevel()
                      complex_scalar_field, m_dx, c_rho, Interval(c_s1,c_s3),
                      Interval(c_s11,c_s33))),
                      m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-
 }
 
 // Things to do before outputting a plot file
@@ -137,20 +132,20 @@ void BHBSLevel::prePlotLevel()
 {
     CH_TIME("BHBSLevel::prePlotLevel");
 
-      fillAllGhosts();
-      Potential potential(m_p.potential_params);
-      ComplexScalarFieldWithPotential complex_scalar_field(potential);
-      BoxLoops::loop(make_compute_pack(
-                      MatterWeyl4<ComplexScalarFieldWithPotential>(
-                      complex_scalar_field,m_p.extraction_params.extraction_center,
-                      m_dx, m_p.formulation, m_p.G_Newton),
-                      MatterConstraints<ComplexScalarFieldWithPotential>(
-                      complex_scalar_field, m_dx, m_p.G_Newton, c_Ham,
-                      Interval(c_Mom1, c_Mom3)), NoetherCharge(),
-                      EMTensor<ComplexScalarFieldWithPotential>(
-                      complex_scalar_field, m_dx, c_rho, Interval(c_s1,c_s3),
-                      Interval(c_s11,c_s33))),
-                      m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    fillAllGhosts();
+    Potential potential(m_p.potential_params);
+    ComplexScalarFieldWithPotential complex_scalar_field(potential);
+    BoxLoops::loop(make_compute_pack(
+                    MatterWeyl4<ComplexScalarFieldWithPotential>(
+                    complex_scalar_field,m_p.extraction_params.extraction_center,
+                    m_dx, m_p.formulation, m_p.G_Newton),
+                    MatterConstraints<ComplexScalarFieldWithPotential>(
+                    complex_scalar_field, m_dx, m_p.G_Newton, c_Ham,
+                    Interval(c_Mom1, c_Mom3)), NoetherCharge(),
+                    EMTensor<ComplexScalarFieldWithPotential>(
+                    complex_scalar_field, m_dx, c_rho, Interval(c_s1,c_s3),
+                    Interval(c_s11,c_s33))),
+                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
 }
 

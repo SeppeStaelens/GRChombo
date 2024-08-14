@@ -10,13 +10,14 @@
 #include "DefaultLevelFactory.hpp"
 #include "GRAMR.hpp"
 #include "GRParmParse.hpp"
+#include "MultiLevelTask.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
 
 // Problem specific includes:
 #include "BHBSLevel.hpp"
 
-// BHBSAMR
+// BHBSAMR object
 #include "BHBSAMR.hpp"
 
 int runGRChombo(int argc, char *argv[])
@@ -47,11 +48,13 @@ int runGRChombo(int argc, char *argv[])
     #endif
 
     // !!!! Seems like this assumes the existence of two boson stars...
-    bhbs_amr.m_star_tracker.initial_setup(sim_params.do_star_track,
-        sim_params.number_of_stars, {sim_params.position_BS, sim_params.position_BH},
-        sim_params.star_points, sim_params.star_track_width_BS, sim_params.star_track_width_BH, 
+    bhbs_amr.m_star_tracker.initial_setup(
+        sim_params.do_star_track, sim_params.number_of_stars, 
+        {sim_params.position_BS, sim_params.position_BH}, sim_params.star_points, 
+        sim_params.star_track_width_BS, sim_params.star_track_width_BH, 
         sim_params.star_track_direction_of_motion);
     DefaultLevelFactory<BHBSLevel> bh_bs_level_fact(bhbs_amr, sim_params);
+
     setupAMRObject(bhbs_amr, bh_bs_level_fact);
 
     // Instantiate AMR interpolator for mass/GW extraction
@@ -74,6 +77,16 @@ int runGRChombo(int argc, char *argv[])
     using Minutes = std::chrono::duration<double, std::ratio<60, 1>>;
 
     std::chrono::time_point<Clock> start_time = Clock::now();
+
+    // Add a scheduler to call specificPostTimeStep on every AMRLevel at t=0
+    auto task = [](GRAMRLevel *level)
+    {
+        if (level->time() == 0.)
+            level->specificPostTimeStep();
+    };
+    // call 'now' really now
+    MultiLevelTaskPtr<> call_task(task);
+    call_task.execute(bhbs_amr);
 
     // Engage! Run the evolution.
     bhbs_amr.run(sim_params.stop_time, sim_params.max_steps);

@@ -12,7 +12,6 @@
 
 #include "BosonStarSolution.hpp" //for BosonStarSolution class
 #include "DebuggingTools.hpp"
-#include "Max.hpp"
 #include "WeightFunction.hpp"
 #ifdef USE_TWOPUNCTURES
 #include "TwoPunctures.hpp" //for TwoPunctures-based ID method
@@ -82,8 +81,6 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
      *            INITIALIZATION OF THE PARAMETERS
      */
 
-    //pout() << "Starting initial data calculation" << endl;
-
     // Load variables (should be set to zero if this is a single BS)
     MatterCCZ4<ComplexScalarField<>>::Vars<data_t> vars;
     current_cell.load_vars(vars);
@@ -100,22 +97,12 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double BS_radius_width = m_params_BosonStar.radius_width;
     double R_BS = m_params_BosonStar.bump_radius;
 
-    // pout() << "Boson star parameters:" << endl;
-    // pout() << "BS mass = " << m_params_BosonStar.mass << endl;
-    // pout() << "BS_rapidity = " << BS_rapidity << endl;
-    // pout() << "R_BS = " << R_BS << endl;
-
     // Import BH parameters
     double BH_rapidity = m_params_BlackHole.rapidity;
     double M = m_params_BlackHole.mass;
 
     double BH_radius_width = m_params_BlackHole.radius_width;
     double R_BH = m_params_BlackHole.bump_radius;
-
-    // pout() << "Black hole parameters:" << endl;
-    // pout() << "BH mass = " << M << endl;
-    // pout() << "BH_rapidity = " << BH_rapidity << endl;
-    // pout() << "R_BH = " << R_BH << endl;
 
     // Import binary parameters. Note that the mass ratio is defined as q =
     // mBH/mBS
@@ -181,7 +168,15 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     // Get scalar field modulus, conformal factor, lapse and their gradients
     double pc_os = psi_ * psi_ * c_ * c_ - omega_ * omega_ * s_ * s_;
     double lapse_1 = omega_ * psi_ / (sqrt(pc_os));
-    double w_ = m_1d_sol.get_w(); // frequency
+    double w_; // frequency
+    if (antiboson)
+    {
+        w_ = -m_1d_sol.get_w();
+    }
+    else
+    {
+        w_ = m_1d_sol.get_w();
+    }
 
     // Write in phase, shift, metric components of star 1 and initialise metric
     // components of star 2
@@ -304,15 +299,6 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
     pc_os = psi_ * psi_ * c_ * c_ - omega_ * omega_ * s_ * s_;
     double lapse_2 = omega_ * psi_ / (sqrt(pc_os));
-
-    if (antiboson)
-    {
-        w_ = -m_1d_sol.get_w();
-    }
-    else
-    {
-        w_ = m_1d_sol.get_w();
-    }
 
     beta_x = s_ * c_ * (psi_ * psi_ - omega_ * omega_) / (pc_os);
     vars.shift[0] += beta_x;
@@ -620,8 +606,8 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 
         //apply TP correction to physical metric and extrinsic curvature
         FOR2(i,j) gammaLLFinal[i][j] = gammaThomas[i][j] + TPFactor * (gamma_TP[i][j] - gammaThomas[i][j]);
-        //FOR2(i,j) KLL[i][j] = KLLThomas[i][j] + TPFactor * (K_TP[i][j] - KLLThomas[i][j]);
-        FOR2(i,j) KLL[i][j] = KLLThomas[i][j]; // seems to work better without K fix
+        FOR2(i,j) KLL[i][j] = KLLThomas[i][j] + TPFactor * (K_TP[i][j] - KLLThomas[i][j]);
+        //FOR2(i,j) KLL[i][j] = KLLThomas[i][j]; // seems to work better without K fix
         
         //vars.lapse = vars.lapse + TPFactor * (lapseTP - vars.lapse); 
 

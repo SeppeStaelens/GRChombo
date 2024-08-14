@@ -6,20 +6,20 @@
 #ifndef BHBSBINARY_HPP_
 #define BHBSBINARY_HPP_
 
+#include "BHBSBinaryParams.hpp"
+#include "BosonStarSolution.hpp"
 #include "Cell.hpp"
+#include "ComplexPotential.hpp"
+#include "ComplexScalarField.hpp"
 #include "Coordinates.hpp"
 #include "MatterCCZ4.hpp"
-#include "ComplexScalarField.hpp"
 #include "Tensor.hpp"
 #include "UserVariables.hpp" //This files needs NUM_VARS - total no. components
 #include "VarsTools.hpp"
-#include "simd.hpp"
-#include "ComplexPotential.hpp"
-#include "BHBSBinaryParams.hpp"
-#include "BosonStarSolution.hpp"
 #include "WeightFunction.hpp"
-#include <vector>
 #include "parstream.H" //gives pout
+#include "simd.hpp"
+#include <vector>
 
 #ifdef USE_TWOPUNCTURES
 #include "TwoPunctures.hpp"
