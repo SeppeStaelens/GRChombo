@@ -4,8 +4,8 @@
  */
 
 #include "parstream.H" //Gives us pout()
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
 #include "DefaultLevelFactory.hpp"
 #include "GRAMR.hpp"
@@ -33,11 +33,13 @@ int runGRChombo(int argc, char *argv[])
     // and an associated LevelFactory)
     STAMR st_amr;
 
-    st_amr.m_star_tracker.initial_setup(sim_params.do_star_track,
-        sim_params.number_of_stars, {sim_params.positionA, sim_params.positionB},
-        sim_params.star_points, sim_params.star_track_width_A, sim_params.star_track_width_B, sim_params.star_track_direction_of_motion);
+    st_amr.m_star_tracker.initial_setup(
+        sim_params.do_star_track, sim_params.number_of_stars,
+        {sim_params.positionA, sim_params.positionB}, sim_params.star_points,
+        sim_params.star_track_width_A, sim_params.star_track_width_B,
+        sim_params.star_track_direction_of_motion);
     DefaultLevelFactory<BosonStarLevel> boson_star_level_fact(st_amr,
-                                                                  sim_params);
+                                                              sim_params);
     setupAMRObject(st_amr, boson_star_level_fact);
 
     // Instantiate AMR interpolator for mass/GW extraction
@@ -72,7 +74,7 @@ int runGRChombo(int argc, char *argv[])
 
     std::chrono::time_point<Clock> start_time = Clock::now();
 
-     // Add a scheduler to call specificPostTimeStep on every AMRLevel at t=0
+    // Add a scheduler to call specificPostTimeStep on every AMRLevel at t=0
     auto task = [](GRAMRLevel *level)
     {
         if (level->time() == 0.)

@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
- #ifndef DIAGNOSTICVARIABLES_HPP
- #define DIAGNOSTICVARIABLES_HPP
+#ifndef DIAGNOSTICVARIABLES_HPP
+#define DIAGNOSTICVARIABLES_HPP
 
 // assign an enum to each variable
 enum
@@ -25,7 +25,7 @@ enum
     c_Weyl4_Re,
     c_Weyl4_Im,
 
-    c_rho,   // stress tensor components
+    c_rho, // stress tensor components
     c_s1,
     c_s2,
     c_s3,
@@ -59,26 +59,44 @@ static const std::array<std::string, NUM_DIAGNOSTIC_VARS> variable_names = {
 
     "mod_phi",
 
-    "Madm",   "Jadm",
+    "Madm",
+    "Jadm",
 
     "N",
 
-    "Ham",    "Mom1",   "Mom2",   "Mom3",
+    "Ham",
+    "Mom1",
+    "Mom2",
+    "Mom3",
 
-    "Weyl4_Re",  "Weyl4_Im",
+    "Weyl4_Re",
+    "Weyl4_Im",
 
-    "rho", "s1", "s2", "s3", "s11", "s12", "s13", "s22", "s23", "s33",
+    "rho",
+    "s1",
+    "s2",
+    "s3",
+    "s11",
+    "s12",
+    "s13",
+    "s22",
+    "s23",
+    "s33",
 
-    "Qphi_density", "Fphi_flux", "Sphi_source",
-    
-    "weight1", "weight2",
-        
-    "profile1", "profile2",
-    
+    "Qphi_density",
+    "Fphi_flux",
+    "Sphi_source",
+
+    "weight1",
+    "weight2",
+
+    "profile1",
+    "profile2",
+
     "testHam"
-    
-     };
-    
-    }
+
+};
+
+}
 
 #endif /* DIAGNOSTICVARIABLES_HPP */

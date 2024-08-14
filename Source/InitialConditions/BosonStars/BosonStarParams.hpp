@@ -13,13 +13,13 @@ struct BosonStar_params_t
 {
     int gridpoints;
     double PSC;
-	double OMC;
-	bool BS_solver_verbosity;
-	double central_amplitude_CSF; 
-	double scalar_mass;
-	double phi4_coeff;
-	bool solitonic;
-	double sigma_solitonic;//0.0499;
+    double OMC;
+    bool BS_solver_verbosity;
+    double central_amplitude_CSF;
+    double scalar_mass;
+    double phi4_coeff;
+    bool solitonic;
+    double sigma_solitonic; // 0.0499;
     double phase;
     double BS_separation;
     double mass;
@@ -31,8 +31,8 @@ struct BosonStar_params_t
     double radius_width2;
     int conformal_factor_power;
     bool antiboson;
-    std::array<double, CH_SPACEDIM> star_centre; //!< coordinates of the centre of the star
+    std::array<double, CH_SPACEDIM>
+        star_centre; //!< coordinates of the centre of the star
 };
 
 #endif /* BOSONSTARPARAMS_HPP_ */
-
