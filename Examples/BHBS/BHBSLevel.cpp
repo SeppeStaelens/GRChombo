@@ -20,7 +20,7 @@
 
 // For tag cells
 #include "BosonChiPunctureExtractionTaggingCriterion.hpp"
-#include "ChiandRhoTaggingCriterion.hpp"
+#include "ChiAndRhoTaggingCriterion.hpp"
 #include "ComplexPhiAndChiExtractionTaggingCriterion.hpp"
 
 // Problem specific includes
