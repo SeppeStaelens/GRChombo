@@ -17,7 +17,6 @@
 
 #ifdef USE_TWOPUNCTURES
 #include "TwoPunctures.hpp" //for TwoPunctures-based ID method
-#include "TPAMR.hpp"
 #endif
 
 inline BHBSBinary::BHBSBinary(BosonStar_params_t a_params_BosonStar,
@@ -30,6 +29,21 @@ inline BHBSBinary::BHBSBinary(BosonStar_params_t a_params_BosonStar,
       m_params_potential(a_params_potential), m_verbosity(a_verbosity)
 {
 }
+
+#ifdef USE_TWOPUNCTURES
+inline BHBSBinary::BHBSBinary(BosonStar_params_t a_params_BosonStar,
+                              BlackHole_params_t a_params_BlackHole,
+                              Potential::params_t a_params_potential,
+                              double a_G_Newton, double a_dx, int a_verbosity,
+                              TP::TwoPunctures *a_two_punctures)
+    : m_dx(a_dx), m_G_Newton(a_G_Newton),
+      m_params_BosonStar(a_params_BosonStar),
+      m_params_BlackHole(a_params_BlackHole),
+      m_params_potential(a_params_potential), m_verbosity(a_verbosity),
+      m_two_punctures(a_two_punctures)
+    {
+    }
+#endif
 
 void BHBSBinary::compute_1d_solution(const double max_r)
 /** This function computes the 1d solution for the BS in the binary
@@ -551,8 +565,7 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
 	//pout() << "Survived Pre-Interpolation" << endl;
 	    
 	//Read TwoPunctures data from the TPAMR initialized in Main
-	TPAMR_HPP_::bh_amr.m_two_punctures.Interpolate(coords_array, TP_state);	
-	
+    (*m_two_punctures).Interpolate(coords_array, TP_state);		
 	//pout() << "Survived Interpolation Step" << endl;
 
 	// TP metric

@@ -21,6 +21,10 @@
 #include <vector>
 #include "parstream.H" //gives pout
 
+#ifdef USE_TWOPUNCTURES
+#include "TwoPunctures.hpp"
+#endif
+
 //! Class which solves for the initial data for a spherically symmetric boson
 //! star with phi^4 coupling
 class BHBSBinary
@@ -31,6 +35,12 @@ public:
     BHBSBinary(BosonStar_params_t a_params_BosonStar, BlackHole_params_t a_params_BlackHole,
         Potential::params_t a_params_potential, double a_G_Newton, double a_dx, int a_verbosity);
 
+    #ifdef USE_TWOPUNCTURES
+    //! Constructor in case of Two Punctures being used
+    BHBSBinary(BosonStar_params_t a_params_BosonStar, BlackHole_params_t a_params_BlackHole,
+        Potential::params_t a_params_potential, double a_G_Newton, double a_dx, int a_verbosity, TP::TwoPunctures *a_two_punctures);
+    #endif
+
     //! Computes the 1d solution and stores in m_1d_sol
     void compute_1d_solution(const double max_r);
 
@@ -40,6 +50,11 @@ public:
 
     //!The object that stores the solution found by the 1d ODE integrator
     BosonStarSolution m_1d_sol;
+
+    #ifdef USE_TWOPUNCTURES
+    //! The TwoPunctures object
+    TP::TwoPunctures *m_two_punctures;
+    #endif
 
 protected:
     double m_dx;

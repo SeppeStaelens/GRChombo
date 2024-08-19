@@ -13,7 +13,6 @@
 
 // For RHS update
 #include "MatterCCZ4.hpp"
-#include "IntegratedMovingPunctureGauge.hpp"
 
 // For constraints calculation
 #include "NewMatterConstraints.hpp"
@@ -75,9 +74,15 @@ void BHBSLevel::initialData()
     if (m_verbosity)
         pout() << "BHBSLevel::initialData " << m_level << endl;
 
-    // First initalise a BosonStar object
+    // First initalise a BHBSBinary object
+    #ifdef USE_TWOPUNCTURES
     BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, m_p.potential_params,
-                         m_p.G_Newton, m_dx, m_verbosity);
+                            m_p.G_Newton, m_dx, m_verbosity, &m_bhbs_amr.m_two_punctures);
+    #else
+    BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, m_p.potential_params,
+                            m_p.G_Newton, m_dx, m_verbosity);
+    
+    #endif
 
 
     // the max radius the code might need to calculate out to is L*sqrt(3)
@@ -97,8 +102,8 @@ void BHBSLevel::initialData()
     BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.blackhole_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
 
     fillAllGhosts();
-    BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params),
-                 m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
+    // BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params),
+    //              m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
     
 }
 
@@ -163,13 +168,16 @@ void BHBSLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     //MatterCCZ4RHS<ComplexScalarFieldWithPotential> my_ccz4_matter(
     //    complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
     //    m_p.G_Newton);
-    MatterCCZ4RHS<ComplexScalarFieldWithPotential, IntegratedMovingPunctureGauge, FourthOrderDerivatives> my_ccz4_matter(
-         complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
-         m_p.G_Newton);
-    SetValue set_analysis_vars_zero(0.0, Interval(c_Pi_Im + 1, NUM_VARS - 1));
-    auto compute_pack =
-        make_compute_pack(my_ccz4_matter, set_analysis_vars_zero);
-    BoxLoops::loop(compute_pack, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    // MatterCCZ4RHS<ComplexScalarFieldWithPotential, MovingPunctureGauge, FourthOrderDerivatives> my_ccz4_matter(
+    //      complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
+    //      m_p.G_Newton);
+    // SetValue set_analysis_vars_zero(0.0, Interval(c_Pi_Im + 1, NUM_VARS - 1));
+    // auto compute_pack =
+    //     make_compute_pack(my_ccz4_matter, set_analysis_vars_zero);
+    // BoxLoops::loop(compute_pack, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(MatterCCZ4RHS<ComplexScalarFieldWithPotential>(
+       complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
+       m_p.G_Newton), a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
 
 // Things to do at ODE update, after soln + rhs
@@ -322,11 +330,11 @@ void BHBSLevel::doAnalysis()
         // will default to param file if restart time is 0
         if (fabs(m_time - m_restart_time) < m_dt * 1.1)
         {
-            m_st_amr.m_star_tracker.read_old_centre_from_dat(
+            m_bhbs_amr.m_star_tracker.read_old_centre_from_dat(
                 "StarCentres", m_dt, m_time, m_restart_time, first_step);
         }
-        m_st_amr.m_star_tracker.update_star_centres(m_dt);
-        m_st_amr.m_star_tracker.write_to_dat("StarCentres", m_dt, m_time,
+        m_bhbs_amr.m_star_tracker.update_star_centres(m_dt);
+        m_bhbs_amr.m_star_tracker.write_to_dat("StarCentres", m_dt, m_time,
                                              m_restart_time, first_step);
     }
 
@@ -489,7 +497,7 @@ void BHBSLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                m_p.blackhole_params.BlackHoleMass};
 
        const std::vector<double> star_coords =
-           m_st_amr.m_star_tracker.get_puncture_coords();
+           m_bhbs_amr.m_star_tracker.get_puncture_coords();
 	
        BoxLoops::loop(BosonChiPunctureExtractionTaggingCriterion(
                           m_dx, m_level, m_p.tag_horizons_max_levels,
