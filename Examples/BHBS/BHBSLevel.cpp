@@ -6,37 +6,33 @@
 // General includes common to most GR problems
 #include "BHBSLevel.hpp"
 #include "BoxLoops.hpp"
+#include "GammaCalculator.hpp"
 #include "NanCheck.hpp"
 #include "PositiveChiAndAlpha.hpp"
 #include "TraceARemoval.hpp"
-#include "GammaCalculator.hpp"
 
 // For RHS update
 #include "MatterCCZ4.hpp"
-#include "IntegratedMovingPunctureGauge.hpp"
 
 // For constraints calculation
-#include "NewMatterConstraints.hpp"
 #include "NewConstraints.hpp"
+#include "NewMatterConstraints.hpp"
 
 // For tag cells
-#include "ComplexPhiAndChiExtractionTaggingCriterion.hpp"
-#include "ChiAndRhoTaggingCriterion.hpp"
 #include "BosonChiPunctureExtractionTaggingCriterion.hpp"
+#include "ChiAndRhoTaggingCriterion.hpp"
+#include "ComplexPhiAndChiExtractionTaggingCriterion.hpp"
 
 // Problem specific includes
-#include "ComputePack.hpp"
-#include "ComplexPotential.hpp"
 #include "BHBSBinary.hpp"
 #include "ComplexScalarField.hpp"
+#include "ComplexPotential.hpp"
+#include "ComputePack.hpp"
+#include "ComputeWeightFunction.hpp"
 #include "SetValue.hpp"
 
 // For mass extraction
 #include "ADMMass.hpp"
-//#include "Density.hpp"
-#include "EMTensor.hpp"
-#include "MomFluxCalc.hpp"
-#include "SourceIntPreconditioner.hpp"
 #include "ADMMassExtraction.hpp"
 
 // For GW extraction
@@ -44,16 +40,17 @@
 #include "WeylExtraction.hpp"
 
 // For Noether Charge calculation
-#include "SmallDataIO.hpp"
 #include "NoetherCharge.hpp"
-
-// For Ang Mom Integrating
-#include "AngMomFlux.hpp"
-
-#include "ComputeWeightFunction.hpp"
+#include "SmallDataIO.hpp"
 
 // for chombo grid Functions
 #include "AMRReductions.hpp"
+
+// For Ang Mom Integrating - redundant for now?
+#include "AngMomFlux.hpp"
+#include "EMTensor.hpp"
+#include "MomFluxCalc.hpp"
+#include "SourceIntPreconditioner.hpp"
 
 // Things to do at each advance step, after the RK4 is calculated
 void BHBSLevel::specificAdvance()
@@ -77,30 +74,35 @@ void BHBSLevel::initialData()
         pout() << "BHBSLevel::initialData " << m_level << endl;
 
     // First initalise a BHBSBinary object
+    #ifdef USE_TWOPUNCTURES
+    BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, 
+                            m_p.binary_params, m_p.potential_params,
+                            m_p.G_Newton, m_dx, m_verbosity, &m_bhbs_amr.m_two_punctures);
+    #else
     BHBSBinary bh_bs_binary(m_p.bosonstar_params, m_p.blackhole_params, 
                             m_p.binary_params, m_p.potential_params,
                             m_p.G_Newton, m_dx, m_verbosity);
-
+    #endif
 
     // the max radius the code might need to calculate out to is L*sqrt(3)
-    bh_bs_binary.compute_1d_BS_solution(2.*m_p.L);
+    bh_bs_binary.compute_1d_BS_solution(4.*m_p.L);
 
     // First set everything to zero ... we don't want undefined values in
     // constraints etc, then  initial conditions for Boson Star
     BoxLoops::loop(make_compute_pack(SetValue(0.0), bh_bs_binary),
                    m_state_new, m_state_new, INCLUDE_GHOST_CELLS,
                    disable_simd());
- 
+    
+    fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx),
                    m_state_new, m_state_new, EXCLUDE_GHOST_CELLS,
                    disable_simd());
 
     // Check this one
-    BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.blackhole_params, m_p.binary_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
+    // BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.blackhole_params, m_p.binary_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
 
-    fillAllGhosts();
-    BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params),
-                 m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
+    // BoxLoops::loop(MovingPunctureGauge(m_p.ccz4_params),
+    //              m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
     
 }
 
@@ -123,7 +125,6 @@ void BHBSLevel::preCheckpointLevel()
                      complex_scalar_field, m_dx, c_rho, Interval(c_s1,c_s3),
                      Interval(c_s11,c_s33))),
                      m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-
 }
 
 // Things to do before outputting a plot file
@@ -131,20 +132,20 @@ void BHBSLevel::prePlotLevel()
 {
     CH_TIME("BHBSLevel::prePlotLevel");
 
-      fillAllGhosts();
-      Potential potential(m_p.potential_params);
-      ComplexScalarFieldWithPotential complex_scalar_field(potential);
-      BoxLoops::loop(make_compute_pack(
-                      MatterWeyl4<ComplexScalarFieldWithPotential>(
-                      complex_scalar_field,m_p.extraction_params.extraction_center,
-                      m_dx, m_p.formulation, m_p.G_Newton),
-                      MatterConstraints<ComplexScalarFieldWithPotential>(
-                      complex_scalar_field, m_dx, m_p.G_Newton, c_Ham,
-                      Interval(c_Mom1, c_Mom3)), NoetherCharge(),
-                      EMTensor<ComplexScalarFieldWithPotential>(
-                      complex_scalar_field, m_dx, c_rho, Interval(c_s1,c_s3),
-                      Interval(c_s11,c_s33))),
-                      m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    fillAllGhosts();
+    Potential potential(m_p.potential_params);
+    ComplexScalarFieldWithPotential complex_scalar_field(potential);
+    BoxLoops::loop(make_compute_pack(
+                    MatterWeyl4<ComplexScalarFieldWithPotential>(
+                    complex_scalar_field,m_p.extraction_params.extraction_center,
+                    m_dx, m_p.formulation, m_p.G_Newton),
+                    MatterConstraints<ComplexScalarFieldWithPotential>(
+                    complex_scalar_field, m_dx, m_p.G_Newton, c_Ham,
+                    Interval(c_Mom1, c_Mom3)), NoetherCharge(),
+                    EMTensor<ComplexScalarFieldWithPotential>(
+                    complex_scalar_field, m_dx, c_rho, Interval(c_s1,c_s3),
+                    Interval(c_s11,c_s33))),
+                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
 }
 
@@ -165,13 +166,17 @@ void BHBSLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     //MatterCCZ4RHS<ComplexScalarFieldWithPotential> my_ccz4_matter(
     //    complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
     //    m_p.G_Newton);
-    MatterCCZ4RHS<ComplexScalarFieldWithPotential, IntegratedMovingPunctureGauge, FourthOrderDerivatives> my_ccz4_matter(
-         complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
-         m_p.G_Newton);
-    SetValue set_analysis_vars_zero(0.0, Interval(c_Pi_Im + 1, NUM_VARS - 1));
-    auto compute_pack =
-        make_compute_pack(my_ccz4_matter, set_analysis_vars_zero);
-    BoxLoops::loop(compute_pack, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+
+    // MatterCCZ4RHS<ComplexScalarFieldWithPotential, MovingPunctureGauge, FourthOrderDerivatives> my_ccz4_matter(
+    //      complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
+    //      m_p.G_Newton);
+    // SetValue set_analysis_vars_zero(0.0, Interval(c_Pi_Im + 1, NUM_VARS - 1));
+    // auto compute_pack =
+    //     make_compute_pack(my_ccz4_matter, set_analysis_vars_zero);
+    // BoxLoops::loop(compute_pack, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(MatterCCZ4RHS<ComplexScalarFieldWithPotential>(
+       complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
+       m_p.G_Newton), a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
 
 // Things to do at ODE update, after soln + rhs
@@ -183,7 +188,7 @@ void BHBSLevel::specificUpdateODE(GRLevelData &a_soln,
 }
 
 // Things to do for analysis after each timestep and at the start
-void BHBSLevel::doAnalysis()
+void BHBSLevel::specificPostTimeStep()
 {
     CH_TIME("BHBSLevel::specificPostTimeStep");
 
@@ -206,7 +211,7 @@ void BHBSLevel::doAnalysis()
     if (m_p.activate_weyl_extraction == 1 &&
        at_level_timestep_multiple(m_p.extraction_params.min_extraction_level()))
     {
-        CH_TIME("BHBSLevel::doAnalysis::Weyl4&ADMMass");
+        CH_TIME("BHBSLevel::specificPostTimeStep::Weyl4&ADMMass");
         
         // Do the extraction on the min extraction level
         if (m_level == m_p.extraction_params.min_extraction_level())
@@ -240,7 +245,7 @@ void BHBSLevel::doAnalysis()
         ADMMassExtraction mass_extraction(m_p.mass_extraction_params, m_dt,
                                     m_time, first_step,
                                     m_restart_time);
-        mass_extraction.execute_query(m_gr_amr.m_interpolator);
+        mass_extraction.execute_query(m_gr_amr.m_interpolator, m_p.data_path);
     }
 
     // noether charge, max mod phi, min chi, constraint violations
@@ -260,7 +265,7 @@ void BHBSLevel::doAnalysis()
             // compute integrated volume weighted noether charge integral
 
             double noether_charge = amr_reductions.sum(c_N);
-            std::string noether_charge_filename = m_p.data_path + "NoetherCharge"; 
+            std::string noether_charge_filename = m_p.data_path + "noether_charge"; 
             SmallDataIO noether_charge_file(noether_charge_filename, m_dt, m_time,
                                             m_restart_time,
                                             SmallDataIO::APPEND,
@@ -268,6 +273,7 @@ void BHBSLevel::doAnalysis()
             noether_charge_file.remove_duplicate_time_data();
             if (m_time == 0.)
             {
+                
                 noether_charge_file.write_header_line({"Noether Charge"});
             }
             noether_charge_file.write_time_data_line({noether_charge});
@@ -327,21 +333,33 @@ void BHBSLevel::doAnalysis()
 	    pout() << "Running a star tracker now" << endl;
         // if at restart time read data from dat file,
         // will default to param file if restart time is 0
-        
-        std::string centres_filename = m_p.data_path + "StarCentres";
 
-        if (fabs(m_time - m_restart_time) < m_dt * 1.1)
+        std::string centres_filename = m_p.data_path + "star_centres";
+	SmallDataIO centres_file(centres_filename, m_dt, m_time,
+                                     m_restart_time, SmallDataIO::APPEND,
+                                     first_step);
+	if (first_step)
+	{
+	    centres_file.write_header_line({"Star centres"});
+	}
+
+        if ((m_time > m_dt / 4.) && (fabs(m_time - m_restart_time) < m_dt * 1.1))
         {
-            m_st_amr.m_star_tracker.read_old_centre_from_dat(
+            m_bhbs_amr.m_star_tracker.read_old_centre_from_dat(
                 centres_filename, m_dt, m_time, m_restart_time, first_step);
         }
-        m_st_amr.m_star_tracker.update_star_centres(m_dt);
-        m_st_amr.m_star_tracker.write_to_dat(centres_filename, m_dt, m_time,
+        m_bhbs_amr.m_star_tracker.update_star_centres(m_dt);
+        m_bhbs_amr.m_star_tracker.write_to_dat(centres_filename, m_dt, m_time,
                                              m_restart_time, first_step);
     }
 
+    #ifdef USE_AHFINDER
+    if (m_p.AH_activate && m_level == m_p.AH_params.level_to_run)
+        m_bhbs_amr.m_ah_finder.solve(m_dt, m_time, m_restart_time);
+    #endif
+
     //if (m_p.do_flux_integration && m_level==m_p.angmomflux_params.extraction_level)
-    double temp_dx;
+    // double temp_dx;
     // if (m_p.do_flux_integration && at_level_timestep_multiple(m_p.flux_extraction_level))
     // {
     //     CH_TIME("BHBSLevel::doAnalysis::FphiSphi");
@@ -502,7 +520,7 @@ void BHBSLevel::computeTaggingCriterion(
                                                 m_p.blackhole_params.mass};
 
         const std::vector<double> star_coords =
-            m_st_amr.m_star_tracker.get_puncture_coords();
+            m_bhbs_amr.m_star_tracker.get_puncture_coords();
 
         BoxLoops::loop(BosonChiPunctureExtractionTaggingCriterion(
                             m_dx, m_level, m_p.tag_horizons_max_levels,

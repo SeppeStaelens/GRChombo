@@ -5,6 +5,7 @@ o
 p
 f
 *.ex
+*.ex.*
 ipo_out.optrpt
 
 # Scheduler files

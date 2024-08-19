@@ -3,35 +3,47 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef TPAMR_HPP_
-#define TPAMR_HPP_
+#ifndef BHBSAMR_HPP_
+#define BHBSAMR_HPP_
 
 // Even if USE_TWOPUNCTURES is not defined, this file will include BHAMR.hpp
 #include "BHAMR.hpp"
 
-//ifdef USE_TWOPUNCTURES
+#ifdef USE_TWOPUNCTURES
 #include "TwoPunctures.hpp"
+#endif
+
+#include "StarTracker.hpp"
 
 /// A descendent of Chombo's AMR class to interface with tools which require
 /// access to the whole AMR hierarchy, and those of GRAMR
 /**
- * This object inherits from BHAMR and adds members relevant to TwoPunctures
- * initial data
+ * This object inherits from BHAMR and combines functionalities from TPAMR and STAMR
  */
-class TPAMR : public BHAMR
+class BHBSAMR : public BHAMR
 {
   public:
-    TP::TwoPunctures m_two_punctures;
 
+    StarTracker m_star_tracker;
+    #ifdef USE_TWOPUNCTURES
+    TP::TwoPunctures m_two_punctures;
+    #endif
+
+    BHBSAMR() {}
+
+    void set_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator) override
+    {
+        BHAMR::set_interpolator(a_interpolator);
+        m_star_tracker.set_interpolator(a_interpolator);
+    }
+
+    #ifdef USE_TWOPUNCTURES
     void set_two_punctures_parameters(const TP::Parameters &params)
     {
         // explicitly invoke copy constructor of base Parameters class
         m_two_punctures.Parameters::operator=(params);
     }
+    #endif
 };
 
-extern TPAMR bh_amr;
-
-//endif /* USE_TWOPUNCTURES */
-
-#endif /* TPAMR_HPP_ */
+#endif /* BHBSAMR_HPP_ */

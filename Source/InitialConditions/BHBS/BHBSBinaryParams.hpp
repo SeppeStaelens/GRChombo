@@ -47,6 +47,7 @@ struct Binary_params_t
     double separation;              //! separation of the binary components (along x-axis)
     double impact_parameter;        //! impact parameter of the binary (along y-axis)
     double mass_ratio;              //! mass of the black hole divided by the mass of the boson star
+    bool do_rotation;               //! Whether we need to rotate the grid; should only be 1 for inspiral with TP method (id_choice = 6) 
 
     // initial condition parameters
     int id_choice; // initial data choice: 0 - plain superposition, 1 - Thomas' trick, 2 - fixing conformal factor method

@@ -14,8 +14,11 @@
 #include "ComplexPotential.hpp"
 #include "BHBSBinaryParams.hpp"
 #include "AngMomFluxParams.hpp"
-#include  "BoostedBH.hpp"
+#include "BoostedBH.hpp"
+
+#ifdef USE_TWOPUNCTURES
 #include "TP_Parameters.hpp"
+#endif
 
 class SimulationParameters : public SimulationParametersBase
 {
@@ -26,21 +29,12 @@ public:
         readParams(pp);
     }
 
-     #ifdef USE_TWOPUNCTURES
-    double tp_offset_plus, tp_offset_minus;
-   
-    //param sets for TP data and each boosted BH
-    TP::Parameters tp_params;
-    BoostedBH::params_t bh2_params;
-    BoostedBH::params_t bh1_params;
-    #endif
-
     void readParams(GRParmParse &pp)
     {
         // for regridding
-        pp.load("regrid_threshold_phi", regrid_threshold_phi);
-	pp.load("regrid_threshold_rho", regrid_threshold_rho);
-        pp.load("regrid_threshold_chi", regrid_threshold_chi);
+        pp.load("regrid_threshold_phi", regrid_threshold_phi, 0.25);
+	pp.load("regrid_threshold_rho", regrid_threshold_rho, 0.1);
+        pp.load("regrid_threshold_chi", regrid_threshold_chi, 0.125);
 
         // Gravitional constant
         pp.load("G_Newton", G_Newton, 1.0);
@@ -56,22 +50,22 @@ public:
         pp.load("eigen", bosonstar_params.eigen, 0);
         pp.load("antiboson", bosonstar_params.antiboson, false);
 
-        pp.load("BS_radius_width", bosonstar_params.radius_width, 10.);
+        pp.load("BS_radius_width", bosonstar_params.radius_width, 10.0);
         pp.load("BS_bump_radius", bosonstar_params.bump_radius, 10.0);
 
         // Black Hole parameters
         pp.load("BH_mass", blackhole_params.mass, 1.0);
 	pp.load("BH_rapidity", blackhole_params.rapidity, 0.0);
 
-        pp.load("BH_radius_width", bosonstar_params.radius_width, 10.0);
-        pp.load("BH_bump_radius", bosonstar_params.bump_radius, 10.0);   
+        pp.load("BH_radius_width", blackhole_params.radius_width, 10.0);
+        pp.load("BH_bump_radius", blackhole_params.bump_radius, 10.0);   
 
         // Binary parameters
         pp.load("centre_of_mass", binary_params.centre_of_mass, center);
         pp.load("binary_separation", binary_params.separation, 16.0);
         pp.load("impact_parameter", binary_params.impact_parameter, 0.0);
-        // pp.load("mass_ratio", binary_params.mass_ratio, 1.0);
-        binary_params.mass_ratio = blackhole_params.mass / bosonstar_params.mass;
+        binary_params.mass_ratio = blackhole_params.mass / bosonstar_params.mass;       // Calculated as BH / BS
+        pp.load ("do_rotation", binary_params.do_rotation, false);
         
         pout() << "The BH/BS mass ratio is " << binary_params.mass_ratio << endl;
 
@@ -91,11 +85,11 @@ public:
         
 	//std::array<double, CH_SPACEDIM> positionA, positionB;
 
-	position_BS[0] = (binary_params.centre_of_mass[0] + binary_params.mass_ratio * binary_params.separation / (binary_params.mass_ratio + 1.));
+	position_BS[0] = binary_params.centre_of_mass[0] + binary_params.mass_ratio * binary_params.separation / (binary_params.mass_ratio + 1.);
 	position_BS[1] = binary_params.centre_of_mass[1] - binary_params.mass_ratio * binary_params.impact_parameter / (binary_params.mass_ratio + 1.);
 	position_BS[2] = binary_params.centre_of_mass[2];
 
-	position_BH[0] = (binary_params.centre_of_mass[0] - binary_params.separation / (binary_params.mass_ratio + 1.));
+	position_BH[0] = binary_params.centre_of_mass[0] - binary_params.separation / (binary_params.mass_ratio + 1.);
 	position_BH[1] = binary_params.centre_of_mass[1] + binary_params.impact_parameter / (binary_params.mass_ratio + 1.);
         position_BH[2] = binary_params.centre_of_mass[2];
 
@@ -180,10 +174,26 @@ public:
         angmomflux_params.radii.resize(angmomflux_params.number_radii);
         pp.load("flux_extraction_radii", angmomflux_params.radii,
                                                 angmomflux_params.number_radii);*/
+        #ifdef USE_AHFINDER
+        pp.load("AH_initial_guess", AH_initial_guess, 0.5 * blackhole_params.mass);
+        #endif
 	
-                                                #ifdef USE_TWOPUNCTURES
+        #ifdef USE_TWOPUNCTURES
 
     	tp_params.verbose = (verbosity > 0);	
+
+        double v_BS = -tanh(bosonstar_params.rapidity);
+	double v_BH = tanh(blackhole_params.rapidity);
+
+	double gamma_BS = 1 / sqrt ( 1 - v_BS * v_BS);
+	double gamma_BH = 1 / sqrt ( 1 - v_BH * v_BH);
+
+        double q = binary_params.mass_ratio;
+        double d = binary_params.separation;
+	double b = binary_params.impact_parameter;
+
+        //amount the original configuration has been  rotated relative to x-axis parallel config. assumes impact param/ separation > 0. Needed to rotate BH momenta
+        double rotation_angle = asin(b / sqrt(d * d + b * b ));
 	 
 	bool calculate_target_masses;
         pp.load("TP_calculate_target_masses", calculate_target_masses, false);
@@ -192,14 +202,15 @@ public:
 	// masses
         if (calculate_target_masses)
         {
-            pp.load("TP_target_mass_plus", tp_params.target_M_plus);
-            pp.load("TP_target_mass_minus", tp_params.target_M_minus);
+            // IDENTIFICATION: (+, BH1, BS) vs (-, BH2, BH)
+            pp.load("TP_target_mass_plus", tp_params.target_M_plus, bosonstar_params.mass);
+            pp.load("TP_target_mass_minus", tp_params.target_M_minus, blackhole_params.mass);
             pp.load("TP_adm_tol", tp_params.adm_tol, 1e-10);
             pout() << "The black holes have target ADM masses of "
                    << tp_params.target_M_plus << " and "
                    << tp_params.target_M_minus << "\n";
-            bh1_params.mass = tp_params.target_M_minus;
-            bh2_params.mass = tp_params.target_M_plus;
+            bh1_params.mass = tp_params.target_M_plus;
+            bh2_params.mass = tp_params.target_M_minus;
 	}
 	else
 	{
@@ -214,16 +225,33 @@ public:
             pout() << std::setprecision(6);
         }
 
-	// BH spin and momenta
+        //magnitudes of momenta (in x-axis dir in final but not TP coord system)
+        double p1 = bosonstar_params.mass * gamma_BS * v_BS;
+        double p2 = blackhole_params.mass * gamma_BH * v_BH;
+        std::array<double, CH_SPACEDIM> momentum_BS{p1, 0, 0};
+	std::array<double, CH_SPACEDIM> momentum_BH{p2, 0, 0};
+        if (binary_params.do_rotation)
+	{
+	    pout() << "Doing TP coordinate rotation by angle " << rotation_angle << endl;
+	    
+	    //rotate into frame in which black holes are on x-axis as required for TwoPunctures; we'll undo when constructing initial data
+	    momentum_BS[0] = cos(rotation_angle) *p1;
+       	    momentum_BS[1] = sin(rotation_angle) *p1;
+
+	    momentum_BH[0] = cos(rotation_angle) *p2;
+            momentum_BH[1] = sin(rotation_angle) *p2;
+	}
+
+        // BH spin and momenta
         std::array<double, CH_SPACEDIM> spin_minus, spin_plus;
-        pp.load("TP_momentum_minus", bh1_params.momentum);
-        pp.load("TP_momentum_plus", bh2_params.momentum);
+        pp.load("TP_momentum_plus", bh1_params.momentum, momentum_BS);
+        pp.load("TP_momentum_minus", bh2_params.momentum, momentum_BH);
         pp.load("TP_spin_plus", spin_plus);
         pp.load("TP_spin_minus", spin_minus);
         FOR(i)
         {
-            tp_params.par_P_minus[i] = bh1_params.momentum[i];
-            tp_params.par_P_plus[i] = bh2_params.momentum[i];
+            tp_params.par_P_plus[i] = bh1_params.momentum[i];
+            tp_params.par_P_minus[i] = bh2_params.momentum[i];
             tp_params.par_S_minus[i] = spin_minus[i];
             tp_params.par_S_plus[i] = spin_plus[i];
         }
@@ -283,9 +311,12 @@ public:
         pp.load("TP_Tiny", tp_params.TP_Tiny, 0.0);
         pp.load("TP_Extend_Radius", tp_params.TP_Extend_Radius, 0.0);
 
+        //total distance between BH and BS
+	double total_sep = sqrt(d*d + b*b);
+
         // BH positions
-        pp.load("TP_offset_minus", tp_offset_minus);
-        pp.load("TP_offset_plus", tp_offset_plus);
+        pp.load("TP_offset_minus", tp_offset_minus, - total_sep / (q + 1.));
+        pp.load("TP_offset_plus", tp_offset_plus, total_sep * q / (q + 1.));
         bh1_params.center = center;
         bh2_params.center = center;
         bh1_params.center[0] += tp_offset_minus;
@@ -367,6 +398,19 @@ public:
     std::array<double, CH_SPACEDIM> position_BS, position_BH;
 
     int flux_extraction_level; // specifies times (level) to do angmom flux extraction
+
+    #ifdef USE_TWOPUNCTURES
+    double tp_offset_plus, tp_offset_minus;
+   
+    //param sets for TP data and each boosted BH
+    TP::Parameters tp_params;
+    BoostedBH::params_t bh2_params;
+    BoostedBH::params_t bh1_params;
+    #endif
+
+    #ifdef USE_AHFINDER
+    double AH_initial_guess;
+    #endif
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

@@ -13,7 +13,7 @@
 // Problem specific includes
 #include "ComplexPotential.hpp"
 #include "ComplexScalarField.hpp"
-#include "STAMR.hpp"
+#include "BHBSAMR.hpp"
 
 //!  A class for the evolution of a black hole boson star binary
 /*!
@@ -27,7 +27,7 @@ class BHBSLevel : public GRAMRLevel
     // Inherit the contructors from GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
 
-    STAMR &m_st_amr = dynamic_cast<STAMR &>(m_gr_amr);
+    BHBSAMR &m_bhbs_amr = dynamic_cast<BHBSAMR &>(m_gr_amr);
 
     // Typedef for scalar field
     typedef ComplexScalarField<Potential> ComplexScalarFieldWithPotential;
@@ -60,7 +60,7 @@ class BHBSLevel : public GRAMRLevel
                                          override;
 
     //! Things to do for analysis after each timestep and at the start
-    virtual void doAnalysis() override;
+    virtual void specificPostTimeStep() override;
 };
 
 #endif /* BHBSLevel_HPP_ */
