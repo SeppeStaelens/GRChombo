@@ -81,10 +81,13 @@ template <class SurfaceGeometry, class AHFunction>
 bool ApparentHorizon<SurfaceGeometry, AHFunction>::good_to_go(
     double a_dt, double a_time) const
 {
+    pout() << "In [ApparentHorizon::good_to_go]" << std::endl;
     if (a_time < m_params.start_time - 1.e-7 /*just to be safe*/)
+        pout() << "Time is less than start time." << std::endl;
         return false;
     if (m_params.give_up_time >= 0. && a_time >= m_params.give_up_time &&
         !get_converged())
+        pout() << "case 2" << std::endl;
         return false;
 
     bool is_lost =
@@ -93,6 +96,10 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::good_to_go(
              : false);
 
     // stop if it has been found but was lost
+    pout() << "is_lost = " << is_lost << std::endl;
+    pout() << "has_been_found = " << has_been_found() << std::endl;
+    pout() << "do_solve" << do_solve(a_dt, a_time) << std::endl;
+
     return do_solve(a_dt, a_time) && !(has_been_found() && is_lost);
 }
 
