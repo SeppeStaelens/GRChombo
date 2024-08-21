@@ -12,7 +12,7 @@
 
 GRCHOMBO_SOURCE = ../../Source
 
-#TWOPUNCTURES_SOURCE = ../../../TwoPunctures/Source
+TWOPUNCTURES_SOURCE = ../../../TwoPunctures/Source
 
 ebase := Main_BHBS
 
@@ -44,9 +44,9 @@ src_dirs := $(GRCHOMBO_SOURCE)/utils \
             $(GRCHOMBO_SOURCE)/AMRInterpolator  \
 	    $(GRCHOMBO_SOURCE)/ApparentHorizonFinder \
             $(GRCHOMBO_SOURCE)/InitialConditions/BHBS \
-	        $(GRCHOMBO_SOURCE)/InitialConditions/SingleBosonStar  \
+	    $(GRCHOMBO_SOURCE)/InitialConditions/SingleBosonStar  \
             $(GRCHOMBO_SOURCE)/InitialConditions/BlackHoles  \
-	        $(GRCHOMBO_SOURCE)/BlackHoles  
+	    $(GRCHOMBO_SOURCE)/BlackHoles  
 
 ifeq ($(USE_TWOPUNCTURES),TRUE)
   src_dirs += $(TWOPUNCTURES_SOURCE)
