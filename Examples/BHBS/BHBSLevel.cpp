@@ -96,14 +96,7 @@ void BHBSLevel::initialData()
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx),
                    m_state_new, m_state_new, EXCLUDE_GHOST_CELLS,
-                   disable_simd());
-
-    // Check this one
-    // BoxLoops::loop(ComputeWeightFunction(m_p.bosonstar_params, m_p.blackhole_params, m_p.binary_params, m_dx), m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS, disable_simd());
-
-    // BoxLoops::loop(MovingPunctureGauge(m_p.ccz4_params),
-    //              m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
-    
+                   disable_simd());    
 }
 
 // Things to do before outputting a checkpoint file
@@ -163,17 +156,7 @@ void BHBSLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     // zero these
     Potential potential(m_p.potential_params);
     ComplexScalarFieldWithPotential complex_scalar_field(potential);
-    //MatterCCZ4RHS<ComplexScalarFieldWithPotential> my_ccz4_matter(
-    //    complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
-    //    m_p.G_Newton);
-
-    // MatterCCZ4RHS<ComplexScalarFieldWithPotential, MovingPunctureGauge, FourthOrderDerivatives> my_ccz4_matter(
-    //      complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
-    //      m_p.G_Newton);
-    // SetValue set_analysis_vars_zero(0.0, Interval(c_Pi_Im + 1, NUM_VARS - 1));
-    // auto compute_pack =
-    //     make_compute_pack(my_ccz4_matter, set_analysis_vars_zero);
-    // BoxLoops::loop(compute_pack, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    
     BoxLoops::loop(MatterCCZ4RHS<ComplexScalarFieldWithPotential>(
        complex_scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
        m_p.G_Newton), a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
@@ -500,17 +483,8 @@ void BHBSLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state,
     const FArrayBox &current_state_diagnostics)
 {
-
-// BoxLoops::loop(ComplexPhiAndChiExtractionTaggingCriterion(m_dx, m_level,
-//                    m_p.mass_extraction_params, m_p.regrid_threshold_phi,
-//                    m_p.regrid_threshold_chi), current_state, tagging_criterion);
-
-//    BoxLoops::loop(ChiandRhoTaggingCriterion(m_dx, m_level,
-//                    m_p.mass_extraction_params, m_p.regrid_threshold_rho,
-//                    m_p.regrid_threshold_chi), current_state, tagging_criterion);
-
-// Be aware of the tagging here, you may want to change it, depending on your problem of interest. 
-// Below tagging for when the tracking is activated is 'intense' and specific to binary inspirals. 	
+    // Be aware of the tagging here, you may want to change it, depending on your problem of interest. 
+    // Below tagging for when the tracking is activated is 'intense' and specific to binary inspirals. 	
     
     if (m_p.do_star_track == true)
     {
