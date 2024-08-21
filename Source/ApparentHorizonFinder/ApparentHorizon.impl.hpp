@@ -89,6 +89,8 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::good_to_go(
         !get_converged())
         pout() << "case 2" << std::endl;
         return false;
+    
+    pout() << "case 3" << std::endl;
 
     bool is_lost =
         (m_params.max_fails_after_lost >= 0
@@ -96,9 +98,12 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::good_to_go(
              : false);
 
     // stop if it has been found but was lost
-    pout() << "is_lost = " << is_lost << std::endl;
-    pout() << "has_been_found = " << has_been_found() << std::endl;
-    pout() << "do_solve" << do_solve(a_dt, a_time) << std::endl;
+    if (is_lost && has_been_found())
+        pout() << "Horizon was lost. Stopping." << std::endl;
+    else if do_solve(a_dt, a_time)
+        pout() << "do_solve(a_dt, a_time) = true" << std::endl;
+    else
+        pout() << "do_solve(a_dt, a_time) = false" << std::endl;
 
     return do_solve(a_dt, a_time) && !(has_been_found() && is_lost);
 }
