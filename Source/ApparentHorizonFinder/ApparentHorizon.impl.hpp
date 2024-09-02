@@ -83,24 +83,23 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::good_to_go(
 {
     pout() << "In [ApparentHorizon::good_to_go]" << std::endl;
     if (a_time < m_params.start_time - 1.e-7 /*just to be safe*/)
-        pout() << "Time is less than start time." << std::endl;
         return false;
     if (m_params.give_up_time >= 0. && a_time >= m_params.give_up_time &&
         !get_converged())
-        pout() << "case 2" << std::endl;
         return false;
     
-    pout() << "case 3" << std::endl;
-
     bool is_lost =
         (m_params.max_fails_after_lost >= 0
              ? m_num_failed_convergences > m_params.max_fails_after_lost
-             : false);
+    	     : false);
+
+    pout() << "is lost = " << is_lost << std::endl;
+    pout() << "has been found = " << has_been_found() << std::endl;
 
     // stop if it has been found but was lost
     if (is_lost && has_been_found())
         pout() << "Horizon was lost. Stopping." << std::endl;
-    else if do_solve(a_dt, a_time)
+    else if (do_solve(a_dt, a_time))
         pout() << "do_solve(a_dt, a_time) = true" << std::endl;
     else
         pout() << "do_solve(a_dt, a_time) = false" << std::endl;

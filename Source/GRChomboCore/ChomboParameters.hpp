@@ -213,8 +213,11 @@ class ChomboParameters
             FilesystemTools::mkdir_recursive(pout_path);
         setPoutBaseName(pout_path + pout_prefix);
 #endif
-        if (!FilesystemTools::directory_exists(data_path)) 
-            FilesystemTools::mkdir_recursive(data_path);
+	std::cout << "Made it to addition." << std::endl;
+	if (!FilesystemTools::directory_exists(data_path)){ 
+		std::cout << "Make data dir: "<< data_path  << std::endl;
+		FilesystemTools::mkdir_recursive(data_path);
+	}
 
         // only create hdf5 directory in setupAMRObject (when it becomes needed)
     }
