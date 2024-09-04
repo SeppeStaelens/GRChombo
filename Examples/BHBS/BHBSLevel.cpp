@@ -318,18 +318,11 @@ void BHBSLevel::specificPostTimeStep()
         // will default to param file if restart time is 0
 
         std::string centres_filename = m_p.data_path + "star_centres";
-	SmallDataIO centres_file(centres_filename, m_dt, m_time,
-                                     m_restart_time, SmallDataIO::APPEND,
-                                     first_step);
-	if (first_step)
-	{
-	    centres_file.write_header_line({"Star centres"});
-	}
 
         if ((m_time > m_dt / 4.) && (fabs(m_time - m_restart_time) < m_dt * 1.1))
         {
-            m_bhbs_amr.m_star_tracker.read_old_centre_from_dat(
-                centres_filename, m_dt, m_time, m_restart_time, first_step);
+	    m_bhbs_amr.m_star_tracker.read_old_centre_from_dat(
+            centres_filename, m_dt, m_time, m_restart_time, first_step);
         }
         m_bhbs_amr.m_star_tracker.update_star_centres(m_dt);
         m_bhbs_amr.m_star_tracker.write_to_dat(centres_filename, m_dt, m_time,
