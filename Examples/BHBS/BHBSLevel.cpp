@@ -279,7 +279,7 @@ void BHBSLevel::specificPostTimeStep()
 
         // Compute the min of chi and write it to a file
         double min_chi = amr_reductions.min(c_chi);
-        std::string min_chi_filename = m_p.data_path + "mod_phi_max";
+        std::string min_chi_filename = m_p.data_path + "min_chi";
         SmallDataIO min_chi_file(min_chi_filename, m_dt, m_time,
                                      m_restart_time,
                                      SmallDataIO::APPEND,

@@ -86,11 +86,11 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::good_to_go(
     if (m_params.give_up_time >= 0. && a_time >= m_params.give_up_time &&
         !get_converged())
         return false;
-
+    
     bool is_lost =
         (m_params.max_fails_after_lost >= 0
              ? m_num_failed_convergences > m_params.max_fails_after_lost
-             : false);
+    	     : false);
 
     // stop if it has been found but was lost
     return do_solve(a_dt, a_time) && !(has_been_found() && is_lost);
