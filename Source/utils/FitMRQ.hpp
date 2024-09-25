@@ -4,6 +4,7 @@
 #include "GaussJ.hpp"
 #include "Matrix.hpp"
 #include <stdexcept>
+#include "nr3.h"
 
 class Fitmrq
 {

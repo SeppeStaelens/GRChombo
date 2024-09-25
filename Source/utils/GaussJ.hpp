@@ -7,6 +7,8 @@
 #include "VarsTools.hpp"
 #include "simd.hpp"
 
+#include "nr3.h" 
+
 int gaussj(Matrix &a, Matrix &b)
 {
     int i, icol, irow, j, k, l, ll, n = a.nrows(), m = b.ncols();

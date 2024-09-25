@@ -4,6 +4,8 @@
 // #include "VarsTools.hpp"
 // #include "simd.hpp"
 
+#include "nr3.h"
+
 void fgauss(const double x, std::vector<double> &a, double &y,
             std::vector<double> &dyda)
 {

@@ -370,6 +370,14 @@ void StarTracker::update_star_centres(double a_dt)
         double starB_2 = find_centre(1, 2);
         m_star_coords[5] = starB_2;
     }
+
+    for (int n = 0; n < m_num_stars; n++)
+        {
+            for (int i = 0; i < CH_SPACEDIM; i++)
+            {
+                m_puncture_coords[n][i] = m_star_coords[n * CH_SPACEDIM + i];
+            }
+        }
 }
 
 // Write all data to designated files

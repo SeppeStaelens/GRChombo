@@ -18,6 +18,7 @@ class StarTracker
     //! Params for puncture tracking
     int m_num_stars;
     std::vector<double> m_star_coords;
+    std::vector<std::array<double, CH_SPACEDIM>> m_puncture_coords;
     std::array<double, CH_SPACEDIM> m_centre;
     int m_tracking_level; // level (i.e. times) to execute tracking
     int m_points;         // number of points n, (2n + 1 points to integrate)
@@ -61,7 +62,9 @@ class StarTracker
                        << std::endl;
             }
         }
-    }
+
+	m_puncture_coords = a_initial_star_centres;
+}
 
     ALWAYS_INLINE void
     set_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator)
@@ -85,6 +88,11 @@ class StarTracker
     ALWAYS_INLINE const std::vector<double> &get_puncture_coords() const
     {
         return m_star_coords;
+    }
+
+    ALWAYS_INLINE const std::vector<std::array<double, CH_SPACEDIM>> &get_puncture_coords_v2() const
+    {
+        return m_puncture_coords;
     }
 };
 
