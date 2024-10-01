@@ -73,6 +73,9 @@ void BosonStarLevel::initialData()
     // the max radius the code might need to calculate out to is L*sqrt(3)
     boson_star.compute_1d_solution(4. * m_p.L);
 
+    pout() << "Star 1 has A[0] " << boson_star.central_amplitude1 << " mass " << boson_star.mass1 << " radius " << boson_star.radius1 << " and compactness " << boson_star.compactness1 << endl;
+    pout() << "Star 2 has A[0] " << boson_star.central_amplitude2 << " mass " << boson_star.mass2 << " radius " << boson_star.radius2 << " and compactness " << boson_star.compactness2 << endl;
+
     // First set everything to zero ... we don't want undefined values in
     // constraints etc, then  initial conditions for Boson Star
     BoxLoops::loop(make_compute_pack(SetValue(0.0), boson_star), m_state_new,
@@ -303,11 +306,11 @@ void BosonStarLevel::specificPostTimeStep()
     if (m_p.AH_activate && m_level == m_p.AH_params.level_to_run)
     {
         if (m_p.AH_set_origins_to_punctures && m_p.do_star_track)
-         {
-             m_st_amr.m_ah_finder.set_origins(
-                 m_st_amr.m_star_tracker.get_puncture_coords_v2());
-         }
-	m_st_amr.m_ah_finder.solve(m_dt, m_time, m_restart_time);
+        {
+            m_st_amr.m_ah_finder.set_origins(
+                m_st_amr.m_star_tracker.get_puncture_coords());
+        }
+        m_st_amr.m_ah_finder.solve(m_dt, m_time, m_restart_time);
     }
 #endif
 }
@@ -338,13 +341,13 @@ void BosonStarLevel::computeTaggingCriterion(
         const vector<double> puncture_masses = {m_p.bosonstar_params.mass,
                                                 m_p.bosonstar2_params.mass};
 
-        const std::vector<double> star_coords =
+        const std::vector<std::array<double, CH_SPACEDIM>> puncture_coords =
             m_st_amr.m_star_tracker.get_puncture_coords();
 
         BoxLoops::loop(BosonChiPunctureExtractionTaggingCriterion(
                            m_dx, m_level, m_p.tag_horizons_max_levels,
                            m_p.tag_punctures_max_levels, m_p.extraction_params,
-                           star_coords, m_p.activate_extraction,
+                           puncture_coords, m_p.activate_extraction,
                            m_p.do_star_track, puncture_radii, puncture_masses,
                            m_p.tag_buffer),
                        current_state, tagging_criterion);

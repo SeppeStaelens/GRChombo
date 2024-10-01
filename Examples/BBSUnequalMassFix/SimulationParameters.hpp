@@ -26,6 +26,10 @@ class SimulationParameters : public SimulationParametersBase
 
     void readParams(GRParmParse &pp)
     {
+        pout() << "Hello! You are running a boson star binary with the "
+                  "'unequal-mass fix'!"
+               << endl;
+
         // Gravitional constant
         pp.load("G_Newton", G_Newton, 1.0);
 

@@ -26,24 +26,10 @@ class BosonStarSolution
     double L, dx, omega_ansatz, omega_true;       // L, length of domain, dx.
     double OM_INF, PSI_INF; // asymptotics of lapse and cpnformal factpr
     int matching_index;     // integer where growing mode becomes relevant
-    double radius,
-        compactness_value; // for storing the radius and compactness of the BS
     double eps = 10e-20;
     double omega_tolerance = 1e-20;
+    int niter; // number of iterations for finding the solution 
 
-    std::vector<double> A;                  // scalar field modulus
-    std::vector<double> dA;                 // scalar field modulus gradient
-    std::vector<double> psi;                // conformal factor
-    std::vector<double> dpsi;               // conformal factor gradient
-    std::vector<double> omega;              // lapse
-    std::vector<double> radius_array;       // isotropic radius
-    std::vector<double> areal_radius_array; // areal radius
-    std::vector<double> boson_mass;         // mass
-    std::vector<double> adm_mass;           // mass
-    std::vector<double> boson_radius;       // radius of the BS
-    std::vector<double> compactness;        // compactness array
-
-  private: // private member fucntions functions
     void rk4(const double ww_);
     void rk4_asymp(const int iter, const bool adaptive, const double ww_);
     void rk4_match(const int iter, const bool adaptive, const double ww_);
@@ -67,7 +53,6 @@ class BosonStarSolution
                      const double ww_);
     void initialise();
     double amplitude_criterion(double omega, double index);
-    int crossings();
     int zero_crossings();
     void truncate_solution();
     void force_flat(const int iter_crit);
@@ -84,18 +69,29 @@ class BosonStarSolution
 
   public:
     BosonStarSolution();
+
+    std::vector<double> A;                  // scalar field modulus
+    std::vector<double> dA;                 // scalar field modulus gradient
+    std::vector<double> psi;                // conformal factor
+    std::vector<double> dpsi;               // conformal factor gradient
+    std::vector<double> omega;              // lapse
+    std::vector<double> radius_array;       // isotropic radius
+    std::vector<double> areal_radius_array; // areal radius
+    std::vector<double> boson_mass;         // mass
+    std::vector<double> adm_mass;           // mass
+    double radius, compactness_value;       // for storing the radius and compactness of the BS
+
     void set_initialcondition_params(BosonStar_params_t m_params_BosonStar,
                                      Potential::params_t m_params_potential,
                                      const double max_r);
+    double interpolate_vars(const double r, std::vector<double> vars) const;
     double get_A_interp(const double r) const;
     double get_lapse_interp(const double r) const;
     double get_psi_interp(const double r) const;
     double get_dpsi_interp(const double r) const;
     double get_dA_interp(const double r) const;
     double get_dlapse_interp(const double r) const;
-    double get_mass() const;
-    double get_w() const;
-    void shout() const;
+    double get_BSfrequency() const;
     void output_csv();
     void main();
 };

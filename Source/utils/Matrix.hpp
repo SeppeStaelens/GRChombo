@@ -3,6 +3,8 @@
 
 #include <vector>
 
+// A simple class for a matrix (only used in the non-linear fitting routine)
+
 class Matrix
 {
   public:
@@ -19,6 +21,7 @@ class Matrix
         }
     }
 
+    // Value at given row and column
     double At(const int &row, const int &col) const
     {
         return data.at(row).at(col);
@@ -26,8 +29,10 @@ class Matrix
 
     double &At(const int &row, const int &col) { return data.at(row).at(col); }
 
+    // Number of rows
     int nrows() const { return data.size(); }
 
+    // Number of columns
     int ncols() const
     {
         if (nrows() > 0)
