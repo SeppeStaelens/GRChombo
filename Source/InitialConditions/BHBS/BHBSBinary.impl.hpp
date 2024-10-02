@@ -158,8 +158,8 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double r_star{r};
 
     // First star physical variables
-    double p_ = m_1d_sol.get_p_interp(r);
-    double dp_ = m_1d_sol.get_dp_interp(r);
+    double A_ = m_1d_sol.get_A_interp(r);
+    double dA_ = m_1d_sol.get_dA_interp(r);
     double omega_ = m_1d_sol.get_lapse_interp(r);
     double omega_prime_ = m_1d_sol.get_dlapse_interp(r);
     double psi_ = m_1d_sol.get_psi_interp(r);
@@ -171,11 +171,11 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double w_; // frequency
     if (antiboson)
     {
-        w_ = -m_1d_sol.get_w();
+        w_ = -m_1d_sol.get_BSfrequency();
     }
     else
     {
-        w_ = m_1d_sol.get_w();
+        w_ = m_1d_sol.get_BSfrequency();
     }
 
     // Write in phase, shift, metric components of star 1 and initialise metric
@@ -188,14 +188,14 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double g_xx_1 = pc_os;
 
     // Add on to evolution equations
-    vars.phi_Re += p_ * cos(phase_);
-    vars.phi_Im += p_ * sin(phase_);
+    vars.phi_Re += A_ * cos(phase_);
+    vars.phi_Im += A_ * sin(phase_);
     vars.Pi_Re +=
-        -(1. / lapse_1) * ((x / r) * (s_ - beta_x * c_) * dp_ * cos(phase_) -
-                           w_ * (c_ - beta_x * s_) * p_ * sin(phase_));
+        -(1. / lapse_1) * ((x / r) * (s_ - beta_x * c_) * dA_ * cos(phase_) -
+                           w_ * (c_ - beta_x * s_) * A_ * sin(phase_));
     vars.Pi_Im +=
-        -(1. / lapse_1) * ((x / r) * (s_ - beta_x * c_) * dp_ * sin(phase_) +
-                           w_ * (c_ - beta_x * s_) * p_ * cos(phase_));
+        -(1. / lapse_1) * ((x / r) * (s_ - beta_x * c_) * dA_ * sin(phase_) +
+                           w_ * (c_ - beta_x * s_) * A_ * cos(phase_));
 
     // Metric upper indices
     gammaUU_1[0][0] = 1. / g_xx_1;
@@ -243,8 +243,8 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     double y_p = impact_parameter;
     double r_p = sqrt(x_p * x_p + y_p * y_p + z_p * z_p);
 
-    double p_p = m_1d_sol.get_p_interp(r_p);
-    double dp_p = m_1d_sol.get_dp_interp(r_p);
+    double A_p = m_1d_sol.get_A_interp(r_p);
+    double dA_p = m_1d_sol.get_dA_interp(r_p);
     double omega_p = m_1d_sol.get_lapse_interp(r_p);
     double omega_prime_p = m_1d_sol.get_dlapse_interp(r_p);
     double psi_p = m_1d_sol.get_psi_interp(r_p);
@@ -330,8 +330,8 @@ void BHBSBinary::compute(Cell<data_t> current_cell) const
     // metric of the BS at its centre In the solution stored in m_1d_sol, this
     // is at the origin, as this is the single star solution
     double r_11 = 0.;
-    double p_11 = m_1d_sol.get_p_interp(r_11);
-    double dp_11 = m_1d_sol.get_dp_interp(r_11);
+    double A_11 = m_1d_sol.get_A_interp(r_11);
+    double dA_11 = m_1d_sol.get_dA_interp(r_11);
     double omega_11 = m_1d_sol.get_lapse_interp(r_11);
     double omega_prime_11 = m_1d_sol.get_dlapse_interp(r_11);
     double psi_11 = m_1d_sol.get_psi_interp(r_11);
