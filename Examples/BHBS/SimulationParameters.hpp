@@ -93,6 +93,7 @@ public:
 	position_BH[1] = binary_params.centre_of_mass[1] + binary_params.impact_parameter / (binary_params.mass_ratio + 1.);
         position_BH[2] = binary_params.centre_of_mass[2];
 
+        if (restart_from_checkpoint == false) {
 	pout() << "Boson star is at x-position " << position_BS[0] << endl;
         pout() << "Boson star is at y-position " << position_BS[1] << endl;
         pout() << "Boson star is at z-position " << position_BS[2] << endl;	
@@ -100,6 +101,7 @@ public:
 	pout() << "Black hole is at x-position " << position_BH[0] << endl;
         pout() << "Black hole is at y-position " << position_BH[1] << endl;	
 	pout() << "Black hole is at z-position " << position_BH[2] << endl;
+        }
 	
 	// Star Tracking
         pp.load("do_star_track", do_star_track, false);
@@ -256,6 +258,7 @@ public:
             tp_params.par_S_plus[i] = spin_plus[i];
         }
 
+        if (restart_from_checkpoint == false){
         pout() << "The corresponding momenta are:";
         pout() << "\nP_plus = ";
         FOR(i) { pout() << tp_params.par_P_plus[i] << " "; }
@@ -268,6 +271,7 @@ public:
         pout() << "\nS_minus = ";
         FOR(i) { pout() << tp_params.par_S_minus[i] << " "; }
         pout() << "\n";
+        }
 
 	// interpolation type
         bool use_spectral_interpolation;

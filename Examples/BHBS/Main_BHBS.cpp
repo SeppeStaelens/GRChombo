@@ -41,7 +41,7 @@ int runGRChombo(int argc, char *argv[])
     /* Gareth's addition */
     bhbs_amr.set_two_punctures_parameters(sim_params.tp_params);
     // Run TwoPunctures solver if id_choice is appropriate
-	if (sim_params.binary_params.id_choice == 6)
+	if (sim_params.binary_params.id_choice == 6 &&  sim_params.restart_from_checkpoint == false)
         pout() << "Running TwoPunctures solver..." << endl;
         bhbs_amr.m_two_punctures.Run();
         pout() << "TwoPunctures solver finished." << endl;
