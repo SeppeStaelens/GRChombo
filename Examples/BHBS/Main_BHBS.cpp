@@ -48,7 +48,7 @@ int runGRChombo(int argc, char *argv[])
     #endif
 
     // !!!! Seems like this assumes the existence of two boson stars...
-    bhbs_amr.m_star_tracker.initial_setup(
+    bhbs_amr.m_star_tracker.initialise_star_tracking(
         sim_params.do_star_track, sim_params.number_of_stars, 
         {sim_params.position_BS, sim_params.position_BH}, sim_params.star_points, 
         sim_params.star_track_width_BS, sim_params.star_track_width_BH, 

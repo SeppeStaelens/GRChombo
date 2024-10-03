@@ -183,7 +183,7 @@ void BosonStarLevel::specificPostTimeStep()
         m_gr_amr.m_interpolator->refresh();
         ADMMassExtraction mass_extraction(m_p.mass_extraction_params, m_dt,
                                           m_time, first_step, m_restart_time);
-        mass_extraction.execute_query(m_gr_amr.m_interpolator);
+        mass_extraction.execute_query(m_gr_amr.m_interpolator, m_p.data_path);
     }
 
     // noether charge, max mod phi, min chi, constraint violations
@@ -203,7 +203,8 @@ void BosonStarLevel::specificPostTimeStep()
             // compute integrated volume weighted noether charge integral
 
             double noether_charge = amr_reductions.sum(c_N);
-            SmallDataIO noether_charge_file("NoetherCharge", m_dt, m_time,
+            std::string noether_charge_filename = m_p.data_path + "noether_charge"; 
+            SmallDataIO noether_charge_file(noether_charge_filename, m_dt, m_time,
                                             m_restart_time, SmallDataIO::APPEND,
                                             first_step);
             noether_charge_file.remove_duplicate_time_data();
@@ -216,7 +217,8 @@ void BosonStarLevel::specificPostTimeStep()
 
         // Compute the maximum of mod_phi and write it to a file
         double mod_phi_max = amr_reductions.max(c_mod_phi);
-        SmallDataIO mod_phi_max_file("mod_phi_max", m_dt, m_time,
+        std::string mod_phi_max_filename = m_p.data_path + "mod_phi_max"; 
+        SmallDataIO mod_phi_max_file(mod_phi_max_filename, m_dt, m_time,
                                      m_restart_time, SmallDataIO::APPEND,
                                      first_step);
         mod_phi_max_file.remove_duplicate_time_data();
@@ -228,7 +230,8 @@ void BosonStarLevel::specificPostTimeStep()
 
         // Compute the min of chi and write it to a file
         double min_chi = amr_reductions.min(c_chi);
-        SmallDataIO min_chi_file("min_chi", m_dt, m_time, m_restart_time,
+        std::string min_chi_filename = m_p.data_path + "min_chi";
+        SmallDataIO min_chi_file(min_chi_filename, m_dt, m_time, m_restart_time,
                                  SmallDataIO::APPEND, first_step);
         min_chi_file.remove_duplicate_time_data();
         if (m_time == 0.)
@@ -243,7 +246,9 @@ void BosonStarLevel::specificPostTimeStep()
         double L2_Mom = amr_reductions.norm(Interval(c_Mom1, c_Mom3), 2, true);
         double L1_Ham = amr_reductions.norm(c_Ham, 1, true);
         double L1_Mom = amr_reductions.norm(Interval(c_Mom1, c_Mom3), 1, true);
-        SmallDataIO constraints_file("constraint_norms", m_dt, m_time,
+        
+        std::string constraints_filename = m_p.data_path + "constraint_norms";
+        SmallDataIO constraints_file(constraints_filename, m_dt, m_time,
                                      m_restart_time, SmallDataIO::APPEND,
                                      first_step);
         constraints_file.remove_duplicate_time_data();
@@ -264,13 +269,16 @@ void BosonStarLevel::specificPostTimeStep()
         pout() << "Running a star tracker now" << endl;
         // if at restart time read data from dat file,
         // will default to param file if restart time is 0
-        if (fabs(m_time - m_restart_time) < m_dt * 1.1)
+
+        std::string centres_filename = m_p.data_path + "star_centres";
+        
+        if ((m_time > m_dt / 4.) && (fabs(m_time - m_restart_time) < m_dt * 1.1))
         {
             m_st_amr.m_star_tracker.read_old_centre_from_dat(
-                "StarCentres", m_dt, m_time, m_restart_time, first_step);
+                centres_filename, m_dt, m_time, m_restart_time, first_step);
         }
         m_st_amr.m_star_tracker.update_star_centres(m_dt);
-        m_st_amr.m_star_tracker.write_to_dat("StarCentres", m_dt, m_time,
+        m_st_amr.m_star_tracker.write_to_dat(centres_filename, m_dt, m_time,
                                              m_restart_time, first_step);
     }
 

@@ -37,6 +37,7 @@ int runGRChombo(int argc, char *argv[])
     // and an associated LevelFactory)
     STAMR st_amr;
 
+    // FIX THIS TO ONLY TRACK ONE STAR
     st_amr.m_star_tracker.initialise_star_tracking(
         sim_params.do_star_track, sim_params.number_of_stars,
         {sim_params.positionA, sim_params.positionB}, sim_params.star_points,
@@ -63,13 +64,9 @@ int runGRChombo(int argc, char *argv[])
     if (sim_params.AH_activate)
     {
         AHSurfaceGeometry sph1(sim_params.positionA);
-        AHSurfaceGeometry sph2(sim_params.positionB);
 
         st_amr.m_ah_finder.add_ah(sph1, sim_params.AH_1_initial_guess,
                                   sim_params.AH_params);
-        st_amr.m_ah_finder.add_ah(sph2, sim_params.AH_2_initial_guess,
-                                  sim_params.AH_params);
-        st_amr.m_ah_finder.add_ah_merger(0, 1, sim_params.AH_params);
     }
 #endif
 
