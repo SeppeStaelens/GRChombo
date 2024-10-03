@@ -53,7 +53,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("scalar_mass", potential_params.scalar_mass, 1.0);
         pp.load("phi4_coeff", potential_params.phi4_coeff, 0.0);
         pp.load("solitonic", potential_params.solitonic, false);
-        pp.load("sigma_solitonic", potential_params.sigma_solitonic, 0.2);
+        pp.load("sigma_solitonic", potential_params.sigma_soliton, 0.2);
 
         positionA[0] = bosonstar_params.star_centre[0];
         positionA[1] = bosonstar_params.star_centre[1];

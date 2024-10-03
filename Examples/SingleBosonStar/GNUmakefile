@@ -25,8 +25,7 @@ src_dirs := $(GRCHOMBO_SOURCE)/utils \
             $(GRCHOMBO_SOURCE)/TaggingCriteria  \
             $(GRCHOMBO_SOURCE)/AMRInterpolator  \
             $(GRCHOMBO_SOURCE)/BosonStars \
-	    $(GRCHOMBO_SOURCE)/InitialConditions/BosonStars \
-            $(GRCHOMBO_SOURCE)/InitialConditions/BosonStars/SingleBosonStar \
+	    $(GRCHOMBO_SOURCE)/InitialConditions/SingleBosonStar \
             $(GRCHOMBO_SOURCE)/ApparentHorizonFinder 
 
 include $(CHOMBO_HOME)/mk/Make.test
