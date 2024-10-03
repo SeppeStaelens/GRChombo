@@ -90,12 +90,12 @@ void BinaryEqualMassFix::compute(Cell<data_t> current_cell) const
     double r = sqrt(x * x + y * y + z * z);
 
     // First star physical variables
-    double p_ = m_1d_sol.interpolate_vars(r, m_1d_sol.A);
-    double dp_ = m_1d_sol.interpolate_vars(r, m_1d_sol.dA);
-    double omega_ = m_1d_sol.interpolate_vars(r, m_1d_sol.omega);
+    double p_ = m_1d_sol.get_A_interp(r);
+    double dp_ = m_1d_sol.get_dA_interp(r);
+    double omega_ = m_1d_sol.get_lapse_interp(r);
     double omega_prime_ = m_1d_sol.get_dlapse_interp(r);
-    double psi_ = m_1d_sol.interpolate_vars(r, m_1d_sol.psi);
-    double psi_prime_ = m_1d_sol.interpolate_vars(r, m_1d_sol.dpsi);
+    double psi_ = m_1d_sol.get_psi_interp(r);
+    double psi_prime_ = m_1d_sol.get_dpsi_interp(r);
 
     // Get scalar field modulus, conformal factor, lapse and their gradients
     double pc_os = psi_ * psi_ * c_ * c_ - omega_ * omega_ * s_ * s_;

@@ -732,8 +732,6 @@ double BosonStarSolution::calculate_radius()
         if (boson_mass[i] < 99.9 / 100.0 * boson_mass[gridsize - 1])
             break;
 
-    pout() << "radius = " << radius_array[i + 1] << endl;
-
     return radius_array[i + 1];
 }
 
