@@ -963,7 +963,7 @@ void BosonStarSolution::set_initialcondition_params(
     MM = m_params_potential.scalar_mass * m_params_potential.scalar_mass;
     lambda = m_params_potential.phi4_coeff;
     solitonic = m_params_potential.solitonic;
-    sigma = m_params_potential.sigma_solitonic;
+    sigma = m_params_potential.sigma_soliton;
     BS_verbosity = m_params_BosonStar.BS_solver_verbosity;
     PSC = m_params_BosonStar.PSC;
     OMC = m_params_BosonStar.OMC;
