@@ -170,7 +170,7 @@ extraction_radii = 60. 70. 80. 90. 100. 110. 120. 130. 140. 150. 160.
 extraction_levels = 3 2 2 2 2 1 1 1 1 1 1 
 num_points_phi = 48
 num_points_theta = 60
-num_modes = 39
+num_modes = 5
 modes = 2 0
         2 1
         2 2
