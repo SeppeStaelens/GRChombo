@@ -43,6 +43,7 @@ src_dirs := $(GRCHOMBO_SOURCE)/utils \
             $(GRCHOMBO_SOURCE)/TaggingCriteria  \
             $(GRCHOMBO_SOURCE)/AMRInterpolator  \
 	          $(GRCHOMBO_SOURCE)/ApparentHorizonFinder \
+            $(GRCHOMBO_SOURCE)/BosonStars \
             $(GRCHOMBO_SOURCE)/InitialConditions/BHBS \
 	    $(GRCHOMBO_SOURCE)/InitialConditions/SingleBosonStar  \
             $(GRCHOMBO_SOURCE)/InitialConditions/BlackHoles  \
