@@ -25,6 +25,7 @@ class SimulationParameters : public SimulationParametersBase
 
     void readParams(GRParmParse &pp)
     {
+        pout() << "---------------------------------" << endl;
         pout() << "Hello! You are running a boson star binary with the "
                   "'equal-mass fix'!"
                << endl;

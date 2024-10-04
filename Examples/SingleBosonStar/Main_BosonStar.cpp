@@ -21,7 +21,7 @@
 // Problem specific includes:
 #include "BosonStarLevel.hpp"
 
-// Star tracking
+// Star tracking 
 #include "STAMR.hpp"
 
 int runGRChombo(int argc, char *argv[])
@@ -35,13 +35,14 @@ int runGRChombo(int argc, char *argv[])
     // The line below selects the problem that is simulated
     // (To simulate a different problem, define a new child of AMRLevel
     // and an associated LevelFactory)
-    STAMR st_amr;
+    // STAMR st_amr;
 
-    st_amr.m_star_tracker.initialise_star_tracking(
-        sim_params.do_star_track, sim_params.number_of_stars,
-        {sim_params.positionA, sim_params.positionB}, sim_params.star_points,
-        sim_params.star_track_width_A, sim_params.star_track_width_B,
-        sim_params.star_track_direction_of_motion);
+    // st_amr.m_star_tracker.initialise_star_tracking(
+    //     sim_params.do_star_track, sim_params.number_of_stars,
+    //     {sim_params.positionA, sim_params.positionB}, sim_params.star_points,
+    //     sim_params.star_track_width_A, sim_params.star_track_width_B,
+    //     sim_params.star_track_direction_of_motion);
+    STAMR st_amr;
     DefaultLevelFactory<BosonStarLevel> boson_star_level_fact(st_amr,
                                                               sim_params);
     setupAMRObject(st_amr, boson_star_level_fact);
@@ -62,14 +63,9 @@ int runGRChombo(int argc, char *argv[])
 #ifdef USE_AHFINDER
     if (sim_params.AH_activate)
     {
-        AHSurfaceGeometry sph1(sim_params.positionA);
-        AHSurfaceGeometry sph2(sim_params.positionB);
-
-        st_amr.m_ah_finder.add_ah(sph1, sim_params.AH_1_initial_guess,
+        AHSurfaceGeometry sph(sim_params.positionA);
+        st_amr.m_ah_finder.add_ah(sph, sim_params.AH_initial_guess,
                                   sim_params.AH_params);
-        st_amr.m_ah_finder.add_ah(sph2, sim_params.AH_2_initial_guess,
-                                  sim_params.AH_params);
-        st_amr.m_ah_finder.add_ah_merger(0, 1, sim_params.AH_params);
     }
 #endif
 

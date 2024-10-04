@@ -26,6 +26,7 @@ class SimulationParameters : public SimulationParametersBase
 
     void readParams(GRParmParse &pp)
     {
+        pout() << "---------------------------------" << endl;
         pout() << "Hello! You are running a boson star binary with the "
                   "'unequal-mass fix'!"
                << endl;
@@ -42,6 +43,8 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("BS_solver_omc", bosonstar_params.OMC, 0.5);
         pp.load("BS_solver_verbosity", bosonstar_params.BS_solver_verbosity,
                 false);
+        pp.load("BS_solver_niter", bosonstar_params.niter,
+                17);
 
         pp.load("star_centre", bosonstar_params.star_centre, center);
 
