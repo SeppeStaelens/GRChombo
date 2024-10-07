@@ -410,6 +410,8 @@ void BosonStarSolution::rk4_asymp(const int iter, const bool adaptive,
                                   const double ww_)
 {
     double o1 = 0, o2 = 0, o3 = 0, o4 = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0, r1 = 0, r2 = 0, r3 = 0, r4 = 0; // for RK steps 
+    double k1 = 0, k2 = 0, k3 = 0, k4 = 0, q1 = 0, q2 = 0, q3 = 0,
+           q4 = 0; // for RK steps
     double x_ = iter * dx, h, delta = (double)gridsize;
     const double DX = dx;
     double DX_ = DX;
@@ -498,7 +500,7 @@ void BosonStarSolution::rk4_asymp(const int iter, const bool adaptive,
 void BosonStarSolution::rk4_match(const int iter, const bool adaptive,
                                   const double ww_)
 {
-    double o1 = 0, o2 = 0, o3 = 0, o = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0, r1 = 0, r2 = 0, r3 = 0, r4 = 0;
+    double o1 = 0, o2 = 0, o3 = 0, o4 = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0, r1 = 0, r2 = 0, r3 = 0, r4 = 0;
     double r, dr;
     double c1, c2;
     double Amp, eta, mass, arealr, om0, epsilon;
@@ -522,8 +524,6 @@ void BosonStarSolution::rk4_match(const int iter, const bool adaptive,
     for (int i = iter + 1; i < gridsize; ++i)
     {
         dr = radius_array[i] - radius_array[i - 1];
-
-        h = DX_ / 2.;
 
         // 1st RK step
         r = radius_array[i - 1];
