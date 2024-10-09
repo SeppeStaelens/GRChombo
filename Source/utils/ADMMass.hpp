@@ -56,7 +56,7 @@ class ADMMass
         Tensor<1, data_t> x = {coords.x, coords.y, coords.z};
         // This is multiplied by r^2 as SphericalExtraction assumes it is
         // normalised as such.
-        Tensor<1, data_t> dS = {coords.x * r, coords.y * r, coords.z * r};
+        Tensor<1, data_t> dS = {coords.x / r, coords.y / r, coords.z / r};
 
         data_t Madm = 0.0;
         FOR4(i, j, k, l)
@@ -65,7 +65,7 @@ class ADMMass
                     (pow(vars.chi, -0.5) * (d1.h[l][k][j] - d1.h[j][k][l]) -
                      pow(vars.chi, -1.5) *
                          (vars.h[l][j] * d1.chi[j] - vars.h[j][k] * d1.chi[l]));
-        }
+	}
 
         // spin about z axis
         data_t Jadm = 0.0;
