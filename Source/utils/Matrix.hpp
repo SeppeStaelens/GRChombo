@@ -1,3 +1,8 @@
+/* GRChombo
+ * Copyright 2012 The GRChombo collaboration.
+ * Please refer to LICENSE in GRChombo's root directory.
+ */
+
 #ifndef MATRIX_HPP_
 #define MATRIX_HPP_
 

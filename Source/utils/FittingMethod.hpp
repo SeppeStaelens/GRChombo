@@ -1,3 +1,8 @@
+/* GRChombo
+ * Copyright 2012 The GRChombo collaboration.
+ * Please refer to LICENSE in GRChombo's root directory.
+ */
+
 #ifndef FITTINGMETHOD_HPP_
 #define FITTINGMETHOD_HPP_
 
@@ -153,7 +158,7 @@ class FittingMethod
                 chi_square = prev_chi_square;
             }
         }
-        MayDay::Error("I am out of iteration in the fitting for the model in "
+        MayDay::Error("I am out of the maximum number of iterations in the fitting in "
                       "FittingMethod.hpp!");
         return 0; // Too many iterations
     }

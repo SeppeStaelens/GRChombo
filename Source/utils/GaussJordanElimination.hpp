@@ -1,3 +1,8 @@
+/* GRChombo
+ * Copyright 2012 The GRChombo collaboration.
+ * Please refer to LICENSE in GRChombo's root directory.
+ */
+
 #ifndef GAUSSJORDANELIMINATION_HPP_
 #define GAUSSJORDANELIMINATION_HPP_
 
@@ -107,13 +112,13 @@ class GaussJordan
         double pivot_inv = 1.0 / a.At(pivot_row, pivot_row);
         a.At(pivot_row, pivot_row) = 1.0;
 
-        // Normalize matrix `a`
+        // Normalize matrix a
         for (int col = 0; col < num_rows; col++)
         {
             a.At(pivot_row, col) *= pivot_inv;
         }
 
-        // Normalize matrix `b`
+        // Normalize matrix b
         for (int col = 0; col < num_cols; col++)
         {
             b.At(pivot_row, col) *= pivot_inv;
@@ -130,13 +135,13 @@ class GaussJordan
                 double factor = a.At(row, pivot_row);
                 a.At(row, pivot_row) = 0.0;
 
-                // Eliminate in matrix `a`
+                // Eliminate in matrix a
                 for (int col = 0; col < num_rows; col++)
                 {
                     a.At(row, col) -= a.At(pivot_row, col) * factor;
                 }
 
-                // Eliminate in matrix `b`
+                // Eliminate in matrix b
                 for (int col = 0; col < num_cols; col++)
                 {
                     b.At(row, col) -= b.At(pivot_row, col) * factor;
@@ -162,7 +167,7 @@ class GaussJordan
     }
 };
 
-// Overload for the homogeneous system, i.e., `b` is an empty matrix
+// Overload for the homogeneous system, i.e., b is an empty matrix
 class GaussJordanHomogeneous : public GaussJordan
 {
   public:
