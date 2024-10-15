@@ -23,7 +23,8 @@ class BosonStarSolution
     double EIGEN = 0;  // the desired eigenstate, 0 for ground
     int gridsize, adaptive_buffer;                // anywhere from 2k-200k is ok
     const int adaptive_stepsize_repetitions = 20; // 50; // 0 for no adaptive
-    double L, dx, omega_ansatz, omega_true;       // L, length of domain, dx.
+    double L, dx;                                 // L, length of domain, dx.
+    double omega_lower_ansatz, omega_ansatz, omega_true; // omega_bisection
     double OM_INF, PSI_INF; // asymptotics of lapse and cpnformal factpr
     int matching_index;     // integer where growing mode becomes relevant
     double eps = 10e-20;

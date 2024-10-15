@@ -35,7 +35,7 @@ struct BosonStar_params_t
     std::array<double, CH_SPACEDIM>
         star_centre; //!< coordinates of the centre of the star
     bool use_own_ansatz;
-    double omega_ansatz;
+    double omega_lower_ansatz, omega_ansatz;
 };
 
 #endif /* BOSONSTARPARAMS_HPP_ */

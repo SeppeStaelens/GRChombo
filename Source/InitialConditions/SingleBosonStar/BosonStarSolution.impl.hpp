@@ -26,6 +26,8 @@ void BosonStarSolution::main()
         pout() << "-----------------------------------------------" << endl;
         pout() << "I am running iteration # " << iter << endl;
         pout() << "-----------------------------------------------" << endl;
+        pout() << "Central Density : " << A[0] << ", PSI0 : " << psi[0]
+               << ", OM0 : " << omega[0] << endl;
         }
 
         // Set the initial conditions
@@ -35,12 +37,14 @@ void BosonStarSolution::main()
         // between 0 and 1. Check this by finding the number of zero crossings
         // for omega ansatz of unity. If we have a zero crossing, then the upper
         // bound will be omega_upper = 1.
-	if (!use_own_ansatz)
-	{
-	   omega_ansatz = find_upper_omega();
-	}
-	// Apply bisection algorithm to find the right frequency of the BS
-        omega_true = bisect_omega(0, omega_ansatz);
+        if (!use_own_ansatz)
+        {
+            omega_lower_ansatz = 0.;
+            omega_ansatz = find_upper_omega();
+        }
+	    // Apply bisection algorithm to find the right frequency of the BS
+        omega_true = bisect_omega(omega_lower_ansatz, omega_ansatz);
+        pout() << "Found the true omega to be " << omega_true << endl;
         // Determine the matching index
         matching_index = find_matching_index();
 
@@ -244,6 +248,10 @@ double BosonStarSolution::bisect_omega(double omega_min, double omega_max)
 
     while (true)
     {
+
+        pout() << "Bisection iteration " << iter << " omega = " << middle_omega
+             << " upper_omega = " << upper_omega
+             << " lower_omega = " << lower_omega << endl;
         iter++;
         middle_omega = 0.5 * (lower_omega + upper_omega);
         //   initialise();
@@ -976,6 +984,7 @@ void BosonStarSolution::set_initialcondition_params(
     dx = L / double((gridsize - 1));
     use_own_ansatz = m_params_BosonStar.use_own_ansatz;
     omega_ansatz = m_params_BosonStar.omega_ansatz;
+    omega_lower_ansatz = m_params_BosonStar.omega_lower_ansatz;
 }
 
 void BosonStarSolution::output_csv()
