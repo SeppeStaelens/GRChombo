@@ -35,8 +35,11 @@ void BosonStarSolution::main()
         // between 0 and 1. Check this by finding the number of zero crossings
         // for omega ansatz of unity. If we have a zero crossing, then the upper
         // bound will be omega_upper = 1.
-        omega_ansatz = find_upper_omega();
-        // Apply bisection algorithm to find the right frequency of the BS
+	if (!use_own_ansatz)
+	{
+	   omega_ansatz = find_upper_omega();
+	}
+	// Apply bisection algorithm to find the right frequency of the BS
         omega_true = bisect_omega(0, omega_ansatz);
         // Determine the matching index
         matching_index = find_matching_index();
@@ -971,6 +974,8 @@ void BosonStarSolution::set_initialcondition_params(
     L = max_r * 1.05; // just to make sure the function domain is slightly
                       // larger than the required cube
     dx = L / double((gridsize - 1));
+    use_own_ansatz = m_params_BosonStar.use_own_ansatz;
+    omega_ansatz = m_params_BosonStar.omega_ansatz;
 }
 
 void BosonStarSolution::output_csv()

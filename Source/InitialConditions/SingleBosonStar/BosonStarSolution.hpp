@@ -29,6 +29,7 @@ class BosonStarSolution
     double eps = 10e-20;
     double omega_tolerance = 1e-20;
     int niter; // number of iterations for finding the solution 
+    bool use_own_ansatz; // whether to set own custom upper omega
 
     void rk4(const double ww_);
     void rk4_asymp(const int iter, const bool adaptive, const double ww_);
