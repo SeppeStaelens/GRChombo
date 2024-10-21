@@ -10,6 +10,7 @@
 #ifndef BOSONSTARSOLUTION_IMPL_HPP_
 #define BOSONSTARSOLUTION_IMPL_HPP_
 
+#include "spline.h"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -23,11 +24,11 @@ void BosonStarSolution::main()
     {
         if (BS_verbosity)
         {
-        pout() << "-----------------------------------------------" << endl;
-        pout() << "I am running iteration # " << iter << endl;
-        pout() << "-----------------------------------------------" << endl;
-        pout() << "Central Density : " << A[0] << ", PSI0 : " << psi[0]
-               << ", OM0 : " << omega[0] << endl;
+            pout() << "-----------------------------------------------" << endl;
+            pout() << "I am running iteration # " << iter << endl;
+            pout() << "-----------------------------------------------" << endl;
+            pout() << "Central Density : " << A[0] << ", PSI0 : " << psi[0]
+                   << ", OM0 : " << omega[0] << endl;
         }
 
         // Set the initial conditions
@@ -42,7 +43,7 @@ void BosonStarSolution::main()
             omega_lower_ansatz = 0.;
             omega_ansatz = find_upper_omega();
         }
-	    // Apply bisection algorithm to find the right frequency of the BS
+        // Apply bisection algorithm to find the right frequency of the BS
         omega_true = bisect_omega(omega_lower_ansatz, omega_ansatz);
         pout() << "Found the true omega to be " << omega_true << endl;
         // Determine the matching index
@@ -77,12 +78,13 @@ void BosonStarSolution::main()
         // Useful, when you may want to iterate through the for loop a few
         // times.
         if (fabs(PSI_INF - 1.) < 1e-05 && fabs(OM_INF - 1.) < 1e-05)
-        {   
+        {
             if (BS_verbosity)
             {
-            pout() << "Found the desired solution... Central Density : " << A[0] << ", PSI0 : " << psi[0]
-                   << ", OM0 : " << omega[0] << ", w : " << sqrt(omega_true)
-                   << endl;
+                pout() << "Found the desired solution... Central Density : "
+                       << A[0] << ", PSI0 : " << psi[0]
+                       << ", OM0 : " << omega[0] << ", w : " << sqrt(omega_true)
+                       << endl;
             }
             break;
         }
@@ -93,22 +95,25 @@ void BosonStarSolution::main()
 
         if (BS_verbosity)
         {
-        pout() << "For updated variables I am now using... Central Density : " << A[0] << ", PSI0 : " << PSC
-               << ", OM0 : " << OMC << ", w : " << sqrt(omega_true) << endl;
+            pout()
+                << "For updated variables I am now using... Central Density : "
+                << A[0] << ", PSI0 : " << PSC << ", OM0 : " << OMC
+                << ", w : " << sqrt(omega_true) << endl;
         }
 
-        if (iter == niter-1)
+        if (iter == niter - 1)
         {
-            MayDay::Error("Ooopsies... I have reached 16 iterations now, did not "
-                      "find a BS solution  ¯|_(ツ)_|¯ ");
+            MayDay::Error(
+                "Ooopsies... I have reached 16 iterations now, did not "
+                "find a BS solution  ¯|_(ツ)_|¯ ");
         }
     }
 
     if (BS_verbosity)
     {
-    pout() << "-----------------------------------------------" << endl;
-    pout() << "Computing the diagnostics of the solution" << endl;
-    pout() << "-----------------------------------------------" << endl;
+        pout() << "-----------------------------------------------" << endl;
+        pout() << "Computing the diagnostics of the solution" << endl;
+        pout() << "-----------------------------------------------" << endl;
     }
     rk4_match(matching_index, false, omega_true);
 
@@ -121,13 +126,166 @@ void BosonStarSolution::main()
 
     if (BS_verbosity)
     {
-    pout() << "-----------------------------------------------" << endl;
-    pout() << "Central Density : " << A[0] << endl;
-    pout() << "ADM mass : " << adm_mass[gridsize - 1] << endl;
-    pout() << "Aspect mass : " << boson_mass[gridsize - 1] << endl;
-    pout() << "Radius : " << radius << endl;
-    pout() << "Compactness : " << compactness_value << endl;
-    pout() << "W : " << sqrt(omega_true) << endl;
+        pout() << "-----------------------------------------------" << endl;
+        pout() << "Central Density : " << A[0] << endl;
+        pout() << "ADM mass : " << adm_mass[gridsize - 1] << endl;
+        pout() << "Aspect mass : " << boson_mass[gridsize - 1] << endl;
+        pout() << "Radius : " << radius << endl;
+        pout() << "Compactness : " << compactness_value << endl;
+        pout() << "W : " << sqrt(omega_true) << endl;
+    }
+}
+
+void BosonStarSolution::initialise_from_file()
+{
+    std::ifstream A_file("A.dat");
+    std::ifstream m_file("m.dat");
+    std::ifstream phi_file("Phi.dat");
+    std::ifstream info_file("output.dat");
+
+    if (!A_file.is_open() || !phi_file.is_open() || !m_file.is_open())
+    {
+        std::cerr << "Error reading thinshell files!" << endl;
+        exit(1);
+    }
+
+    A_file.seekg(0, A_file.end);
+    int line_count = A_file.tellg();
+    std::cout << "line count " << line_count << endl;
+    A_file.seekg(0, A_file.beg);
+    std::string lineA, linePhi, linem, lineInfo;
+
+    // holds the A, phi, and r values from the nonuniform r-y hybrid grid.
+    // Needed for interpolation
+    // TODO: size properly, currently overestimated
+    std::vector<double> A_vals(line_count);
+    std::vector<double> phi_vals(line_count);
+    std::vector<double> m_vals(line_count);
+    std::vector<double> X_vals(line_count);
+    std::vector<double> r_vals(line_count);
+
+    double junk;
+    int j = 0;
+    while (std::getline(A_file, lineA))
+    {
+        std::istringstream iss(lineA);
+        if (iss >> r_vals[j] >> A_vals[j])
+            j++;
+    }
+    j = 0;
+    while (std::getline(m_file, linem))
+    {
+        std::istringstream iss(linem);
+        if (iss >> junk >> m_vals[j])
+            j++;
+    }
+    double phi_offset, A_central, omega_pre_rescale, Mass, compactness, r_99;
+
+    // read in info values including omega, M, r_99, C
+    while (std::getline(info_file, lineInfo))
+    {
+        std::istringstream iss(lineInfo);
+        if (!lineInfo.empty() &&
+            lineInfo[0] != '#') // ignore leading commented lines
+        {
+            if (!(iss >> A_central >> omega_pre_rescale >> junk >> omega_true >>
+                  phi_offset >> Mass >> junk >> junk >> compactness >> r_99 >>
+                  junk >> junk >> junk))
+                std::cout
+                    << "WARNING: reading thinshell output.dat may have failed "
+                    << endl;
+        }
+    }
+
+    // read in phi-values, accounting for offset
+    j = 0;
+    while (std::getline(phi_file, linePhi))
+    {
+        std::istringstream iss(linePhi);
+        if (iss >> junk >> phi_vals[j])
+        {
+            phi_vals[j] -= phi_offset; // enforce phi(infty) = 0
+            j++;
+        }
+    }
+
+    X_vals[0] = 1.0;
+    for (int i = 1; i < line_count; i++)
+    {
+        X_vals[i] = sqrt(m_vals[i] / (r_vals[i] - 2 * m_vals[i]));
+    }
+
+    // The spline interpolators
+    tk::spline PhiSpline, A_Spline, mSpline;
+
+    // Set up the spline interpolators
+    PhiSpline.set_points(r_vals, phi_vals, tk::spline::cspline_hermite);
+    ASpline.set_points(r_vals, A_vals, tk::spline::cspline_hermite);
+    XSpline.set_points(r_vals, X_vals, tk::spline::cspline_hermite);
+
+    double dR = dx;
+    double max_arial_r = 2 * L + Mass + Mass * Mass / (4 * (2 * L));
+    double f_max_arial_r = L / max_arial_r;
+
+    double int_radius = 0.001, dr = 0.01, f_c = 1.;
+
+    int len_int_array = floor(max_arial_r / dr);
+
+    std::vector<double> f_vals(len_int_array);
+    std::vector<double> iso_R_vals(len_int_array);
+    std::vector<double> int_r_vals(len_int_array);
+
+    j = 1;
+    f_vals[0] = f_c;
+    int_r_vals[0] = 0.;
+    while (int_radius < max_arial_r)
+    {
+        double k1 = (XSpline(int_radius) - 1.) * f_c / int_radius;
+        double k2 = (XSpline(int_radius + dr / 2) - 1.) * (f_c + k1 * dr / 2) /
+                    (int_radius + dr / 2);
+        double k3 = (XSpline(int_radius + dr / 2) - 1.) * (f_c + k2 * dr / 2) /
+                    (int_radius + dr / 2);
+        double k4 = (XSpline(int_radius + dr) - 1.) * (f_c + k3 * dr) /
+                    (int_radius + dr);
+        f_c += dr * (k1 + 2 * k2 + 2 * k3 + k4) / 6;
+        f_vals[j] = f_c;
+        int_radius += dr;
+        int_r_vals[j] = int_radius;
+        j++;
+    }
+
+    double unscaled_f_at_max_r = f_vals[len_int_array - 1];
+    j = 0;
+    while (j < len_int_array)
+    {
+        f_vals[j] *= f_max_arial_r / unscaled_f_at_max_r;
+        iso_R_vals[j] = f_vals[j] * int_r_vals[j];
+        j++;
+    }
+
+    tk::spline r_from_R_Spline(iso_R_vals, r_vals, tk::spline::cspline_hermite);
+    tk::spline fSpline(int_r_vals, f_vals, tk::spline::cspline_hermite);
+
+    // interpolate to fill uniform grid with A, phi, eta
+    A[0] = A_Spline(0.);
+    dA[0] = A_Spline.deriv(1, 0.) / (XSpline(0.) * f_vals[0]);
+    omega[0] = exp(PhiSpline(0.));
+    psi[0] = 1. / sqrt(fSpline(0.));
+    dpsi[0] = 0.;
+    for (int k = 1; k < gridsize; k++)
+    {
+        double iso_radius = k * dx;
+        double ar_radius = r_from_R_Spline(iso_radius);
+
+        A[k] = A_Spline(ar_radius);
+        dA[k] = A_Spline.deriv(1, ar_radius) * ar_radius /
+                (XSpline(ar_radius) * iso_radius);
+        omega[k] = exp(PhiSpline(ar_radius));
+        psi[k] = 1. / sqrt(fSpline(ar_radius));
+        dpsi[k] = 0.5 * (1. / XSpline(ar_radius) - 1.) /
+                  (iso_radius * sqrt(fSpline(ar_radius)));
+
+        radius_array[k] = iso_radius;
     }
 }
 
@@ -250,8 +408,8 @@ double BosonStarSolution::bisect_omega(double omega_min, double omega_max)
     {
 
         pout() << "Bisection iteration " << iter << " omega = " << middle_omega
-             << " upper_omega = " << upper_omega
-             << " lower_omega = " << lower_omega << endl;
+               << " upper_omega = " << upper_omega
+               << " lower_omega = " << lower_omega << endl;
         iter++;
         middle_omega = 0.5 * (lower_omega + upper_omega);
         //   initialise();
@@ -501,9 +659,9 @@ void BosonStarSolution::rk4_asymp(const int iter, const bool adaptive,
     }
 
     if (adaptive and x_ < 8e7)
-    {   
+    {
         pout() << "Radius is " << x_ << endl;
-        MayDay::Error("Asymptotic Radius Too Small"); 
+        MayDay::Error("Asymptotic Radius Too Small");
     }
 }
 
@@ -691,7 +849,7 @@ double BosonStarSolution::OMEGA_RHS(const double x, const double A,
             DPSI - 0.5 * x * DPSI * DPSI / PSI);
 }
 
-// Boson star potential 
+// Boson star potential
 double BosonStarSolution::V(const double A)
 {
     if (!solitonic)
@@ -704,7 +862,7 @@ double BosonStarSolution::V(const double A)
     }
 }
 
-// Derivative of the potential 
+// Derivative of the potential
 double BosonStarSolution::DV(const double A)
 {
     if (!solitonic)
@@ -717,7 +875,7 @@ double BosonStarSolution::DV(const double A)
     }
 }
 
-// Find the aspect mass 
+// Find the aspect mass
 void BosonStarSolution::calculate_aspect_mass()
 {
     for (int i = 0; i < gridsize; ++i)
@@ -726,7 +884,7 @@ void BosonStarSolution::calculate_aspect_mass()
     }
 }
 
-// Find the ADM mass 
+// Find the ADM mass
 void BosonStarSolution::calculate_adm_mass()
 {
     for (int i = 0; i < gridsize; ++i)
@@ -748,15 +906,17 @@ double BosonStarSolution::calculate_radius()
     return radius_array[i + 1];
 }
 
-// 4th order error (cubic interpolation) for the amplitude 
-double BosonStarSolution::interpolate_vars(const double r, std::vector<double> var) const
+// 4th order error (cubic interpolation) for the amplitude
+double BosonStarSolution::interpolate_vars(const double r,
+                                           std::vector<double> var) const
 {
     int iter = (int)floor(
         r / dx); // index of the 2nd (out of 4) gridpoint used for interpolation
     double a =
-        (r / dx) - floor(r / dx) - 0.5; // fractional distance from the midpoint between the two central grid points
+        (r / dx) - floor(r / dx) - 0.5; // fractional distance from the midpoint
+                                        // between the two central grid points
     double interpolated_value = 0, f1, f2, f3, f4;
-    
+
     f1 = ((iter == 0) ? A[1] : var[iter - 1]);
     f2 = var[iter];
     f3 = var[iter + 1];
@@ -778,7 +938,7 @@ double BosonStarSolution::interpolate_vars(const double r, std::vector<double> v
     return interpolated_value;
 }
 
-// 4th order error (cubic interpolation) for the amplitude 
+// 4th order error (cubic interpolation) for the amplitude
 double BosonStarSolution::get_A_interp(const double r) const
 {
     int iter = (int)floor(
@@ -816,14 +976,14 @@ double BosonStarSolution::get_dA_interp(const double r) const
         (r / dx) - floor(r / dx) - 0.5; // fraction from midpoint of two values,
                                         // a = +- 1/2 is the nearest gridpoints
     double interpolated_value = 0, f1, f2, f3, f4;
-    f1 = ((iter == 0) ? dA[1] : dA[iter - 1]); 
+    f1 = ((iter == 0) ? dA[1] : dA[iter - 1]);
     f2 = dA[iter];
     f3 = dA[iter + 1];
     f4 = dA[iter + 2];
 
     if (iter > gridsize - 3)
     {
-       MayDay::Error("FArrayBox domain exceeding star radius!");
+        MayDay::Error("FArrayBox domain exceeding star radius!");
     }
 
     // do the cubic spline, from mathematica script written by Robin
@@ -874,7 +1034,7 @@ double BosonStarSolution::get_psi_interp(const double r) const
         (r / dx) - floor(r / dx) - 0.5; // fraction from midpoint of two values,
                                         // a = +- 1/2 is the nearest gridpoints
     double interpolated_value = 0, f1, f2, f3, f4;
-    f1 = ((iter == 0) ? psi[1] : psi[iter - 1]); 
+    f1 = ((iter == 0) ? psi[1] : psi[iter - 1]);
     f2 = psi[iter];
     f3 = psi[iter + 1];
     f4 = psi[iter + 2];
@@ -903,7 +1063,7 @@ double BosonStarSolution::get_dpsi_interp(const double r) const
         (r / dx) - floor(r / dx) - 0.5; // fraction from midpoint of two values,
                                         // a = +- 1/2 is the nearest gridpoints
     double interpolated_value = 0, f1, f2, f3, f4;
-    f1 = ((iter == 0) ? dpsi[1] : dpsi[iter - 1]); 
+    f1 = ((iter == 0) ? dpsi[1] : dpsi[iter - 1]);
     f2 = dpsi[iter];
     f3 = dpsi[iter + 1];
     f4 = dpsi[iter + 2];
@@ -985,13 +1145,14 @@ void BosonStarSolution::set_initialcondition_params(
     use_own_ansatz = m_params_BosonStar.use_own_ansatz;
     omega_ansatz = m_params_BosonStar.omega_ansatz;
     omega_lower_ansatz = m_params_BosonStar.omega_lower_ansatz;
+    initialise_from_data_file = m_params_BosonStar.initialise_from_data_file;
 }
 
 void BosonStarSolution::output_csv()
 {
     std::ofstream A_file, dA_file, psi_file, dpsi_file, omega_file, r_file,
         mass_file;
-    
+
     A_file.open("A.csv");
     dA_file.open("dA.csv");
     psi_file.open("psi.csv");

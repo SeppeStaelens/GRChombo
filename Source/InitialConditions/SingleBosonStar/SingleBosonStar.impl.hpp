@@ -30,8 +30,16 @@ void SingleBosonStar::compute_1d_solution(const double max_r)
         pout() << "Setting initial conditions for Star 1" << endl;
         m_1d_sol.set_initialcondition_params(m_params_BosonStar,
                                              m_params_potential, max_r);
-        pout() << "Running the solver for Star 1" << endl;
-        m_1d_sol.main();
+        if (m_1d_sol.initialise_from_data_file)
+        {
+            pout() << "Setting initial conditions from file" << endl;
+            m_1d_sol.initialise_from_file();
+        }
+        else
+        {
+            pout() << "Running the solver for Star 1" << endl;
+            m_1d_sol.main();
+        }
         pout() << "Completed for star 1" << endl;
     }
     catch (std::exception &exception)

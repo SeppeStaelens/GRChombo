@@ -36,6 +36,7 @@ struct BosonStar_params_t
         star_centre; //!< coordinates of the centre of the star
     bool use_own_ansatz;
     double omega_lower_ansatz, omega_ansatz;
+    bool initialise_from_data_file;
 };
 
 #endif /* BOSONSTARPARAMS_HPP_ */

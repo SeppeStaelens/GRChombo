@@ -29,8 +29,9 @@ class BosonStarSolution
     int matching_index;     // integer where growing mode becomes relevant
     double eps = 10e-20;
     double omega_tolerance = 1e-20;
-    int niter; // number of iterations for finding the solution 
+    int niter;           // number of iterations for finding the solution
     bool use_own_ansatz; // whether to set own custom upper omega
+    bool initialise_from_data_file;
 
     void rk4(const double ww_);
     void rk4_asymp(const int iter, const bool adaptive, const double ww_);
@@ -54,6 +55,7 @@ class BosonStarSolution
                      const double PSI, const double DPSI, const double OM,
                      const double ww_);
     void initialise();
+    void initialise_from_file();
     double amplitude_criterion(double omega, double index);
     int zero_crossings();
     void truncate_solution();
@@ -81,7 +83,8 @@ class BosonStarSolution
     std::vector<double> areal_radius_array; // areal radius
     std::vector<double> boson_mass;         // mass
     std::vector<double> adm_mass;           // mass
-    double radius, compactness_value;       // for storing the radius and compactness of the BS
+    double radius,
+        compactness_value; // for storing the radius and compactness of the BS
 
     void set_initialcondition_params(BosonStar_params_t m_params_BosonStar,
                                      Potential::params_t m_params_potential,

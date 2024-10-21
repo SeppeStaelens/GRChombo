@@ -46,10 +46,12 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("BS_solver_omc", bosonstar_params.OMC, 0.5);
         pp.load("BS_solver_verbosity", bosonstar_params.BS_solver_verbosity,
                 false);
-	pp.load("BS_solver_niter", bosonstar_params.niter, 17);
-	pp.load("use_own_ansatz", bosonstar_params.use_own_ansatz, false);
+        pp.load("BS_solver_niter", bosonstar_params.niter, 17);
+        pp.load("use_own_ansatz", bosonstar_params.use_own_ansatz, false);
         pp.load("omega_lower_ansatz", bosonstar_params.omega_lower_ansatz, 0.);
-	pp.load("omega_ansatz", bosonstar_params.omega_ansatz, 1.);
+        pp.load("omega_ansatz", bosonstar_params.omega_ansatz, 1.);
+        pp.load("initialise_from_data_file",
+                bosonstar_params.initialise_from_data_file, false);
 
         pp.load("star_centre", bosonstar_params.star_centre, center);
 
