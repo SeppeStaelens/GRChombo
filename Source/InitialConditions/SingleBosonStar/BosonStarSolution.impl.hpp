@@ -138,26 +138,29 @@ void BosonStarSolution::main()
 
 void BosonStarSolution::initialise_from_file()
 {
+    // Read in the data files with the solution from Fortran
     std::ifstream A_file("A.dat");
     std::ifstream m_file("m.dat");
     std::ifstream phi_file("Phi.dat");
     std::ifstream info_file("output.dat");
 
-    if (!A_file.is_open() || !phi_file.is_open() || !m_file.is_open())
+    if (!A_file.is_open() || !phi_file.is_open() || !m_file.is_open() || !info_file.is_open())
     {
         std::cerr << "Error reading thinshell files!" << endl;
         exit(1);
     }
 
+    // count the number of lines
     A_file.seekg(0, A_file.end);
     int line_count = A_file.tellg();
-    std::cout << "line count " << line_count << endl;
-    A_file.seekg(0, A_file.beg);
+    A_file.clear();
+    A_file.seekg(0, ios::beg);
+
+    pout() << "The files contain " << line_count << " lines." << endl;
+
+    // Read in the data
     std::string lineA, linePhi, linem, lineInfo;
 
-    // holds the A, phi, and r values from the nonuniform r-y hybrid grid.
-    // Needed for interpolation
-    // TODO: size properly, currently overestimated
     std::vector<double> A_vals(line_count);
     std::vector<double> phi_vals(line_count);
     std::vector<double> m_vals(line_count);
@@ -179,6 +182,7 @@ void BosonStarSolution::initialise_from_file()
         if (iss >> junk >> m_vals[j])
             j++;
     }
+
     double phi_offset, A_central, omega_pre_rescale, Mass, compactness, r_99;
 
     // read in info values including omega, M, r_99, C
@@ -190,7 +194,7 @@ void BosonStarSolution::initialise_from_file()
         {
             if (!(iss >> A_central >> omega_pre_rescale >> junk >> omega_true >>
                   phi_offset >> Mass >> junk >> junk >> compactness >> r_99 >>
-                  junk >> junk >> junk))
+                  junk >> junk >> junk >> junk >> junk >> junk >> junk))
                 std::cout
                     << "WARNING: reading thinshell output.dat may have failed "
                     << endl;
@@ -215,21 +219,28 @@ void BosonStarSolution::initialise_from_file()
         X_vals[i] = sqrt(m_vals[i] / (r_vals[i] - 2 * m_vals[i]));
     }
 
+    pout() << "We now have central values A = " << A_vals[0] << ", X = " << X_vals[0] << ", phi = " << phi_vals[0] << ", r = " << r_vals[0] << endl; 
+
     // The spline interpolators
-    tk::spline PhiSpline, A_Spline, mSpline;
+    tk::spline PhiSpline, ASpline, XSpline;
 
     // Set up the spline interpolators
     PhiSpline.set_points(r_vals, phi_vals, tk::spline::cspline_hermite);
     ASpline.set_points(r_vals, A_vals, tk::spline::cspline_hermite);
     XSpline.set_points(r_vals, X_vals, tk::spline::cspline_hermite);
 
+    pout() << "TEST: phi, A, X at 0 are " << ASpline(0.) << ", " << XSpline(0.) << ", " << PhiSpline(0.) << endl;
+
     double dR = dx;
-    double max_arial_r = 2 * L + Mass + Mass * Mass / (4 * (2 * L));
-    double f_max_arial_r = L / max_arial_r;
+    double max_iso_R = 2*L;
+    double max_arial_r = max_iso_R + Mass + Mass * Mass / (4 * max_iso_R);
+    double f_max_arial_r = max_iso_R / max_arial_r;
 
-    double int_radius = 0.001, dr = 0.01, f_c = 1.;
+    pout() << "The maximal isotropic radius, " << max_iso_R << ", corresponds to maximal areal radius " << max_arial_r << " giving f_at_max = " << f_max_arial_r << endl;
 
-    int len_int_array = floor(max_arial_r / dr);
+    double int_radius = 0.01, dr = 0.01, f_c = 1.;
+
+    int len_int_array = floor(max_arial_r / dr) + 1;
 
     std::vector<double> f_vals(len_int_array);
     std::vector<double> iso_R_vals(len_int_array);
@@ -254,7 +265,7 @@ void BosonStarSolution::initialise_from_file()
         j++;
     }
 
-    double unscaled_f_at_max_r = f_vals[len_int_array - 1];
+    double unscaled_f_at_max_r = f_vals[len_int_array-1];
     j = 0;
     while (j < len_int_array)
     {
@@ -263,22 +274,24 @@ void BosonStarSolution::initialise_from_file()
         j++;
     }
 
-    tk::spline r_from_R_Spline(iso_R_vals, r_vals, tk::spline::cspline_hermite);
+    tk::spline r_from_R_Spline(iso_R_vals, int_r_vals, tk::spline::cspline_hermite);
     tk::spline fSpline(int_r_vals, f_vals, tk::spline::cspline_hermite);
 
     // interpolate to fill uniform grid with A, phi, eta
-    A[0] = A_Spline(0.);
-    dA[0] = A_Spline.deriv(1, 0.) / (XSpline(0.) * f_vals[0]);
+    A[0] = ASpline(0.);
+    dA[0] = ASpline.deriv(1, 0.) / (XSpline(0.) * f_vals[0]);
     omega[0] = exp(PhiSpline(0.));
     psi[0] = 1. / sqrt(fSpline(0.));
     dpsi[0] = 0.;
+    radius_array[0] = 0.;
+    double iso_radius, ar_radius;
     for (int k = 1; k < gridsize; k++)
     {
-        double iso_radius = k * dx;
-        double ar_radius = r_from_R_Spline(iso_radius);
+        iso_radius = k * dx;
+        ar_radius = r_from_R_Spline(iso_radius);
 
-        A[k] = A_Spline(ar_radius);
-        dA[k] = A_Spline.deriv(1, ar_radius) * ar_radius /
+        A[k] = ASpline(ar_radius);
+        dA[k] = ASpline.deriv(1, ar_radius) * ar_radius /
                 (XSpline(ar_radius) * iso_radius);
         omega[k] = exp(PhiSpline(ar_radius));
         psi[k] = 1. / sqrt(fSpline(ar_radius));
@@ -287,6 +300,27 @@ void BosonStarSolution::initialise_from_file()
 
         radius_array[k] = iso_radius;
     }
+
+    // Calculate the aspect mass and the ADM mass at the boundary of the
+    // physical domain. They shoud be similar, but not equal!
+    calculate_aspect_mass();
+    calculate_adm_mass();
+    radius = calculate_radius();
+    compactness_value = boson_mass[gridsize - 1] / radius;
+
+    if (BS_verbosity)
+    {
+        pout() << "-----------------------------------------------" << endl;
+        pout() << "Central Density : " << A[0] << endl;
+        pout() << "ADM mass : " << adm_mass[gridsize - 1] << endl;
+        pout() << "Aspect mass : " << boson_mass[gridsize - 1] << endl;
+        pout() << "Radius : " << radius << endl;
+        pout() << "Compactness : " << compactness_value << endl;
+        pout() << "W : " << sqrt(omega_true) << endl;
+    }
+
+    output_csv();
+
 }
 
 // Initialise the 5 filed variables with their central values
