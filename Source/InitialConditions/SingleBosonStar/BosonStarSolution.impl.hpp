@@ -151,11 +151,14 @@ void BosonStarSolution::initialise_from_file()
     }
 
     // count the number of lines
-    A_file.seekg(0, A_file.end);
-    int line_count = A_file.tellg();
+    int line_count = 0;
+    std::string line;
+    while (std::getline(A_file, line)) {
+      line_count++;
+    }
     A_file.clear();
-    A_file.seekg(0, ios::beg);
-
+    A_file.seekg(0, std::ios::beg);
+    
     pout() << "The files contain " << line_count << " lines." << endl;
 
     // Read in the data
@@ -169,21 +172,21 @@ void BosonStarSolution::initialise_from_file()
 
     double junk;
     int j = 0;
-    while (std::getline(A_file, lineA))
+    while (std::getline(A_file, lineA) && j < line_count)
     {
         std::istringstream iss(lineA);
         if (iss >> r_vals[j] >> A_vals[j])
             j++;
     }
     j = 0;
-    while (std::getline(m_file, linem))
+    while (std::getline(m_file, linem) && j < line_count)
     {
         std::istringstream iss(linem);
         if (iss >> junk >> m_vals[j])
             j++;
     }
 
-    double phi_offset, A_central, omega_pre_rescale, Mass, compactness, r_99;
+    double phi_offset, A_central, omega_pre_rescale, omega_file, Mass, compactness, r_99;
 
     // read in info values including omega, M, r_99, C
     while (std::getline(info_file, lineInfo))
@@ -192,7 +195,7 @@ void BosonStarSolution::initialise_from_file()
         if (!lineInfo.empty() &&
             lineInfo[0] != '#') // ignore leading commented lines
         {
-            if (!(iss >> A_central >> omega_pre_rescale >> junk >> omega_true >>
+            if (!(iss >> A_central >> omega_pre_rescale >> junk >> omega_file >>
                   phi_offset >> Mass >> junk >> junk >> compactness >> r_99 >>
                   junk >> junk >> junk >> junk >> junk >> junk >> junk))
                 std::cout
@@ -200,10 +203,11 @@ void BosonStarSolution::initialise_from_file()
                     << endl;
         }
     }
+    omega_true = omega_file*omega_file;
 
     // read in phi-values, accounting for offset
     j = 0;
-    while (std::getline(phi_file, linePhi))
+    while (std::getline(phi_file, linePhi) && j < line_count)
     {
         std::istringstream iss(linePhi);
         if (iss >> junk >> phi_vals[j])
@@ -216,7 +220,7 @@ void BosonStarSolution::initialise_from_file()
     X_vals[0] = 1.0;
     for (int i = 1; i < line_count; i++)
     {
-        X_vals[i] = sqrt(m_vals[i] / (r_vals[i] - 2 * m_vals[i]));
+        X_vals[i] = sqrt(r_vals[i] / (r_vals[i] - 2 * m_vals[i]));
     }
 
     pout() << "We now have central values A = " << A_vals[0] << ", X = " << X_vals[0] << ", phi = " << phi_vals[0] << ", r = " << r_vals[0] << endl; 
@@ -231,8 +235,10 @@ void BosonStarSolution::initialise_from_file()
 
     pout() << "TEST: phi, A, X at 0 are " << ASpline(0.) << ", " << XSpline(0.) << ", " << PhiSpline(0.) << endl;
 
-    double dR = dx;
-    double max_iso_R = 2*L;
+    pout() << "TEST: phi, A, X outside shell are " << ASpline(40.) << ", "
+            << XSpline(40.) << ", " << PhiSpline(40.) << std::endl;
+
+    double max_iso_R = L;
     double max_arial_r = max_iso_R + Mass + Mass * Mass / (4 * max_iso_R);
     double f_max_arial_r = max_iso_R / max_arial_r;
 
@@ -251,6 +257,7 @@ void BosonStarSolution::initialise_from_file()
     int_r_vals[0] = 0.;
     while (int_radius < max_arial_r)
     {
+	int_r_vals[j] = int_radius;
         double k1 = (XSpline(int_radius) - 1.) * f_c / int_radius;
         double k2 = (XSpline(int_radius + dr / 2) - 1.) * (f_c + k1 * dr / 2) /
                     (int_radius + dr / 2);
@@ -261,11 +268,11 @@ void BosonStarSolution::initialise_from_file()
         f_c += dr * (k1 + 2 * k2 + 2 * k3 + k4) / 6;
         f_vals[j] = f_c;
         int_radius += dr;
-        int_r_vals[j] = int_radius;
         j++;
     }
 
     double unscaled_f_at_max_r = f_vals[len_int_array-1];
+    pout() << "unscaled f at max r = " << unscaled_f_at_max_r << std::endl;
     j = 0;
     while (j < len_int_array)
     {
@@ -281,7 +288,7 @@ void BosonStarSolution::initialise_from_file()
     A[0] = ASpline(0.);
     dA[0] = ASpline.deriv(1, 0.) / (XSpline(0.) * f_vals[0]);
     omega[0] = exp(PhiSpline(0.));
-    psi[0] = 1. / sqrt(fSpline(0.));
+    psi[0] = 1. / fSpline(0.);
     dpsi[0] = 0.;
     radius_array[0] = 0.;
     double iso_radius, ar_radius;
@@ -294,7 +301,7 @@ void BosonStarSolution::initialise_from_file()
         dA[k] = ASpline.deriv(1, ar_radius) * ar_radius /
                 (XSpline(ar_radius) * iso_radius);
         omega[k] = exp(PhiSpline(ar_radius));
-        psi[k] = 1. / sqrt(fSpline(ar_radius));
+        psi[k] = 1. / fSpline(ar_radius);
         dpsi[k] = 0.5 * (1. / XSpline(ar_radius) - 1.) /
                   (iso_radius * sqrt(fSpline(ar_radius)));
 
@@ -318,9 +325,6 @@ void BosonStarSolution::initialise_from_file()
         pout() << "Compactness : " << compactness_value << endl;
         pout() << "W : " << sqrt(omega_true) << endl;
     }
-
-    output_csv();
-
 }
 
 // Initialise the 5 filed variables with their central values
