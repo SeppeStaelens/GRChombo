@@ -203,10 +203,11 @@ void BosonStarLevel::specificPostTimeStep()
             // compute integrated volume weighted noether charge integral
 
             double noether_charge = amr_reductions.sum(c_N);
-            std::string noether_charge_filename = m_p.data_path + "noether_charge"; 
-            SmallDataIO noether_charge_file(noether_charge_filename, m_dt, m_time,
-                                            m_restart_time, SmallDataIO::APPEND,
-                                            first_step);
+            std::string noether_charge_filename =
+                m_p.data_path + "noether_charge";
+            SmallDataIO noether_charge_file(noether_charge_filename, m_dt,
+                                            m_time, m_restart_time,
+                                            SmallDataIO::APPEND, first_step);
             noether_charge_file.remove_duplicate_time_data();
             if (m_time == 0.)
             {
@@ -217,7 +218,7 @@ void BosonStarLevel::specificPostTimeStep()
 
         // Compute the maximum of mod_phi and write it to a file
         double mod_phi_max = amr_reductions.max(c_mod_phi);
-        std::string mod_phi_max_filename = m_p.data_path + "mod_phi_max"; 
+        std::string mod_phi_max_filename = m_p.data_path + "mod_phi_max";
         SmallDataIO mod_phi_max_file(mod_phi_max_filename, m_dt, m_time,
                                      m_restart_time, SmallDataIO::APPEND,
                                      first_step);
@@ -246,7 +247,9 @@ void BosonStarLevel::specificPostTimeStep()
         double L2_Mom = amr_reductions.norm(Interval(c_Mom1, c_Mom3), 2, true);
         double L1_Ham = amr_reductions.norm(c_Ham, 1, true);
         double L1_Mom = amr_reductions.norm(Interval(c_Mom1, c_Mom3), 1, true);
-        
+        double L2_dtK = amr_reductions.norm(c_dtK, 2, true);
+        double L1_dtK = amr_reductions.norm(c_dtK, 1, true);
+
         std::string constraints_filename = m_p.data_path + "constraint_norms";
         SmallDataIO constraints_file(constraints_filename, m_dt, m_time,
                                      m_restart_time, SmallDataIO::APPEND,
@@ -254,14 +257,12 @@ void BosonStarLevel::specificPostTimeStep()
         constraints_file.remove_duplicate_time_data();
         if (first_step)
         {
-            constraints_file.write_header_line({
-                "L^2_Ham",
-                "L^2_Mom",
-                "L^1_Ham",
-                "L^1_Mom",
-            });
+            constraints_file.write_header_line({"L^2_Ham", "L^2_Mom", "L^1_Ham",
+                                                "L^1_Mom", "L^2_dtK",
+                                                "L^1_dtK"});
         }
-        constraints_file.write_time_data_line({L2_Ham, L2_Mom, L1_Ham, L1_Mom});
+        constraints_file.write_time_data_line(
+            {L2_Ham, L2_Mom, L1_Ham, L1_Mom, L2_dtK, L1_dtK});
     }
 
     if (m_p.do_star_track && m_level == m_p.star_track_level)
@@ -271,8 +272,9 @@ void BosonStarLevel::specificPostTimeStep()
         // will default to param file if restart time is 0
 
         std::string centres_filename = m_p.data_path + "star_centres";
-        
-        if ((m_time > m_dt / 4.) && (fabs(m_time - m_restart_time) < m_dt * 1.1))
+
+        if ((m_time > m_dt / 4.) &&
+            (fabs(m_time - m_restart_time) < m_dt * 1.1))
         {
             m_st_amr.m_star_tracker.read_old_centre_from_dat(
                 centres_filename, m_dt, m_time, m_restart_time, first_step);
