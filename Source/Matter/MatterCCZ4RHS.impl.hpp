@@ -40,9 +40,6 @@ void MatterCCZ4RHS<matter_t, gauge_t, deriv_t>::compute(
     // add RHS matter terms from EM Tensor
     add_emtensor_rhs(matter_rhs, matter_vars, d1);
 
-    // store the RHS of dtK as diagnostic variable
-    current_cell.store_vars(matter_rhs.K, c_dtK);
-
     // add evolution of matter fields themselves
     my_matter.add_matter_rhs(matter_rhs, matter_vars, d1, d2, advec);
 
