@@ -42,6 +42,7 @@
 #include "WeylExtraction.hpp"
 
 // For Noether Charge calculation
+#include "DiagnosticTimeDerivativeK.hpp"
 #include "NoetherCharge.hpp"
 #include "SmallDataIO.hpp"
 
@@ -88,8 +89,6 @@ void BosonStarLevel::initialData()
                    EXCLUDE_GHOST_CELLS, disable_simd());
 
     fillAllGhosts();
-    BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params), m_state_new,
-                   m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
 }
 
 // Things to do before outputting a checkpoint file
@@ -189,6 +188,19 @@ void BosonStarLevel::specificPostTimeStep()
     // noether charge, max mod phi, min chi, constraint violations
     if (at_level_timestep_multiple(0))
     {
+        EMTensor<ComplexScalarFieldWithPotential> emtensor(
+            complex_scalar_field, m_dx, c_rho, Interval(c_s1, c_s3),
+            Interval(c_s11, c_s33));
+        BoxLoops::loop(emtensor, m_state_new, m_state_diagnostics,
+                       EXCLUDE_GHOST_CELLS);
+        if (c_dtK > 0)
+        {
+            BoxLoops::loop(DiagnosticTimeDerivativeK(
+                               m_p.G_Newton, emtensor, m_dx,
+                               m_p.ccz4_params.kappa1, m_p.ccz4_params.kappa2),
+                           m_state_new, m_state_diagnostics,
+                           EXCLUDE_GHOST_CELLS);
+        }
         BoxLoops::loop(NoetherCharge(), m_state_new, m_state_diagnostics,
                        EXCLUDE_GHOST_CELLS);
     }
