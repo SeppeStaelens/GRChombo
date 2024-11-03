@@ -164,7 +164,7 @@ void BosonStarLevel::specificPostTimeStep()
     Potential potential(m_p.potential_params);
     ComplexScalarFieldWithPotential complex_scalar_field(potential);
     BoxLoops::loop(MatterConstraints<ComplexScalarFieldWithPotential>(
-                       complex_scalar_field, m_dx, m_p.G_Newton, c_Ham,
+                       complex_scalar_field, static_cast<double>(m_dx), m_p.G_Newton, c_Ham,
                        Interval(c_Mom1, c_Mom3)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
@@ -188,19 +188,17 @@ void BosonStarLevel::specificPostTimeStep()
     // noether charge, max mod phi, min chi, constraint violations
     if (at_level_timestep_multiple(0))
     {
-        EMTensor<ComplexScalarFieldWithPotential> emtensor(
-            complex_scalar_field, m_dx, c_rho, Interval(c_s1, c_s3),
-            Interval(c_s11, c_s33));
-        BoxLoops::loop(emtensor, m_state_new, m_state_diagnostics,
-                       EXCLUDE_GHOST_CELLS);
-        if (c_dtK > 0)
-        {
-            BoxLoops::loop(DiagnosticTimeDerivativeK(
-                               m_p.G_Newton, emtensor, m_dx,
-                               m_p.ccz4_params.kappa1, m_p.ccz4_params.kappa2),
+        //EMTensor<ComplexScalarFieldWithPotential> emtensor(
+        //    complex_scalar_field, m_dx, c_rho, Interval(c_s1, c_s3),
+        //    Interval(c_s11, c_s33));
+        //BoxLoops::loop(emtensor, m_state_new, m_state_diagnostics,
+        //               EXCLUDE_GHOST_CELLS);
+        BoxLoops::loop(DiagnosticTimeDerivativeK<ComplexScalarFieldWithPotential>(
+                               m_p.G_Newton, complex_scalar_field, m_dx,
+                               m_p.ccz4_params, c_rho, Interval(c_s1, c_s3), 
+			       Interval(c_s11, c_s33), c_dtK),
                            m_state_new, m_state_diagnostics,
                            EXCLUDE_GHOST_CELLS);
-        }
         BoxLoops::loop(NoetherCharge(), m_state_new, m_state_diagnostics,
                        EXCLUDE_GHOST_CELLS);
     }

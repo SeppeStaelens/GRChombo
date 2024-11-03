@@ -28,6 +28,9 @@ class NoetherCharge
     using MatterVars = ComplexScalarField<>::Vars<data_t>;
 
   public:
+    
+    NoetherCharge() {}
+
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
         // load vars locally

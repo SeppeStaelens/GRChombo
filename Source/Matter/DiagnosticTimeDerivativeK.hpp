@@ -3,11 +3,12 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef NOETHERCHARGE_HPP_
-#define NOETHERCHARGE_HPP_
+#ifndef DIAGNOSTICTIMEDERIVATIVEK_HPP_
+#define DIAGNOSTICTIMEDERIVATIVEK_HPP_
 
 #include "ADMConformalVars.hpp" // needed for CCz4 and matter variables
 #include "CCZ4Geometry.hpp"
+#include "CCZ4RHS.hpp"
 #include "Cell.hpp"
 #include "ComplexScalarField.hpp"
 #include "Coordinates.hpp"
@@ -17,52 +18,68 @@
 #include "Interval.H"
 #include "UserVariables.hpp"
 #include "simd.hpp"
+#include "CCZ4Vars.hpp"
 
 //! Calculates the Noether Charge integrand values and the modulus of the
 //! complex scalar field on the grid
-template <class deriv_t = FourthOrderDerivatives>
+template <class matter_t, class gauge_t = MovingPunctureGauge, class deriv_t = FourthOrderDerivatives>
 class DiagnosticTimeDerivativeK
 {
+  public:
+    template <class data_t> using MatterCCZ4Vars = typename MatterCCZ4<matter_t>::template Vars<data_t>;	
+    using params_t = CCZ4_params_t<typename gauge_t::params_t>;
     // Need matter variables and chi
-    template <class data_t> using CCZ4Vars = CCZ4Vars::VarsNoGauge<data_t>;
-    template <class data_t>
-    using MatterVars = ComplexScalarField<>::Vars<data_t>;
     template <class data_t>
     using CCZ4VarsWithGauge = CCZ4Vars::VarsWithGauge<data_t>;
     template <class data_t>
     using Diff2Vars = CCZ4Vars::Diff2VarsWithGauge<data_t>;
+    template <class data_t> using MatterCCZ4RHSVars = typename MatterCCZ4RHS<matter_t>::template Vars<data_t>;
+
+    enum{ USE_CCZ4, USE_BSSN};
+
 
   protected:
     const double m_G_Newton;
-    const EMTensor<ComplexScalarField<>> m_emtensor;
-    const deriv_t m_deriv;
-    const double m_kappa1;
-    const double m_kappa2;
-    const m_formulation = USE_CCZ4;
+    const matter_t &m_matter;
+    deriv_t m_deriv;
+    double m_kappa1 = 0.1;
+    double m_kappa2 = 0.;
+    bool m_covariantZ4 = 1;
+    const int m_formulation = USE_CCZ4;
+    const int m_c_rho;
+    const Interval m_c_Si;
+    const Interval m_c_Sij;
+    const int m_c_dtK;
 
   public:
-    DiagnosticTimeDerivativeK(const double a_G_Newton = 1.0,
-                              const EMTensor<ComplexScalarField<>> a_emtensor,
-                              const double a_dx, const double a_kappa1,
-                              const double a_kappa2)
-        : m_G_Newton(a_G_Newton), m_emtensor(a_emtensor), m_deriv(a_dx),
-          m_kappa1(a_kappa1), m_kappa2(a_kappa2)
+    DiagnosticTimeDerivativeK(const double a_G_Newton,
+                              const matter_t &a_matter,
+                              const double a_dx, params_t a_params,
+                              const int a_c_rho = -1, const Interval a_c_Si = Interval(), 
+			      const Interval a_c_Sij = Interval(), const int a_c_dtK = -1)
+        : m_G_Newton(a_G_Newton), m_matter(a_matter), m_deriv(a_dx), m_c_rho(a_c_rho), m_c_Si(a_c_Si), m_c_Sij(a_c_Sij), m_c_dtK(a_c_dtK)
     {
+    m_kappa1 = a_params.kappa1;
+    m_kappa2 = a_params.kappa2;
+    m_covariantZ4 = a_params.covariantZ4;
+    // add asserts from EMTensor
     }
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
         // load vars locally
-        const auto ccz4_vars = current_cell.template load_vars<CCZ4Vars>();
-        const auto matter_vars = current_cell.template load_vars<MatterVars>();
-        const auto d1 = m_deriv.template diff1<CCZ4VarsWithGauge>(current_cell);
+        const auto ccz4_vars = current_cell.template load_vars<CCZ4VarsWithGauge>();
+        const auto matter_vars = current_cell.template load_vars<MatterCCZ4Vars>();
+        
+	const auto d1 = m_deriv.template diff1<CCZ4VarsWithGauge>(current_cell);
+	const auto d1_matter = m_deriv.template diff1<MatterCCZ4Vars>(current_cell);
         const auto d2 = m_deriv.template diff2<Diff2Vars>(current_cell);
 
-        const auto advec = this->m_deriv.template advection<CCZ4Vars>(
+        const auto advec = m_deriv.template advection<MatterCCZ4RHSVars>(
             current_cell, ccz4_vars.shift);
 
         data_t kappa1_times_lapse;
-        if (m_params.covariantZ4)
+        if (m_covariantZ4)
             kappa1_times_lapse = m_kappa1;
         else
             kappa1_times_lapse = m_kappa1 * ccz4_vars.lapse;
@@ -72,6 +89,35 @@ class DiagnosticTimeDerivativeK
         auto h_UU = compute_inverse_sym(ccz4_vars.h);
         auto chris = compute_christoffel(d1.h, h_UU);
 
+	const auto emtensor =
+        m_matter.compute_emtensor(matter_vars, d1_matter, h_UU, chris.ULL);
+
+	if (m_c_rho >= 0)
+	{
+	    current_cell.store_vars(emtensor.rho, m_c_rho);
+	}
+
+	if (m_c_Si.size() > 0)
+    {   
+#if DEFAULT_TENSOR_DIM == 3
+        FOR(i) { current_cell.store_vars(emtensor.Si[i], m_c_Si.begin() + i); }                
+#endif  
+    }                          
+                               
+    if (m_c_Sij.size() > 0)    
+    {                      
+#if DEFAULT_TENSOR_DIM == 3
+        current_cell.store_vars(emtensor.Sij[0][0], m_c_Sij.begin());
+        current_cell.store_vars(emtensor.Sij[0][1], m_c_Sij.begin() + 1);                      
+        current_cell.store_vars(emtensor.Sij[0][2], m_c_Sij.begin() + 2);                      
+        current_cell.store_vars(emtensor.Sij[1][1], m_c_Sij.begin() + 3);                      
+        current_cell.store_vars(emtensor.Sij[1][2], m_c_Sij.begin() + 4);                      
+        current_cell.store_vars(emtensor.Sij[2][2], m_c_Sij.begin() + 5);                      
+#endif  
+    }   
+
+	if (m_c_dtK >= 0)
+	{
         Tensor<1, data_t> Z_over_chi;
         Tensor<1, data_t> Z;
 
@@ -128,11 +174,12 @@ class DiagnosticTimeDerivativeK
                      tr_covd2lapse;
         // ignoring the bit with cosmologivcal constant for now
         dtK += 4.0 * M_PI * m_G_Newton * ccz4_vars.lapse *
-               (m_emtensor.S - 3 * m_emtensor.rho);
+               (emtensor.S - 3 * emtensor.rho);
 
         // store the RHS of dtK as diagnostic variable
         current_cell.store_vars(dtK, c_dtK);
+        }
     }
 };
 
-#endif /* NOETHERCHARGE_HPP_ */
+#endif /* DIAGNOSTICTIMEDERIVATIVEK_HPP_ */
