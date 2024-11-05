@@ -240,7 +240,8 @@ void BosonStarLevel::specificPostTimeStep()
         mod_phi_max_file.write_time_data_line({mod_phi_max});
 
         // Compute the min of chi and write it to a file
-        double min_chi = amr_reductions.min(c_chi);
+        AMRReductions<VariableType::evolution> amr_reductions_evolution(m_gr_amr);
+	double min_chi = amr_reductions_evolution.min(c_chi);
         std::string min_chi_filename = m_p.data_path + "min_chi";
         SmallDataIO min_chi_file(min_chi_filename, m_dt, m_time, m_restart_time,
                                  SmallDataIO::APPEND, first_step);
