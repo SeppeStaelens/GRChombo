@@ -37,7 +37,7 @@ class AngMomFlux : SphericalExtraction
                          : SphericalExtraction(a_params, a_dt, a_time, a_first_step,
                                                a_restart_time),
                             m_params(a_params),
-                            m_time(a_time), m_dt(a_dt), m_restart_time(m_restart_time),
+                            m_time(a_time), m_dt(a_dt), m_restart_time(a_restart_time),
                             m_first_step(a_first_step)
       {
           add_var(c_Fphi_flux, VariableType::diagnostic);
