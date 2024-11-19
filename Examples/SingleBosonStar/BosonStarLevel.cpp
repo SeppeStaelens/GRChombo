@@ -42,9 +42,15 @@
 #include "WeylExtraction.hpp"
 
 // For Noether Charge calculation
-#include "DiagnosticTimeDerivativeK.hpp"
 #include "NoetherCharge.hpp"
 #include "SmallDataIO.hpp"
+
+// For dtK
+#include "DiagnosticTimeDerivativeK.hpp"
+
+// For effective potential calculation
+#include "EffectivePotential.hpp"
+#include "EffectivePotentialExtraction.hpp"
 
 // For Ang Mom Integrating
 #include "AngMomFlux.hpp"
@@ -164,8 +170,8 @@ void BosonStarLevel::specificPostTimeStep()
     Potential potential(m_p.potential_params);
     ComplexScalarFieldWithPotential complex_scalar_field(potential);
     BoxLoops::loop(MatterConstraints<ComplexScalarFieldWithPotential>(
-                       complex_scalar_field, static_cast<double>(m_dx), m_p.G_Newton, c_Ham,
-                       Interval(c_Mom1, c_Mom3)),
+                       complex_scalar_field, static_cast<double>(m_dx),
+                       m_p.G_Newton, c_Ham, Interval(c_Mom1, c_Mom3)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
     if (m_p.activate_mass_extraction == 1 &&
@@ -188,19 +194,30 @@ void BosonStarLevel::specificPostTimeStep()
     // noether charge, max mod phi, min chi, constraint violations
     if (at_level_timestep_multiple(0))
     {
-        //EMTensor<ComplexScalarFieldWithPotential> emtensor(
-        //    complex_scalar_field, m_dx, c_rho, Interval(c_s1, c_s3),
-        //    Interval(c_s11, c_s33));
-        //BoxLoops::loop(emtensor, m_state_new, m_state_diagnostics,
-        //               EXCLUDE_GHOST_CELLS);
-        BoxLoops::loop(DiagnosticTimeDerivativeK<ComplexScalarFieldWithPotential>(
-                               m_p.G_Newton, complex_scalar_field, m_dx,
-                               m_p.ccz4_params, c_rho, Interval(c_s1, c_s3), 
-			       Interval(c_s11, c_s33), c_dtK),
-                           m_state_new, m_state_diagnostics,
-                           EXCLUDE_GHOST_CELLS);
+        // EMTensor<ComplexScalarFieldWithPotential> emtensor(
+        //     complex_scalar_field, m_dx, c_rho, Interval(c_s1, c_s3),
+        //     Interval(c_s11, c_s33));
+        // BoxLoops::loop(emtensor, m_state_new, m_state_diagnostics,
+        //                EXCLUDE_GHOST_CELLS);
+        BoxLoops::loop(
+            DiagnosticTimeDerivativeK<ComplexScalarFieldWithPotential>(
+                m_p.G_Newton, complex_scalar_field, m_dx, m_p.ccz4_params,
+                c_rho, Interval(c_s1, c_s3), Interval(c_s11, c_s33), c_dtK),
+            m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
         BoxLoops::loop(NoetherCharge(), m_state_new, m_state_diagnostics,
                        EXCLUDE_GHOST_CELLS);
+
+        if (m_p.activate_effective_potential_extraction == 1)
+        {
+            // Populate the effective potential values on the grid
+            BoxLoops::loop(EffectivePotential(m_p.center, m_dx), m_state_new,
+                           m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+
+            EffectivePotentialExtraction V_extraction(
+                m_p.effective_potential_extraction_params, m_dt, m_time,
+                first_step, m_restart_time);
+            V_extraction.execute_query(m_gr_amr.m_interpolator);
+        }
     }
     if (m_level == 0)
     {
