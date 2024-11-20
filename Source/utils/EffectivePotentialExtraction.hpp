@@ -21,13 +21,14 @@ class EffectivePotentialExtraction : public SphericalExtraction
 {
   public:
     string m_filename = "EffectivePotential";
+    spherical_extraction_params_t m_params;
 
     //! The constructor
     EffectivePotentialExtraction(const spherical_extraction_params_t &a_params,
                                  double a_dt, double a_time, bool a_first_step,
                                  double a_restart_time = 0.0)
         : SphericalExtraction(a_params, a_dt, a_time, a_first_step,
-                              a_restart_time)
+                              a_restart_time), m_params(a_params)
     {
         add_var(c_V_eff, VariableType::diagnostic);
     }
@@ -82,7 +83,7 @@ class EffectivePotentialExtraction : public SphericalExtraction
         potential_file.write_time_data_line(vals);
     }
 
-    ~EffectivePotentialExtraction() {}
+    ~EffectivePotentialExtraction() {;}
 };
 
 #endif /* EFFECTIVEPOTENTIALEXTRACTION_HPP_ */

@@ -6,7 +6,7 @@
 #ifndef EFFECTIVEPOTENTIAL_HPP_
 #define EFFECTIVEPOTENTIAL_HPP_
 
-#include "CCZ4Vars"
+#include "CCZ4Vars.hpp"
 #include "Cell.hpp"
 #include "Coordinates.hpp"
 #include "UserVariables.hpp" //This files needs c_NUM - total number of components
@@ -35,7 +35,7 @@ class EffectivePotential
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
         const Coordinates<data_t> coords(current_cell, m_dx, m_center);
-        const double R = coords.get_radius();
+        data_t R = coords.get_radius();
 
         const auto vars = current_cell.template load_vars<Vars>();
         // const double V_eff = vars.lapse / (vars.chi * R);
@@ -47,6 +47,6 @@ class EffectivePotential
   protected:
     const std::array<double, CH_SPACEDIM> m_center; //!< The grid center
     const double m_dx;                              //!< the grid spacing
-}
+};
 
 #endif /* EFFECTIVEPOTENTIAL_HPP_ */
