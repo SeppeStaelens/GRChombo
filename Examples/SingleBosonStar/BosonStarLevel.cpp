@@ -232,7 +232,7 @@ void BosonStarLevel::specificPostTimeStep()
     if (m_level == 0)
     {
         AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
-        if (m_p.calculate_noether_charge)
+	if (m_p.calculate_noether_charge)
         {
             // noether charge should be calculated pre-check and pre plot
             // so automatically here
@@ -269,7 +269,7 @@ void BosonStarLevel::specificPostTimeStep()
         // Compute the min of chi and write it to a file
         AMRReductions<VariableType::evolution> amr_reductions_evolution(m_gr_amr);
 	
-	double min_chi = amr_reductions_evolution.min(c_chi);
+	      double min_chi = amr_reductions_evolution.min(c_chi);
         std::string min_chi_filename = m_p.data_path + "min_chi";
         SmallDataIO min_chi_file(min_chi_filename, m_dt, m_time, m_restart_time,
                                  SmallDataIO::APPEND, first_step);
