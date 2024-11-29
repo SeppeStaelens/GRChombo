@@ -188,15 +188,19 @@ void BosonStarLevel::specificPostTimeStep()
     }
 
     // Compute the central value of phi and write it to a file
-    double phi_central = 0.0;
+    double phi_re = 0.0;
+    double phi_im = 0.0;
     InterpolationQuery query(1);
 
-    query.setCoords(0, m_p.center[0]);
-    query.setCoords(1, m_p.center[1]);
-    query.setCoords(2, m_p.center[2]);
-    query.addComp(c_mod_phi, &phi_central);
+    query.setCoords(0, &m_p.center[0]);
+    query.setCoords(1, &m_p.center[1]);
+    query.setCoords(2, &m_p.center[2]);
+    query.addComp(c_phi_Re, &phi_re);
+    query.addComp(c_phi_Im, &phi_im);
 
     m_gr_amr.m_interpolator->interp(query);
+
+    double phi_central = sqrt(phi_re * phi_re + phi_im * phi_im);
 
     std::string phi_central_filename = m_p.data_path + "phi_central";
     SmallDataIO phi_central_file(phi_central_filename, m_dt, m_time,
@@ -263,7 +267,9 @@ void BosonStarLevel::specificPostTimeStep()
         mod_phi_max_file.write_time_data_line({mod_phi_max});
 
         // Compute the min of chi and write it to a file
-        double min_chi = amr_reductions.min(c_chi);
+        AMRReductions<VariableType::evolution> amr_reductions_evolution(m_gr_amr);
+	
+	double min_chi = amr_reductions_evolution.min(c_chi);
         std::string min_chi_filename = m_p.data_path + "min_chi";
         SmallDataIO min_chi_file(min_chi_filename, m_dt, m_time, m_restart_time,
                                  SmallDataIO::APPEND, first_step);
