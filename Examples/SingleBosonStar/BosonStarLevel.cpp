@@ -52,6 +52,8 @@
 // for chombo grid Functions
 #include "AMRReductions.hpp"
 
+#include "InterpolationQuery.hpp"
+
 // Things to do at each advance step, after the RK4 is calculated
 void BosonStarLevel::specificAdvance()
 {
@@ -164,8 +166,8 @@ void BosonStarLevel::specificPostTimeStep()
     Potential potential(m_p.potential_params);
     ComplexScalarFieldWithPotential complex_scalar_field(potential);
     BoxLoops::loop(MatterConstraints<ComplexScalarFieldWithPotential>(
-                       complex_scalar_field, static_cast<double>(m_dx), m_p.G_Newton, c_Ham,
-                       Interval(c_Mom1, c_Mom3)),
+                       complex_scalar_field, static_cast<double>(m_dx),
+                       m_p.G_Newton, c_Ham, Interval(c_Mom1, c_Mom3)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
     if (m_p.activate_mass_extraction == 1 &&
@@ -185,20 +187,45 @@ void BosonStarLevel::specificPostTimeStep()
         mass_extraction.execute_query(m_gr_amr.m_interpolator, m_p.data_path);
     }
 
+    // Compute the central value of phi and write it to a file
+    double phi_re = 0.0;
+    double phi_im = 0.0;
+    InterpolationQuery query(1);
+
+    query.setCoords(0, &m_p.center[0]);
+    query.setCoords(1, &m_p.center[1]);
+    query.setCoords(2, &m_p.center[2]);
+    query.addComp(c_phi_Re, &phi_re);
+    query.addComp(c_phi_Im, &phi_im);
+
+    m_gr_amr.m_interpolator->interp(query);
+
+    double phi_central = sqrt(phi_re * phi_re + phi_im * phi_im);
+
+    std::string phi_central_filename = m_p.data_path + "phi_central";
+    SmallDataIO phi_central_file(phi_central_filename, m_dt, m_time,
+                                 m_restart_time, SmallDataIO::APPEND,
+                                 first_step);
+    phi_central_file.remove_duplicate_time_data();
+    if (m_time == 0.)
+    {
+        phi_central_file.write_header_line({"central phi"});
+    }
+    phi_central_file.write_time_data_line({phi_central});
+
     // noether charge, max mod phi, min chi, constraint violations
     if (at_level_timestep_multiple(0))
     {
-        //EMTensor<ComplexScalarFieldWithPotential> emtensor(
-        //    complex_scalar_field, m_dx, c_rho, Interval(c_s1, c_s3),
-        //    Interval(c_s11, c_s33));
-        //BoxLoops::loop(emtensor, m_state_new, m_state_diagnostics,
-        //               EXCLUDE_GHOST_CELLS);
-        BoxLoops::loop(DiagnosticTimeDerivativeK<ComplexScalarFieldWithPotential>(
-                               m_p.G_Newton, complex_scalar_field, m_dx,
-                               m_p.ccz4_params, c_rho, Interval(c_s1, c_s3), 
-			       Interval(c_s11, c_s33), c_dtK),
-                           m_state_new, m_state_diagnostics,
-                           EXCLUDE_GHOST_CELLS);
+        // EMTensor<ComplexScalarFieldWithPotential> emtensor(
+        //     complex_scalar_field, m_dx, c_rho, Interval(c_s1, c_s3),
+        //     Interval(c_s11, c_s33));
+        // BoxLoops::loop(emtensor, m_state_new, m_state_diagnostics,
+        //                EXCLUDE_GHOST_CELLS);
+        BoxLoops::loop(
+            DiagnosticTimeDerivativeK<ComplexScalarFieldWithPotential>(
+                m_p.G_Newton, complex_scalar_field, m_dx, m_p.ccz4_params,
+                c_rho, Interval(c_s1, c_s3), Interval(c_s11, c_s33), c_dtK),
+            m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
         BoxLoops::loop(NoetherCharge(), m_state_new, m_state_diagnostics,
                        EXCLUDE_GHOST_CELLS);
     }
@@ -241,9 +268,8 @@ void BosonStarLevel::specificPostTimeStep()
 
         // Compute the min of chi and write it to a file
         AMRReductions<VariableType::evolution> amr_reductions_evolution(m_gr_amr);
-        double min_chi_test = amr_reductions.min(c_chi);	
-	double min_chi = amr_reductions_evolution.min(c_chi);
-	pout() << "min chi 1 and 2 " << min_chi_test << ", " << min_chi << endl;
+	
+	      double min_chi = amr_reductions_evolution.min(c_chi);
         std::string min_chi_filename = m_p.data_path + "min_chi";
         SmallDataIO min_chi_file(min_chi_filename, m_dt, m_time, m_restart_time,
                                  SmallDataIO::APPEND, first_step);
