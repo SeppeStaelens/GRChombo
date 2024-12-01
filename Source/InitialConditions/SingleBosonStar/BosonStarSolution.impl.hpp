@@ -244,7 +244,7 @@ void BosonStarSolution::initialise_from_file()
 
     pout() << "The maximal isotropic radius, " << max_iso_R << ", corresponds to maximal areal radius " << max_arial_r << " giving f_at_max = " << f_max_arial_r << endl;
 
-    double int_radius = 0.01, dr = 0.01, f_c = 1.;
+    double int_radius = 0.001, dr = 0.001, f_c = 1.;
 
     int len_int_array = floor(max_arial_r / dr) + 1;
 
@@ -298,12 +298,12 @@ void BosonStarSolution::initialise_from_file()
         ar_radius = r_from_R_Spline(iso_radius);
 
         A[k] = ASpline(ar_radius);
-        dA[k] = ASpline.deriv(1, ar_radius) * ar_radius /
-                (XSpline(ar_radius) * iso_radius);
+        dA[k] = ASpline.deriv(1, ar_radius) /
+                (XSpline(ar_radius) * fSpline(ar_radius));
         omega[k] = exp(PhiSpline(ar_radius));
         psi[k] = 1. / fSpline(ar_radius);
-        dpsi[k] = 0.5 * (1. / XSpline(ar_radius) - 1.) /
-                  (iso_radius * sqrt(fSpline(ar_radius)));
+        dpsi[k] = (1. / XSpline(ar_radius) - 1.) /
+                  (iso_radius * fSpline(ar_radius));
 
         radius_array[k] = iso_radius;
     }
