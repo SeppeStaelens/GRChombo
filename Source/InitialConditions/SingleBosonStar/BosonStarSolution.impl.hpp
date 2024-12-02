@@ -286,7 +286,7 @@ void BosonStarSolution::initialise_from_file()
 
     // interpolate to fill uniform grid with A, phi, eta
     A[0] = ASpline(0.);
-    dA[0] = ASpline.deriv(1, 0.) / (XSpline(0.) * f_vals[0]);
+    dA[0] = 0.;
     omega[0] = exp(PhiSpline(0.));
     psi[0] = 1. / fSpline(0.);
     dpsi[0] = 0.;
