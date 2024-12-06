@@ -4,6 +4,7 @@
 
 #include "cmath"
 #include <vector>
+#include "spline.h"
 
 class BosonStarSolution
 {
@@ -99,6 +100,8 @@ class BosonStarSolution
     double get_BSfrequency() const;
     void output_csv();
     void main();
+
+    tk::spline ASpline, PhiSpline, XSpline, fSpline, r_from_R_Spline;
 };
 
 #include "BosonStarSolution.impl.hpp"

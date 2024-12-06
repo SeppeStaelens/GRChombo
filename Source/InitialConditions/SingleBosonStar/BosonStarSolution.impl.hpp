@@ -225,8 +225,13 @@ void BosonStarSolution::initialise_from_file()
 
     pout() << "We now have central values A = " << A_vals[0] << ", X = " << X_vals[0] << ", phi = " << phi_vals[0] << ", r = " << r_vals[0] << endl; 
 
-    // The spline interpolators
-    tk::spline PhiSpline, ASpline, XSpline;
+    // Set the derivatives to be zero at the boundaries
+    ASpline.set_boundary(tk::spline::first_deriv, 0.0, tk::spline::first_deriv,
+                       0.0);
+    XSpline.set_boundary(tk::spline::first_deriv, 0.0, tk::spline::first_deriv,
+                       0.0);
+    PhiSpline.set_boundary(tk::spline::first_deriv, 0.0, tk::spline::first_deriv,
+                         0.0);
 
     // Set up the spline interpolators
     PhiSpline.set_points(r_vals, phi_vals, tk::spline::cspline_hermite);
@@ -235,9 +240,7 @@ void BosonStarSolution::initialise_from_file()
 
     pout() << "TEST: phi, A, X at 0 are " << ASpline(0.) << ", " << XSpline(0.) << ", " << PhiSpline(0.) << endl;
 
-    pout() << "TEST: phi, A, X outside shell are " << ASpline(40.) << ", "
-            << XSpline(40.) << ", " << PhiSpline(40.) << std::endl;
-
+    // Asymptotic behaviour of different radii
     double max_iso_R = L;
     double max_arial_r = max_iso_R + Mass + Mass * Mass / (4 * max_iso_R);
     double f_max_arial_r = max_iso_R / max_arial_r;
@@ -281,8 +284,8 @@ void BosonStarSolution::initialise_from_file()
         j++;
     }
 
-    tk::spline r_from_R_Spline(iso_R_vals, int_r_vals, tk::spline::cspline_hermite);
-    tk::spline fSpline(int_r_vals, f_vals, tk::spline::cspline_hermite);
+    r_from_R_Spline.set_points(iso_R_vals, int_r_vals, tk::spline::cspline_hermite);
+    fSpline.set_points(int_r_vals, f_vals, tk::spline::cspline_hermite);
 
     // interpolate to fill uniform grid with A, phi, eta
     A[0] = ASpline(0.);

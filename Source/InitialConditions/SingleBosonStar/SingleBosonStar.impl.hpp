@@ -83,13 +83,26 @@ void SingleBosonStar::compute(Cell<data_t> current_cell) const
     double r = sqrt(x * x + y * y + z * z);
 
     // First star physical variables
-    double p_ = m_1d_sol.get_A_interp(r);
-    double dp_ = m_1d_sol.get_dA_interp(r);
-    double omega_ = m_1d_sol.get_lapse_interp(r);
-    double omega_prime_ = m_1d_sol.get_dlapse_interp(r);
-    double psi_ = m_1d_sol.get_psi_interp(r);
-    double psi_prime_ = m_1d_sol.get_dpsi_interp(r);
-
+    double p_, dp_, omega_, omega_prime_, psi_, psi_prime_;
+    if (m_1d_sol.initialise_from_data_file)
+    {
+    double areal_r = m_1d_sol.r_from_R_Spline(r);
+    p_ = m_1d_sol.ASpline(areal_r);
+    dp_ = m_1d_sol.ASpline.deriv(1, areal_r) / (m_1d_sol.XSpline(areal_r) * m_1d_sol.fSpline(areal_r));
+    omega_ = exp(m_1d_sol.PhiSpline(areal_r));
+    omega_prime_ = omega_ * m_1d_sol.PhiSpline.deriv(1, areal_r) / (m_1d_sol.XSpline(areal_r) * m_1d_sol.fSpline(areal_r));
+    psi_ = 1./m_1d_sol.fSpline(areal_r);
+    psi_prime_ = (1./ m_1d_sol.XSpline(areal_r) - 1.) / (r * m_1d_sol.fSpline(areal_r));
+    }
+    else
+    {
+    p_ = m_1d_sol.get_A_interp(r);
+    dp_ = m_1d_sol.get_dA_interp(r);
+    omega_ = m_1d_sol.get_lapse_interp(r);
+    omega_prime_ = m_1d_sol.get_dlapse_interp(r);
+    psi_ = m_1d_sol.get_psi_interp(r);
+    psi_prime_ = m_1d_sol.get_dpsi_interp(r);
+    }
     // Get scalar field modulus, conformal factor, lapse and their gradients
     double pc_os = psi_ * psi_ * c_ * c_ - omega_ * omega_ * s_ * s_;
     double lapse_1 = omega_ * psi_ / (sqrt(pc_os));
