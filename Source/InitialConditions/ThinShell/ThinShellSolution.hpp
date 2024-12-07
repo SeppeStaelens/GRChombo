@@ -22,9 +22,9 @@ class ThinShellSolution
     double radius;
     double compactness;
 
-    void calculate_aspect_mass();
-    void calculate_adm_mass();
-    double calculate_radius();
+    double calculate_aspect_mass(double radius);
+    double calculate_adm_mass(double radius);
+    double calculate_radius(double dx = 0.01);
 
   public:
     ThinShellSolution();
@@ -36,7 +36,7 @@ class ThinShellSolution
     double get_BSfrequency() const;
     void output_csv();
 
-    tk::spline ASpline, PhiSpline, fSpline, r_from_R_Spline;
+    tk::spline ASpline, PhiSpline, fSpline, r_from_R_Spline, XSpline;
 };
 
 #include "ThinShellSolution.impl.hpp"

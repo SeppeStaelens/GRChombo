@@ -3,7 +3,7 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#if !defined(THINSHELLSOLUTION_HPP)
+#if !defined(THINSHELLSOLUTION_HPP_)
 #error "This file should only be included through ThinShellSolution.hpp"
 #endif
 
@@ -112,8 +112,6 @@ void ThinShellSolution::initialise_from_file()
            << ", X = " << X_vals[0] << ", phi = " << phi_vals[0]
            << ", r = " << r_vals[0] << endl;
 
-    tk::spline XSpline;
-
     // Set the derivatives to be zero at the boundaries
     ASpline.set_boundary(tk::spline::first_deriv, 0.0, tk::spline::first_deriv,
                          0.0);
@@ -197,16 +195,17 @@ void ThinShellSolution::initialise_from_file()
 }
 
 // Find the aspect mass
-void ThinShellSolution::calculate_aspect_mass(double radius)
+double ThinShellSolution::calculate_aspect_mass(double radius)
 {
     double areal_radius = r_from_R_Spline(radius);
     return 2. * radius * (sqrt(1. / fSpline(areal_radius)) - 1.);
 }
 
 // Find the ADM mass
-void ThinShellSolution::calculate_adm_mass(double radius)
+double ThinShellSolution::calculate_adm_mass(double radius)
 {
     double areal_radius = r_from_R_Spline(radius);
+    double Xvalue = XSpline(areal_radius);
     return -areal_radius * (1. / Xvalue - 1.) / fSpline(areal_radius);
 }
 
@@ -231,7 +230,6 @@ void ThinShellSolution::set_initialcondition_params(
     BosonStar_params_t m_params_BosonStar,
     Potential::params_t m_params_potential, const double max_r)
 {
-    gridsize = m_params_BosonStar.gridpoints;
 
     A0 = m_params_BosonStar.central_amplitude_CSF;
     lambda = m_params_potential.phi4_coeff;
@@ -241,37 +239,37 @@ void ThinShellSolution::set_initialcondition_params(
                       // larger than the required cube
 }
 
-void ThinShellSolution::output_csv()
-{
-    std::ofstream A_file, dA_file, psi_file, dpsi_file, omega_file, r_file,
-        mass_file;
+// void ThinShellSolution::output_csv()
+// {
+//     std::ofstream A_file, dA_file, psi_file, dpsi_file, omega_file, r_file,
+//         mass_file;
 
-    A_file.open("A.csv");
-    dA_file.open("dA.csv");
-    psi_file.open("psi.csv");
-    dpsi_file.open("dpsi.csv");
-    omega_file.open("omega.csv");
-    r_file.open("r.csv");
-    mass_file.open("mass.csv");
+//     A_file.open("A.csv");
+//     dA_file.open("dA.csv");
+//     psi_file.open("psi.csv");
+//     dpsi_file.open("dpsi.csv");
+//     omega_file.open("omega.csv");
+//     r_file.open("r.csv");
+//     mass_file.open("mass.csv");
 
-    for (int i = 0; i < gridsize; i++)
-    {
-        A_file << A[i] << "," << endl;
-        dA_file << dA[i] << "," << endl;
-        psi_file << psi[i] << "," << endl;
-        dpsi_file << dpsi[i] << "," << endl;
-        omega_file << omega[i] << "," << endl;
-        r_file << radius_array[i] << "," << endl;
-        mass_file << boson_mass[i] << "," << endl;
-    }
+//     for (int i = 0; i < gridsize; i++)
+//     {
+//         A_file << A[i] << "," << endl;
+//         dA_file << dA[i] << "," << endl;
+//         psi_file << psi[i] << "," << endl;
+//         dpsi_file << dpsi[i] << "," << endl;
+//         omega_file << omega[i] << "," << endl;
+//         r_file << radius_array[i] << "," << endl;
+//         mass_file << boson_mass[i] << "," << endl;
+//     }
 
-    A_file.close();
-    dA_file.close();
-    psi_file.close();
-    dpsi_file.close();
-    omega_file.close();
-    r_file.close();
-    mass_file.close();
-}
+//     A_file.close();
+//     dA_file.close();
+//     psi_file.close();
+//     dpsi_file.close();
+//     omega_file.close();
+//     r_file.close();
+//     mass_file.close();
+// }
 
 #endif /* THINSHELLSOLUTION_IMPL_HPP_ */
