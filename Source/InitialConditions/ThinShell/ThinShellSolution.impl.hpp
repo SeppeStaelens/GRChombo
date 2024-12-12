@@ -180,8 +180,8 @@ void ThinShellSolution::initialise_from_file()
 
     // Calculate the aspect mass and the ADM mass at the boundary of the
     // physical domain. They shoud be similar, but not equal!
-    aspect_mass = calculate_aspect_mass();
-    adm_mass = calculate_adm_mass();
+    aspect_mass = calculate_aspect_mass(max_iso_R);
+    adm_mass = calculate_adm_mass(max_iso_R);
     radius = calculate_radius();
     compactness = aspect_mass / radius;
 
@@ -209,7 +209,7 @@ double ThinShellSolution::calculate_adm_mass(double radius)
     return -areal_radius * (1. / Xvalue - 1.) / fSpline(areal_radius);
 }
 
-double ThinShellSolution::calculate_radius(double dx = 0.01)
+double ThinShellSolution::calculate_radius(double dx)
 {
     double mass_99 = 0.99 * aspect_mass;
     double lower_radius = 0.;

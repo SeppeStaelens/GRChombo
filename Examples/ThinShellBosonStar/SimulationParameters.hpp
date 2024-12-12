@@ -72,8 +72,6 @@ class SimulationParameters : public SimulationParametersBase
 #ifdef USE_AHFINDER
         pp.load("AH_1_initial_guess", AH_1_initial_guess,
                 0.5 * bosonstar_params.mass);
-        pp.load("AH_2_initial_guess", AH_2_initial_guess,
-                0.5 * bosonstar2_params.mass);
         pp.load("AH_set_origins_to_punctures", AH_set_origins_to_punctures,
                 false);
 #endif
@@ -163,7 +161,6 @@ class SimulationParameters : public SimulationParametersBase
 
 #ifdef USE_AHFINDER
     double AH_1_initial_guess;
-    double AH_2_initial_guess;
     bool AH_set_origins_to_punctures;
 #endif
 
