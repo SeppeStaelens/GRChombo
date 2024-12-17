@@ -115,14 +115,22 @@ class SimulationParameters : public SimulationParametersBase
                 activate_effective_potential_extraction, 0);
         pp.load("effective_potential_write_extraction",
                 effective_potential_extraction_params.write_extraction, false);
-        pp.load("num_effective_potential_extraction_radii",
+        pp.load("effective_potential_extraction_file_prefix", 
+		effective_potential_extraction_params.extraction_file_prefix, 
+		std::string("Veff"));
+	pp.load("num_effective_potential_extraction_radii",
                 effective_potential_extraction_params.num_extraction_radii, 2);
         double min_r, max_r;
-        pp.load("effective_potential_min_r", min_r, 10.);
+        int effective_potential_extraction_level;
+        pp.load("effective_potential_extraction_level",
+                effective_potential_extraction_level, 0);
+	pp.load("effective_potential_min_r", min_r, 10.);
         pp.load("effective_potential_max_r", max_r, 11.);
         std::vector<double> radii(
             effective_potential_extraction_params.num_extraction_radii);
-        for (int i = 0;
+	std::vector<int> 
+	    levels(effective_potential_extraction_params.num_extraction_radii);
+	for (int i = 0;
              i < effective_potential_extraction_params.num_extraction_radii;
              ++i)
         {
@@ -130,9 +138,11 @@ class SimulationParameters : public SimulationParametersBase
                                    (effective_potential_extraction_params
                                         .num_extraction_radii -
                                     1);
+	    levels[i] = effective_potential_extraction_level;
         }
         effective_potential_extraction_params.extraction_radii = radii;
-        pp.load("num_points_phi_effective_potential",
+	effective_potential_extraction_params.extraction_levels = levels;
+	pp.load("num_points_phi_effective_potential",
                 effective_potential_extraction_params.num_points_phi, 2);
         pp.load("num_points_theta_effective_potential",
                 effective_potential_extraction_params.num_points_theta, 4);

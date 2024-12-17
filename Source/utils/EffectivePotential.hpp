@@ -36,12 +36,14 @@ class EffectivePotential
     {
         const Coordinates<data_t> coords(current_cell, m_dx, m_center);
         data_t R = coords.get_radius();
-
+	
         const auto vars = current_cell.template load_vars<Vars>();
-        // const double V_eff = vars.lapse / (vars.chi * R);
-        const double V_eff = 1.0;
+        auto integrand = vars.lapse * vars.lapse;
+	FOR2(i, j) integrand -= vars.chi * vars.h[i][j] * vars.shift[i] * vars.shift[j]; 
+        const data_t unit = R*R / vars.chi;
 
-        current_cell.store_vars(V_eff, c_V_eff);
+        current_cell.store_vars(integrand, c_V_eff);
+	current_cell.store_vars(unit, c_unit);
     }
 
   protected:
