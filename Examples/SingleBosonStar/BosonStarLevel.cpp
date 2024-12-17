@@ -52,9 +52,6 @@
 #include "EffectivePotential.hpp"
 #include "EffectivePotentialExtraction.hpp"
 
-// For Ang Mom Integrating
-#include "AngMomFlux.hpp"
-
 // for chombo grid Functions
 #include "AMRReductions.hpp"
 
@@ -191,14 +188,30 @@ void BosonStarLevel::specificPostTimeStep()
         mass_extraction.execute_query(m_gr_amr.m_interpolator, m_p.data_path);
     }
 
+    if (m_p.activate_effective_potential_extraction == 1)
+    {	
+	int min_level = m_p.effective_potential_extraction_params.min_extraction_level();
+    	if (at_level_timestep_multiple(min_level))
+    	{
+            // Populate the effective potential values on the grid
+            BoxLoops::loop(EffectivePotential(m_p.center, m_dx), m_state_new,
+                           m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+	    if (m_level == min_level)
+	    {
+		if (m_verbosity >= 1) { pout() << "Extracting Veff" << std::endl; }
+		m_gr_amr.m_interpolator->refresh();
+      		EffectivePotentialExtraction V_extraction(
+                    m_p.effective_potential_extraction_params, m_dt, m_time,
+                    first_step, m_restart_time);
+        	V_extraction.execute_query(m_gr_amr.m_interpolator, m_p.data_path);
+	    }
+	}
+    }
+
+
     // noether charge, max mod phi, min chi, constraint violations
     if (at_level_timestep_multiple(0))
     {
-        // EMTensor<ComplexScalarFieldWithPotential> emtensor(
-        //     complex_scalar_field, m_dx, c_rho, Interval(c_s1, c_s3),
-        //     Interval(c_s11, c_s33));
-        // BoxLoops::loop(emtensor, m_state_new, m_state_diagnostics,
-        //                EXCLUDE_GHOST_CELLS);
         BoxLoops::loop(
             DiagnosticTimeDerivativeK<ComplexScalarFieldWithPotential>(
                 m_p.G_Newton, complex_scalar_field, m_dx, m_p.ccz4_params,
@@ -206,18 +219,6 @@ void BosonStarLevel::specificPostTimeStep()
             m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
         BoxLoops::loop(NoetherCharge(), m_state_new, m_state_diagnostics,
                        EXCLUDE_GHOST_CELLS);
-
-        if (m_p.activate_effective_potential_extraction == 1)
-        {
-            // Populate the effective potential values on the grid
-            BoxLoops::loop(EffectivePotential(m_p.center, m_dx), m_state_new,
-                           m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-
-            EffectivePotentialExtraction V_extraction(
-                m_p.effective_potential_extraction_params, m_dt, m_time,
-                first_step, m_restart_time);
-            V_extraction.execute_query(m_gr_amr.m_interpolator);
-        }
     }
     if (m_level == 0)
     {

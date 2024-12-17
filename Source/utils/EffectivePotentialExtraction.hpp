@@ -20,7 +20,6 @@
 class EffectivePotentialExtraction : public SphericalExtraction
 {
   public:
-    string m_filename = "EffectivePotential";
     spherical_extraction_params_t m_params;
 
     //! The constructor
@@ -31,36 +30,44 @@ class EffectivePotentialExtraction : public SphericalExtraction
                               a_restart_time), m_params(a_params)
     {
         add_var(c_V_eff, VariableType::diagnostic);
+	add_var(c_unit, VariableType::diagnostic);
     }
 
     //! Execute the query
-    void execute_query(AMRInterpolator<Lagrange<4>> *a_interpolator)
+    void execute_query(AMRInterpolator<Lagrange<4>> *a_interpolator, std::string data_path)
     {
         // extract the values of the Weyl scalars on the spheres
         extract(a_interpolator);
 
         if (m_params.write_extraction)
-            write_extraction(m_params.extraction_file_prefix);
+            write_extraction(data_path + m_params.extraction_file_prefix);
 
-        std::vector<double> integrals;
+        std::vector<double> integrals_V_eff;
+	std::vector<double> integrals_unit;
 
         // the integrand lambda function
-        auto integrand = [](std::vector<double> effective_potential_vals,
-                            double r, double, double)
-        { return effective_potential_vals[0]; };
+        //auto integrand = [](std::vector<double> effective_potential_vals,
+        //                    double, double, double)
+        //{ return std::make_pair(effective_potential_vals[0], effective_potential_vals[1]); };
 
-        add_integrand(integrand, integrals);
+        add_var_integrand(0, integrals_V_eff);
+	add_var_integrand(1, integrals_unit);
 
         // do the integration over the surface
         integrate();
-
+	
+	std::vector<double> values(integrals_V_eff.size());
+	for (int i = 0; i < integrals_V_eff.size(); i++)
+	{
+		values[i] = sqrt(integrals_V_eff[i] / integrals_unit[i]);
+	}
         // write the integrals
-        write_to_dat(integrals);
+        write_to_dat(values, data_path, "EffectivePotential");
     }
 
-    void write_to_dat(std::vector<double> vals)
+    void write_to_dat(std::vector<double> vals, std::string data_path, std::string filename)
     {
-
+	
         std::vector<string> title_line(m_params.num_extraction_radii);
         string dummy_string;
         for (int i = 0; i < m_params.num_extraction_radii; i++)
@@ -68,19 +75,19 @@ class EffectivePotentialExtraction : public SphericalExtraction
             dummy_string = "r = " + to_string(m_params.extraction_radii[i]);
             title_line[i] = dummy_string;
         }
-
-        SmallDataIO potential_file(m_filename, m_dt, m_time, m_restart_time,
+	
+        SmallDataIO file(data_path + filename, m_dt, m_time, m_restart_time,
                                    SmallDataIO::APPEND, m_first_step);
 
         if (m_time > 0)
-            potential_file.remove_duplicate_time_data();
+            file.remove_duplicate_time_data();
 
         if (m_time == 0.)
         {
-            potential_file.write_header_line(title_line);
+            file.write_header_line(title_line);
         }
 
-        potential_file.write_time_data_line(vals);
+        file.write_time_data_line(vals);
     }
 
     ~EffectivePotentialExtraction() {;}
