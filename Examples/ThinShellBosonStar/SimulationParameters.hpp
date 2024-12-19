@@ -99,9 +99,45 @@ class SimulationParameters : public SimulationParametersBase
         // Weyl extraction
         pp.load("activate_gw_extraction", activate_weyl_extraction, 0);
 
-        // Work out the minimum extraction level
-        auto min_extraction_level_it =
-            mass_extraction_params.min_extraction_level();
+        // Effective potential extraction
+        pp.load("activate_effective_potential_extraction",
+                activate_effective_potential_extraction, 0);
+        pp.load("effective_potential_write_extraction",
+                effective_potential_extraction_params.write_extraction, false);
+        pp.load("effective_potential_extraction_file_prefix",
+                effective_potential_extraction_params.extraction_file_prefix,
+                std::string("Veff"));
+        pp.load("num_effective_potential_extraction_radii",
+                effective_potential_extraction_params.num_extraction_radii, 2);
+        double min_r, max_r;
+        int effective_potential_extraction_level;
+        pp.load("effective_potential_extraction_level",
+                effective_potential_extraction_level, 0);
+        pp.load("effective_potential_min_r", min_r, 10.);
+        pp.load("effective_potential_max_r", max_r, 11.);
+        std::vector<double> radii(
+            effective_potential_extraction_params.num_extraction_radii);
+        std::vector<int> levels(
+            effective_potential_extraction_params.num_extraction_radii);
+        for (int i = 0;
+             i < effective_potential_extraction_params.num_extraction_radii;
+             ++i)
+        {
+            radii[i] = min_r + i * (max_r - min_r) /
+                                   (effective_potential_extraction_params
+                                        .num_extraction_radii -
+                                    1);
+            levels[i] = effective_potential_extraction_level;
+        }
+        effective_potential_extraction_params.extraction_radii = radii;
+        effective_potential_extraction_params.extraction_levels = levels;
+        pp.load("num_points_phi_effective_potential",
+                effective_potential_extraction_params.num_points_phi, 2);
+        pp.load("num_points_theta_effective_potential",
+                effective_potential_extraction_params.num_points_theta, 4);
+        pp.load("effective_potential_extraction_center",
+                effective_potential_extraction_params.extraction_center,
+                {0.5 * L, 0.5 * L, 0.5 * L});
 
         // Do we cant to calculate L2 norms of constraint violations
         pp.load("calculate_constraint_violations",
@@ -134,6 +170,9 @@ class SimulationParameters : public SimulationParametersBase
     extraction_params_t mass_extraction_params;
 
     int activate_weyl_extraction;
+
+    int activate_effective_potential_extraction;
+    extraction_params_t effective_potential_extraction_params;
 
     // Do we want to write a file with the L2 norms of contraints?
     bool calculate_constraint_violations;
