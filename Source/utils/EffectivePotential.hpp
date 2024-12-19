@@ -35,15 +35,35 @@ class EffectivePotential
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
         const Coordinates<data_t> coords(current_cell, m_dx, m_center);
-        data_t R = coords.get_radius();
+        data_t R = coords.get_radius()+1e-10;
+	data_t x = coords.x;
+	data_t y = coords.y;
+	data_t z = coords.z;
+	data_t sint = sqrt(1. - z*z / (R*R));
+	data_t cosp = x / (R * sint + 1e-10);
+	data_t sinp = y / (R * sint + 1e-10);
 	
         const auto vars = current_cell.template load_vars<Vars>();
-        auto integrand = vars.lapse * vars.lapse;
-	FOR2(i, j) integrand -= vars.chi * vars.h[i][j] * vars.shift[i] * vars.shift[j]; 
-        const data_t unit = R*R / vars.chi;
+        
+	auto integrand = vars.lapse * vars.lapse;
+	FOR2(i, j) integrand -= vars.h[i][j] * vars.shift[i] * vars.shift[j] / vars.chi; 
+        
+	const data_t unit = R*R / vars.chi;
+	
+	const auto g_thth = z*z * (cosp*cosp * vars.h[0][0] + sinp*sinp * vars.h[1][1])
+		      + R*R * sint*sint * vars.h[2][2] + 2 * z * 
+			(cosp * vars.h[0][1] * z * sinp - R * sint * 
+			  (cosp * vars.h[0][2] + sinp * vars.h[1][2]));
+	const auto g_phph = y*y * vars.h[0][0] + x*x * vars.h[1][1] - 2*x*y*vars.h[0][1];
+	const auto g_thph = -y*z*cosp*vars.h[0][0] + x*z*sinp*vars.h[1][1] 
+		      +(x*cosp-y*sinp)*z*vars.h[0][1] + R*sint*(y*vars.h[0][2]-x*vars.h[1][2]);
+	const auto root_det_g = sqrt(g_thth*g_phph - g_thph*g_thph)/vars.chi;
+
+	const auto volume = root_det_g / (R*R * sint);  
 
         current_cell.store_vars(integrand, c_V_eff);
 	current_cell.store_vars(unit, c_unit);
+	current_cell.store_vars(volume, c_volume);
     }
 
   protected:

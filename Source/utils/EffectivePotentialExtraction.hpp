@@ -31,12 +31,14 @@ class EffectivePotentialExtraction : public SphericalExtraction
     {
         add_var(c_V_eff, VariableType::diagnostic);
 	add_var(c_unit, VariableType::diagnostic);
+	//std::vector<int> metric_vars = {c_chi, c_h11, c_h12, c_h13, c_h22, c_h23, c_h33};
+	//add_evolution_vars(metric_vars);
+	add_var(c_volume, VariableType::diagnostic);
     }
 
     //! Execute the query
     void execute_query(AMRInterpolator<Lagrange<4>> *a_interpolator, std::string data_path)
     {
-        // extract the values of the Weyl scalars on the spheres
         extract(a_interpolator);
 
         if (m_params.write_extraction)
@@ -44,25 +46,34 @@ class EffectivePotentialExtraction : public SphericalExtraction
 
         std::vector<double> integrals_V_eff;
 	std::vector<double> integrals_unit;
+	std::vector<double> integrals_volume;
 
         // the integrand lambda function
-        //auto integrand = [](std::vector<double> effective_potential_vals,
-        //                    double, double, double)
-        //{ return std::make_pair(effective_potential_vals[0], effective_potential_vals[1]); };
+        //auto integrand = [](std::vector<double> vals,
+        //                    double r, double theta, double phi)
+        //{ 
+	//	double g_th_th = 
+	//	return vals[0]; 
+	//};
 
         add_var_integrand(0, integrals_V_eff);
 	add_var_integrand(1, integrals_unit);
+	add_var_integrand(2, integrals_volume);
+	//add_integrand(integrand, integrals_unit)
 
         // do the integration over the surface
         integrate();
 	
 	std::vector<double> values(integrals_V_eff.size());
+	std::vector<double> values2(integrals_V_eff.size());
 	for (int i = 0; i < integrals_V_eff.size(); i++)
 	{
 		values[i] = sqrt(integrals_V_eff[i] / integrals_unit[i]);
+		values2[i] = sqrt(integrals_V_eff[i] / (4*M_PI))/m_params.extraction_radii[i] / sqrt(integrals_volume[i] / (4*M_PI));
 	}
         // write the integrals
-        write_to_dat(values, data_path, "EffectivePotential");
+        write_to_dat(values, data_path, "EffectivePotential_");
+	write_to_dat(values2, data_path, "EffectivePotential2_");
     }
 
     void write_to_dat(std::vector<double> vals, std::string data_path, std::string filename)
