@@ -302,6 +302,18 @@ void BosonStarLevel::specificPostTimeStep()
         }
         min_chi_file.write_time_data_line({min_chi});
 
+	// Compute the max of A11 and write it to a file
+        double max_a11 = amr_reductions_evolution.max(c_A11);
+        std::string max_a11_filename = m_p.data_path + "max_A11";
+        SmallDataIO max_a11_file(max_a11_filename, m_dt, m_time, m_restart_time,
+                                 SmallDataIO::APPEND, first_step);
+        max_a11_file.remove_duplicate_time_data();
+        if (m_time == 0.)
+        {
+            max_a11_file.write_header_line({"max A11"});
+        }
+        max_a11_file.write_time_data_line({max_a11});
+
         // constraints calculated pre check and pre plot so done here already
 
         double L2_Ham = amr_reductions.norm(c_Ham, 2, true);

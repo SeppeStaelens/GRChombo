@@ -22,6 +22,7 @@ class EffectivePotentialExtraction : public SphericalExtraction
   public:
     spherical_extraction_params_t m_params;
     std::vector<double> m_light_rings;
+    std::vector<double> m_potential_extrema;
     bool found_light_rings = false;
 
     //! The constructor
@@ -59,7 +60,7 @@ class EffectivePotentialExtraction : public SphericalExtraction
 
         std::vector<double> V_eff_values(integrals_V_eff_n.size());
         std::vector<double> V_eff_values2(integrals_V_eff_n.size());
-        for (int i = 0; i < integrals_V_eff.size(); i++)
+        for (int i = 0; i < integrals_V_eff_n.size(); i++)
         {
             V_eff_values[i] =
                 sqrt(integrals_V_eff_n[i] / integrals_V_eff_d1[i]);
@@ -78,6 +79,7 @@ class EffectivePotentialExtraction : public SphericalExtraction
             write_light_rings_to_dat(m_light_rings, data_path, "LightRings_");
             found_light_rings = false;
             m_light_rings.clear();
+	    m_potential_extrema.clear();
         }
         find_light_rings(V_eff_values2);
         if (found_light_rings)
@@ -135,6 +137,7 @@ class EffectivePotentialExtraction : public SphericalExtraction
                  vals[num_radii - 3]) /
                 (2 * dr);
 
+	    double a, b, r_i, r_extremum;
             for (int i = 0; i < num_radii - 1; i++)
             {
                 if (derivatives[i] == 0)
@@ -145,10 +148,12 @@ class EffectivePotentialExtraction : public SphericalExtraction
                 else if (derivatives[i] * derivatives[i + 1] < 0)
                 {
                     found_light_rings = true;
-                    m_light_rings.push_back(
-                        m_params.extraction_radii[i] -
-                        derivatives[i] * dr /
-                            (derivatives[i + 1] - derivatives[i]));
+		    r_i = m_params.extraction_radii[i];
+  		    a = (derivatives[i+1] - derivatives[i]) / (2 * dr);
+		    b = derivatives[i] - 2 * a * r_i;
+		    r_extremum = -b / (2*a);
+		    m_light_rings.push_back(r_extremum);
+		    m_potential_extrema.push_back(vals[i] + a*(r_extremum*r_extremum - r_i*r_i) + b*(r_extremum - r_i)); 
                 }
             }
         }
@@ -157,10 +162,11 @@ class EffectivePotentialExtraction : public SphericalExtraction
     void write_light_rings_to_dat(std::vector<double> vals,
                                   std::string data_path, std::string filename)
     {
-        std::vector<string> title_line(3);
+        std::vector<string> title_line(4);
         title_line[0] = "nr_of_LRs";
         title_line[1] = "r1";
         title_line[2] = "r2";
+	title_line[3] = "delta_V";
 
         SmallDataIO file(data_path + filename, m_dt, m_time, m_restart_time,
                          SmallDataIO::APPEND, m_first_step);
@@ -173,7 +179,13 @@ class EffectivePotentialExtraction : public SphericalExtraction
             file.write_header_line(title_line);
         }
         vals.insert(vals.begin(), vals.size());
-        file.write_time_data_line(vals);
+	double potential_diff = 0;
+	for (int i = 0; i < floor(m_potential_extrema.size() / 2); i++)
+        {
+            potential_diff = abs(m_potential_extrema[2*i] - m_potential_extrema[2*i+1]);
+	    vals.insert(vals.end(), potential_diff);
+	}
+	file.write_time_data_line(vals);
     }
 
     ~EffectivePotentialExtraction() { ; }
