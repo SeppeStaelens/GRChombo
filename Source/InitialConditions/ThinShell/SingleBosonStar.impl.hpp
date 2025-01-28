@@ -62,7 +62,7 @@ void SingleBosonStar::compute(Cell<data_t> current_cell) const
     // auxiliary variables
     double Phi_ = m_1d_sol.PhiSpline.interpolate(areal_r);
     double f_ = m_1d_sol.fSpline.interpolate(areal_r);
-    double A_ = m_1d_sol.ASpline.interpolateI haveaa(areal_r);
+    double A_ = m_1d_sol.ASpline.interpolate(areal_r);
     double w_ = m_1d_sol.get_BSfrequency();
 
     // First star physical variables

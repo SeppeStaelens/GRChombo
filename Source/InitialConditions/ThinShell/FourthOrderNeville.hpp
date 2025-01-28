@@ -34,7 +34,7 @@ public:
      * @param x x values of the data points.
      * @param y y values of the data points.
      */
-    set_data_points(std::vector<double> *x, std::vector<double> *y)
+    void set_data_points(std::vector<double> *x, std::vector<double> *y)
     {
         if (x == nullptr || y == nullptr)
         {
@@ -54,7 +54,7 @@ public:
      * @param x0 The x value of the point to interpolate.
      * @return The interpolated value of the point.
      */
-    double interpolate(double x0)
+    double interpolate(double x0) const
     {
         int i_low = 0, i_high = m_n - 1;
         while (i_high - i_low > 1)
