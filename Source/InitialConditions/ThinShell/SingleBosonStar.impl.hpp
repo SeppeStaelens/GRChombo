@@ -57,12 +57,12 @@ void SingleBosonStar::compute(Cell<data_t> current_cell) const
     double z = coords.z;
     double y = coords.y;
     double r = sqrt(x * x + y * y + z * z);
-    double areal_r = m_1d_sol.r_from_R_Spline(r);
+    double areal_r = m_1d_sol.r_from_R_Spline.interpolate(r);
 
     // auxiliary variables
-    double Phi_ = m_1d_sol.PhiSpline(areal_r);
-    double f_ = m_1d_sol.fSpline(areal_r);
-    double A_ = m_1d_sol.ASpline(areal_r);
+    double Phi_ = m_1d_sol.PhiSpline.interpolate(areal_r);
+    double f_ = m_1d_sol.fSpline.interpolate(areal_r);
+    double A_ = m_1d_sol.ASpline.interpolateI haveaa(areal_r);
     double w_ = m_1d_sol.get_BSfrequency();
 
     // First star physical variables

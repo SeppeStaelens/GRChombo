@@ -3,7 +3,8 @@
 #define THINSHELLSOLUTION_HPP_
 
 #include "cmath"
-#include "spline.h"
+//#include "spline.h"
+#include "FourthOrderNeville.hpp"
 #include <vector>
 
 class ThinShellSolution
@@ -36,7 +37,8 @@ class ThinShellSolution
     double get_BSfrequency() const;
     void output_csv();
 
-    tk::spline ASpline, PhiSpline, fSpline, r_from_R_Spline, XSpline;
+    //tk::spline ASpline, PhiSpline, fSpline, r_from_R_Spline, XSpline;
+    FourthOrderNeville ASpline, PhiSpline, fSpline, r_from_R_Spline, XSpline;
 };
 
 #include "ThinShellSolution.impl.hpp"

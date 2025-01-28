@@ -10,7 +10,8 @@
 #ifndef THINSHELLSOLUTION_IMPL_HPP_
 #define THINSHELLSOLUTION_IMPL_HPP_
 
-#include "spline.h"
+//#include "spline.h"
+#include "FourthOrderNeville.hpp"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -112,21 +113,26 @@ void ThinShellSolution::initialise_from_file()
            << ", X = " << X_vals[0] << ", phi = " << phi_vals[0]
            << ", r = " << r_vals[0] << endl;
 
-    // Set the derivatives to be zero at the boundaries
-    ASpline.set_boundary(tk::spline::first_deriv, 0.0, tk::spline::first_deriv,
-                         0.0);
-    XSpline.set_boundary(tk::spline::first_deriv, 0.0, tk::spline::first_deriv,
-                         0.0);
-    PhiSpline.set_boundary(tk::spline::first_deriv, 0.0,
-                           tk::spline::first_deriv, 0.0);
+    // // Set the derivatives to be zero at the boundaries
+    // ASpline.set_boundary(tk::spline::first_deriv, 0.0, tk::spline::first_deriv,
+    //                      0.0);
+    // XSpline.set_boundary(tk::spline::first_deriv, 0.0, tk::spline::first_deriv,
+    //                      0.0);
+    // PhiSpline.set_boundary(tk::spline::first_deriv, 0.0,
+    //                        tk::spline::first_deriv, 0.0);
+
+    // // Set up the spline interpolators
+    // PhiSpline.set_points(r_vals, phi_vals, tk::spline::cspline_hermite);
+    // ASpline.set_points(r_vals, A_vals, tk::spline::cspline_hermite);
+    // XSpline.set_points(r_vals, X_vals, tk::spline::cspline_hermite);
 
     // Set up the spline interpolators
-    PhiSpline.set_points(r_vals, phi_vals, tk::spline::cspline_hermite);
-    ASpline.set_points(r_vals, A_vals, tk::spline::cspline_hermite);
-    XSpline.set_points(r_vals, X_vals, tk::spline::cspline_hermite);
+    PhiSpline.set_data_points(&r_vals, &phi_vals);
+    ASpline.set_data_points(&r_vals, &A_vals);
+    XSpline.set_data_points(&r_vals, &X_vals);
 
-    pout() << "TEST splines: phi, A, X at 0 are " << ASpline(0.) << ", "
-           << XSpline(0.) << ", " << PhiSpline(0.) << endl;
+    pout() << "TEST splines: phi, A, X at 0 are " << ASpline.interpolate(0.) << ", "
+           << XSpline.interpolate(0.) << ", " << PhiSpline.interpolate(0.) << endl;
 
     // Asymptotic behaviour of different radii
     double max_iso_R = L;
@@ -151,12 +157,12 @@ void ThinShellSolution::initialise_from_file()
     while (int_radius < max_arial_r)
     {
         int_r_vals[j] = int_radius;
-        double k1 = (XSpline(int_radius) - 1.) * f_c / int_radius;
-        double k2 = (XSpline(int_radius + dr / 2) - 1.) * (f_c + k1 * dr / 2) /
+        double k1 = (XSpline.interpolate(int_radius) - 1.) * f_c / int_radius;
+        double k2 = (XSpline.interpolate(int_radius + dr / 2) - 1.) * (f_c + k1 * dr / 2) /
                     (int_radius + dr / 2);
-        double k3 = (XSpline(int_radius + dr / 2) - 1.) * (f_c + k2 * dr / 2) /
+        double k3 = (XSpline.interpolate(int_radius + dr / 2) - 1.) * (f_c + k2 * dr / 2) /
                     (int_radius + dr / 2);
-        double k4 = (XSpline(int_radius + dr) - 1.) * (f_c + k3 * dr) /
+        double k4 = (XSpline.interpolate(int_radius + dr) - 1.) * (f_c + k3 * dr) /
                     (int_radius + dr);
         f_c += dr * (k1 + 2 * k2 + 2 * k3 + k4) / 6;
         f_vals[j] = f_c;
@@ -174,9 +180,11 @@ void ThinShellSolution::initialise_from_file()
         j++;
     }
 
-    r_from_R_Spline.set_points(iso_R_vals, int_r_vals,
-                               tk::spline::cspline_hermite);
-    fSpline.set_points(int_r_vals, f_vals, tk::spline::cspline_hermite);
+    // r_from_R_Spline.set_points(iso_R_vals, int_r_vals,
+    //                            tk::spline::cspline_hermite);
+    // fSpline.set_points(int_r_vals, f_vals, tk::spline::cspline_hermite);
+    r_from_R_Spline.set_data_points(&iso_R_vals, &int_r_vals);
+    fSpline.set_data_points(&int_r_vals, &f_vals);
 
     // Calculate the aspect mass and the ADM mass at the boundary of the
     // physical domain. They shoud be similar, but not equal!
@@ -197,16 +205,16 @@ void ThinShellSolution::initialise_from_file()
 // Find the aspect mass
 double ThinShellSolution::calculate_aspect_mass(double radius)
 {
-    double areal_radius = r_from_R_Spline(radius);
-    return 2. * radius * (sqrt(1. / fSpline(areal_radius)) - 1.);
+    double areal_radius = r_from_R_Spline.interpolate(radius);
+    return 2. * radius * (sqrt(1. / fSpline.interpolate(areal_radius)) - 1.);
 }
 
 // Find the ADM mass
 double ThinShellSolution::calculate_adm_mass(double radius)
 {
-    double areal_radius = r_from_R_Spline(radius);
-    double Xvalue = XSpline(areal_radius);
-    return -areal_radius * (1. / Xvalue - 1.) / fSpline(areal_radius);
+    double areal_radius = r_from_R_Spline.interpolate(radius);
+    double Xvalue = XSpline.interpolate(areal_radius);
+    return -areal_radius * (1. / Xvalue - 1.) / fSpline.interpolate(areal_radius);
 }
 
 double ThinShellSolution::calculate_radius(double dx = 0.01)
@@ -238,38 +246,5 @@ void ThinShellSolution::set_initialcondition_params(
     L = max_r * 1.05; // just to make sure the function domain is slightly
                       // larger than the required cube
 }
-
-// void ThinShellSolution::output_csv()
-// {
-//     std::ofstream A_file, dA_file, psi_file, dpsi_file, omega_file, r_file,
-//         mass_file;
-
-//     A_file.open("A.csv");
-//     dA_file.open("dA.csv");
-//     psi_file.open("psi.csv");
-//     dpsi_file.open("dpsi.csv");
-//     omega_file.open("omega.csv");
-//     r_file.open("r.csv");
-//     mass_file.open("mass.csv");
-
-//     for (int i = 0; i < gridsize; i++)
-//     {
-//         A_file << A[i] << "," << endl;
-//         dA_file << dA[i] << "," << endl;
-//         psi_file << psi[i] << "," << endl;
-//         dpsi_file << dpsi[i] << "," << endl;
-//         omega_file << omega[i] << "," << endl;
-//         r_file << radius_array[i] << "," << endl;
-//         mass_file << boson_mass[i] << "," << endl;
-//     }
-
-//     A_file.close();
-//     dA_file.close();
-//     psi_file.close();
-//     dpsi_file.close();
-//     omega_file.close();
-//     r_file.close();
-//     mass_file.close();
-// }
 
 #endif /* THINSHELLSOLUTION_IMPL_HPP_ */
