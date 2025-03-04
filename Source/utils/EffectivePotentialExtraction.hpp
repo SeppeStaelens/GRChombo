@@ -60,6 +60,7 @@ class EffectivePotentialExtraction : public SphericalExtraction
 
         std::vector<double> V_eff_values(integrals_V_eff_n.size());
         std::vector<double> V_eff_values2(integrals_V_eff_n.size());
+	std::vector<double> areal_radii(integrals_V_eff_n.size());
         for (int i = 0; i < integrals_V_eff_n.size(); i++)
         {
             V_eff_values[i] =
@@ -67,13 +68,14 @@ class EffectivePotentialExtraction : public SphericalExtraction
             V_eff_values2[i] = sqrt(integrals_V_eff_n[i] / (4 * M_PI)) /
                                m_params.extraction_radii[i] /
                                sqrt(integrals_V_eff_d2[i] / (4 * M_PI));
+	    areal_radii[i] = sqrt(integrals_V_eff_d2[i] / (4 * M_PI));
         }
         // write the integrals
         write_to_dat(V_eff_values, data_path, "EffectivePotential_");
         write_to_dat(V_eff_values2, data_path, "EffectivePotential2_");
 
         // find the light rings
-        find_light_rings(V_eff_values);
+        find_light_rings(V_eff_values, areal_radii);
         if (found_light_rings)
         {
             write_light_rings_to_dat(m_light_rings, data_path, "LightRings_");
@@ -81,7 +83,7 @@ class EffectivePotentialExtraction : public SphericalExtraction
             m_light_rings.clear();
 	    m_potential_extrema.clear();
         }
-        find_light_rings(V_eff_values2);
+        find_light_rings(V_eff_values2, areal_radii);
         if (found_light_rings)
         {
             write_light_rings_to_dat(m_light_rings, data_path, "LightRings2_");
@@ -116,7 +118,7 @@ class EffectivePotentialExtraction : public SphericalExtraction
 
     //! This function estimates the extrema of the effective potential, which
     //! correspond to the light rings
-    void find_light_rings(std::vector<double> vals)
+    void find_light_rings(std::vector<double> vals, std::vector<double> areal)
     {
         std::vector<double> derivatives(vals.size());
         int num_radii = vals.size();
@@ -137,13 +139,14 @@ class EffectivePotentialExtraction : public SphericalExtraction
                  vals[num_radii - 3]) /
                 (2 * dr);
 
-	    double a, b, r_i, r_extremum;
+	    double a, b, r_i, r_extremum, r_ip1, K, r_areal_ex;
             for (int i = 0; i < num_radii - 1; i++)
             {
                 if (derivatives[i] == 0)
                 {
                     found_light_rings = true;
                     m_light_rings.push_back(m_params.extraction_radii[i]);
+		    m_light_rings.push_back(areal[i]);
                 }
                 else if (derivatives[i] * derivatives[i + 1] < 0)
                 {
@@ -154,7 +157,12 @@ class EffectivePotentialExtraction : public SphericalExtraction
 		    r_extremum = -b / (2*a);
 		    m_light_rings.push_back(r_extremum);
 		    m_potential_extrema.push_back(vals[i] + a*(r_extremum*r_extremum - r_i*r_i) + b*(r_extremum - r_i)); 
-                }
+                
+		    r_ip1 = m_params.extraction_radii[i+1];
+		    K = (areal[i+1] - areal[i]) / (r_ip1 - r_i);
+		    r_areal_ex = areal[i] + K * (r_extremum - r_i);
+		    m_light_rings.push_back(r_areal_ex);
+		}
             }
         }
     }
@@ -162,11 +170,13 @@ class EffectivePotentialExtraction : public SphericalExtraction
     void write_light_rings_to_dat(std::vector<double> vals,
                                   std::string data_path, std::string filename)
     {
-        std::vector<string> title_line(4);
+        std::vector<string> title_line(6);
         title_line[0] = "nr_of_LRs";
         title_line[1] = "r1";
-        title_line[2] = "r2";
-	title_line[3] = "delta_V";
+	title_line[2] = "r1_areal";
+        title_line[3] = "r2";
+	title_line[4] = "r2_areal";
+	title_line[5] = "delta_V";
 
         SmallDataIO file(data_path + filename, m_dt, m_time, m_restart_time,
                          SmallDataIO::APPEND, m_first_step);
