@@ -23,9 +23,9 @@ enum
     c_Mom3,
 
     c_dtK,
-    c_V_eff_n,
-    c_V_eff_d1,
-    c_V_eff_d2,
+    c_alpha2,
+    c_beta2,
+    c_V_eff_d,
 
     c_Weyl4_Re,
     c_Weyl4_Im,
@@ -75,9 +75,9 @@ static const std::array<std::string, NUM_DIAGNOSTIC_VARS> variable_names = {
     "Mom3",
 
     "dtK",
-    "V_eff_n",
-    "V_eff_d1",
-    "V_eff_d2",
+    "alpha2",
+    "beta2",
+    "V_eff_d",
 
     "Weyl4_Re",
     "Weyl4_Im",

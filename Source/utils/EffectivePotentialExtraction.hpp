@@ -33,9 +33,9 @@ class EffectivePotentialExtraction : public SphericalExtraction
                               a_restart_time),
           m_params(a_params)
     {
-        add_var(c_V_eff_n, VariableType::diagnostic);
-        add_var(c_V_eff_d1, VariableType::diagnostic);
-        add_var(c_V_eff_d2, VariableType::diagnostic);
+        add_var(c_alpha2, VariableType::diagnostic);
+        add_var(c_beta2, VariableType::diagnostic);
+        add_var(c_V_eff_d, VariableType::diagnostic);
     }
 
     //! Execute the query
@@ -47,47 +47,62 @@ class EffectivePotentialExtraction : public SphericalExtraction
         if (m_params.write_extraction)
             write_extraction(data_path + m_params.extraction_file_prefix);
 
-        std::vector<double> integrals_V_eff_n;
-        std::vector<double> integrals_V_eff_d1;
-        std::vector<double> integrals_V_eff_d2;
+        std::vector<double> integrals_alpha2;
+        std::vector<double> integrals_beta2;
+        std::vector<double> integrals_V_eff_d;
 
-        add_var_integrand(0, integrals_V_eff_n);
-        add_var_integrand(1, integrals_V_eff_d1);
-        add_var_integrand(2, integrals_V_eff_d2);
+        add_var_integrand(0, integrals_alpha2);
+        add_var_integrand(1, integrals_beta2);
+        add_var_integrand(2, integrals_V_eff_d);
 
         // do the integration over the surface
         integrate();
 
-        std::vector<double> V_eff_values(integrals_V_eff_n.size());
-        std::vector<double> V_eff_values2(integrals_V_eff_n.size());
-	std::vector<double> areal_radii(integrals_V_eff_n.size());
-        for (int i = 0; i < integrals_V_eff_n.size(); i++)
+        std::vector<double> V_eff_values(integrals_V_eff_d.size());
+        std::vector<double> V_eff_p_values(integrals_V_eff_d.size());
+	std::vector<double> V_eff_m_values(integrals_V_eff_d.size());
+	std::vector<double> areal_radii(integrals_V_eff_d.size());
+        for (int i = 0; i < integrals_V_eff_d.size(); i++)
         {
-            V_eff_values[i] =
-                sqrt(integrals_V_eff_n[i] / integrals_V_eff_d1[i]);
-            V_eff_values2[i] = sqrt(integrals_V_eff_n[i] / (4 * M_PI)) /
+            areal_radii[i] = sqrt(integrals_V_eff_d[i] / (4 * M_PI));
+	    V_eff_values[i] = sqrt((integrals_alpha2[i] - integrals_beta2[i]) / (4 * M_PI)) /
                                m_params.extraction_radii[i] /
-                               sqrt(integrals_V_eff_d2[i] / (4 * M_PI));
-	    areal_radii[i] = sqrt(integrals_V_eff_d2[i] / (4 * M_PI));
-        }
+                               areal_radii[i];
+	    V_eff_p_values[i] = (sqrt(integrals_alpha2[i]) + sqrt(integrals_beta2[i]))  / sqrt(4 * M_PI) /
+                               m_params.extraction_radii[i] /
+                               areal_radii[i];
+            V_eff_m_values[i] = (sqrt(integrals_alpha2[i]) - sqrt(integrals_beta2[i]))  / sqrt(4 * M_PI) /
+                               m_params.extraction_radii[i] / 
+                               areal_radii[i];
+	}
         // write the integrals
-        write_to_dat(V_eff_values, data_path, "EffectivePotential_");
-        write_to_dat(V_eff_values2, data_path, "EffectivePotential2_");
+        write_to_dat(V_eff_values, data_path, "EffectivePotential");
+        write_to_dat(V_eff_p_values, data_path, "EffectivePotential_p");
+        write_to_dat(V_eff_m_values, data_path, "EffectivePotential_m");
 
         // find the light rings
         find_light_rings(V_eff_values, areal_radii);
         if (found_light_rings)
         {
-            write_light_rings_to_dat(m_light_rings, data_path, "LightRings_");
+            write_light_rings_to_dat(m_light_rings, data_path, "LightRings");
             found_light_rings = false;
             m_light_rings.clear();
 	    m_potential_extrema.clear();
         }
-        find_light_rings(V_eff_values2, areal_radii);
+        find_light_rings(V_eff_p_values, areal_radii);
         if (found_light_rings)
         {
-            write_light_rings_to_dat(m_light_rings, data_path, "LightRings2_");
+            write_light_rings_to_dat(m_light_rings, data_path, "LightRings_p");
+            found_light_rings = false;
+            m_light_rings.clear();
+            m_potential_extrema.clear();
+	}
+	find_light_rings(V_eff_m_values, areal_radii);
+        if (found_light_rings)
+        {
+            write_light_rings_to_dat(m_light_rings, data_path, "LightRings_m");
         }
+
     }
 
     void write_to_dat(std::vector<double> vals, std::string data_path,

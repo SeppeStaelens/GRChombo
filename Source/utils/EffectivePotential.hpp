@@ -49,15 +49,13 @@ class EffectivePotential
         // The numerator of the effective potential is calculated by averaging
         // the lapse and shift squared over a sphere. The square root gets taken
         // in the Extraction
-        auto V_eff_numerator = vars.lapse * vars.lapse;
-        FOR2(i, j)
-        V_eff_numerator -=
-            vars.h[i][j] * vars.shift[i] * vars.shift[j] / vars.chi;
+        const auto alpha_squared = vars.lapse * vars.lapse;
 
-        // If spherical symmetry would be preserved perfectly throughout the
-        // evolution, the denominator of the effective potential would simply be
-        // Psi * R (the square root gets taken in the Extraction)
-        const data_t V_eff_denominator1 = R * R / vars.chi;
+	auto norm_shift_squared = vars.chi;
+	FOR2(i, j)
+        norm_shift_squared +=
+            vars.h[i][j] * vars.shift[i] * vars.shift[j] / vars.chi;
+	norm_shift_squared -= vars.chi;
 
         // To account from the (numerical) departure of spherical symmetry, we
         // have to take the off-diagonal terms of the metric into account. The
@@ -82,11 +80,11 @@ class EffectivePotential
 
         // As the volume element in the Spherical Extraction is hardcoded to be
         // r^2 sin theta, we need to divide by this.
-        const auto V_eff_denominator2 = root_det_g / (R * R * sint);
+        const auto V_eff_denominator = root_det_g / (R * R * sint);
 
-        current_cell.store_vars(V_eff_numerator, c_V_eff_n);
-        current_cell.store_vars(V_eff_denominator1, c_V_eff_d1);
-        current_cell.store_vars(V_eff_denominator2, c_V_eff_d2);
+        current_cell.store_vars(alpha_squared, c_alpha2);
+        current_cell.store_vars(norm_shift_squared, c_beta2);
+        current_cell.store_vars(V_eff_denominator, c_V_eff_d);
     }
 
   protected:
