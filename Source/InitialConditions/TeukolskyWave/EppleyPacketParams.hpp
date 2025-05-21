@@ -13,7 +13,7 @@ struct EppleyPacket_params_t
 {
     double sigma; //!< width of the packet
     double amplitude; //!< amplitude of the packet
-    double magnetic; //!< magnetic quantum number
+    int magnetic; //!< magnetic quantum number
     std::array<double, CH_SPACEDIM>
         wave_centre; //!< coordinates of the centre of the star
 };

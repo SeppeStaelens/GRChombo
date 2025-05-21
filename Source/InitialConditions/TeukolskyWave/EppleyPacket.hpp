@@ -20,9 +20,13 @@ class EppleyPacket
     double get_Fd4(double x) const;
 
     //! Auxiliary functions
-    double get_A(double r, double t = 0.) const;
-    double get_B(double r, double t = 0.) const;
-    double get_C(double r, double t = 0.) const;
+    double get_A(double r, double t, int sign) const;
+    double get_B(double r, double t, int sign) const;
+    double get_C(double r, double t, int sign) const;
+
+    double get_A_tot(double r, double t) const;
+    double get_B_tot(double r, double t) const;
+    double get_C_tot(double r, double t) const;
 
   public:
     EppleyPacket(EppleyPacket_params_t m_params);
@@ -34,12 +38,12 @@ class EppleyPacketM0 : public EppleyPacket
     EppleyPacketM0(EppleyPacket_params_t m_params) : EppleyPacket(m_params) {}
 
     //! Metric functions
-    double get_gxx(double x, double y, double z, double r) const;
-    double get_gxy(double x, double y, double z, double r) const;
-    double get_gxz(double x, double y, double z, double r) const;
-    double get_gyy(double x, double y, double z, double r) const;
-    double get_gyz(double x, double y, double z, double r) const;
-    double get_gzz(double x, double y, double z, double r) const;
+    double get_gxx(double x, double y, double z, double r, double t) const;
+    double get_gxy(double x, double y, double z, double r, double t) const;
+    double get_gxz(double x, double y, double z, double r, double t) const;
+    double get_gyy(double x, double y, double z, double r, double t) const;
+    double get_gyz(double x, double y, double z, double r, double t) const;
+    double get_gzz(double x, double y, double z, double r, double t) const;
 };
 
 
