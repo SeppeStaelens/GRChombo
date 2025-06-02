@@ -35,7 +35,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("amplitude", eppley_packet_params.amplitude, 0.01);
         pp.load("sigma", eppley_packet_params.sigma, 0.1);
         pp.load("magnetic", eppley_packet_params.magnetic, 0);
-
+	pp.load("time_offset", eppley_packet_params.time_offset, 0.);
         pp.load("wave_centre", eppley_packet_params.wave_centre, center);
 
         // Weyl extraction

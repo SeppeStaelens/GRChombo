@@ -28,6 +28,7 @@
 
 // For GW extraction
 #include "WeylExtraction.hpp"
+#include "Weyl4.hpp"
 
 // DataIO
 #include "SmallDataIO.hpp"
@@ -150,7 +151,7 @@ void TeukolskyWaveLevel::specificPostTimeStep()
         }
     }
 
-    if (m_p.calculate_constraint_norms)
+    if (m_p.calculate_constraint_violations)
     {
         fillAllGhosts();
         BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
@@ -185,8 +186,5 @@ void TeukolskyWaveLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state,
     const FArrayBox &current_state_diagnostics)
 {
-    BoxLoops::loop(ChiExtractionTaggingCriterion(m_dx, m_level,
-                                                     m_p.extraction_params,
-                                                     m_p.activate_extraction),
-                       current_state, tagging_criterion);
+    BoxLoops::loop(ChiTaggingCriterion(m_dx), current_state, tagging_criterion);
 }
