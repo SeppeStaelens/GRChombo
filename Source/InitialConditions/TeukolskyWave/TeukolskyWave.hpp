@@ -28,7 +28,7 @@ class TeukolskyWave
     template <class data_t> void compute(Cell<data_t> current_cell) const;
 
     // The object that stores the metric functions
-    EppleyPacket m_eppley_packet; //!< The Eppley packet object
+    EppleyPacketM0 m_eppley_packet; //!< The Eppley packet object
 
   protected:
     double m_dx;

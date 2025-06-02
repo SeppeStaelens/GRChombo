@@ -101,7 +101,7 @@ double EppleyPacketM0::get_gxx(double x, double y, double z, double r, double t)
 
 double EppleyPacketM0::get_gxy(double x, double y, double z, double r, double t) const
 {
-    return 3. * x * y * (-1.*get_A_tot(r, t) (x*x + y*y) - 2*z*z*get_B_tot(r, t) + (r*r+z*z)*get_C_tot(r, t)) / pow(r, 4);
+    return 3. * x * y * (-1.*get_A_tot(r, t)* (x*x + y*y) - 2*z*z*get_B_tot(r, t) + (r*r+z*z)*get_C_tot(r, t)) / pow(r, 4);
 }
 
 double EppleyPacketM0::get_gxz(double x, double y, double z, double r, double t) const

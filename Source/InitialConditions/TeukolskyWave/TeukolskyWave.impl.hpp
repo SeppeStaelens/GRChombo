@@ -36,7 +36,7 @@ void TeukolskyWave::compute(Cell<data_t> current_cell) const
     double z = coords.z;
     double y = coords.y;
     double r = sqrt(x * x + y * y + z * z);
-    double t = 0.;
+    double t = m_params_eppley_packet.time_offset;
 
     // get the metric componennts
     double gxx = m_eppley_packet.get_gxx(x, y, z, r, t);
@@ -59,7 +59,7 @@ void TeukolskyWave::compute(Cell<data_t> current_cell) const
     FOR2(i, j) h[i][j] = g[i][j] / chi;
 
     // Define initial conformal factor
-    vars.chi += f_ * f_;
+    vars.chi += chi;
 
     // Define initial lapse
     vars.lapse += 1.0;

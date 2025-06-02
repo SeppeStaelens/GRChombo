@@ -24,11 +24,11 @@ class EppleyPacket
     double get_B(double r, double t, int sign) const;
     double get_C(double r, double t, int sign) const;
 
+  public:
     double get_A_tot(double r, double t) const;
     double get_B_tot(double r, double t) const;
     double get_C_tot(double r, double t) const;
 
-  public:
     EppleyPacket(EppleyPacket_params_t m_params);
 };
 
