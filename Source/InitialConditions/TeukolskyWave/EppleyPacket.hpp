@@ -46,6 +46,19 @@ class EppleyPacketM0 : public EppleyPacket
     double get_gzz(double x, double y, double z, double r, double t) const;
 };
 
+class EppleyPacketM2 : public EppleyPacket
+{
+  public:
+    EppleyPacketM2(EppleyPacket_params_t m_params) : EppleyPacket(m_params) {}
+
+    //! Metric functions
+    double get_gxx(double x, double y, double z, double r, double t) const;
+    double get_gxy(double x, double y, double z, double r, double t) const;
+    double get_gxz(double x, double y, double z, double r, double t) const;
+    double get_gyy(double x, double y, double z, double r, double t) const;
+    double get_gyz(double x, double y, double z, double r, double t) const;
+    double get_gzz(double x, double y, double z, double r, double t) const;
+};
 
 #include "EppleyPacket.impl.hpp"
 

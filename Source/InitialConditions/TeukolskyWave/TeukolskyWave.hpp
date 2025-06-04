@@ -17,6 +17,7 @@
 #include "simd.hpp"
 
 //! Class which initialises an Eppley packet Teukolsky wave
+template <class packet_t = EppleyPacketM0>
 class TeukolskyWave
 {
 
@@ -28,7 +29,7 @@ class TeukolskyWave
     template <class data_t> void compute(Cell<data_t> current_cell) const;
 
     // The object that stores the metric functions
-    EppleyPacketM0 m_eppley_packet; //!< The Eppley packet object
+    packet_t m_eppley_packet; //!< The Eppley packet object
 
   protected:
     double m_dx;

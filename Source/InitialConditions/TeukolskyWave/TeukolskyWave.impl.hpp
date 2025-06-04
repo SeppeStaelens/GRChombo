@@ -12,15 +12,17 @@
 
 #include "EppleyPacket.hpp" //for EppleyPacket class
 
-inline TeukolskyWave::TeukolskyWave(EppleyPacket_params_t a_params_eppley_packet, double a_dx)
-    : m_dx(a_dx), m_params_eppley_packet(a_params_eppley_packet), 
-      m_eppley_packet(EppleyPacketM0(a_params_eppley_packet))
+template <class packet_t>
+inline TeukolskyWave<packet_t>::TeukolskyWave(EppleyPacket_params_t a_params_eppley_packet, double a_dx)
+    : m_dx(a_dx), m_params_eppley_packet(a_params_eppley_packet) 
+    m_eppley_packet(packet_t(a_params_eppley_packet))
 {
 }
 
 // Compute the value of the initial vars on the grid
+template <class packet_t>
 template <class data_t>
-void TeukolskyWave::compute(Cell<data_t> current_cell) const
+void TeukolskyWave<packet_t>::compute(Cell<data_t> current_cell) const
 {
     CCZ4Vars::VarsWithGauge<data_t> vars;
 

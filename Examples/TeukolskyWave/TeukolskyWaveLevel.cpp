@@ -58,14 +58,26 @@ void TeukolskyWaveLevel::initialData()
     if (m_verbosity)
         pout() << "TeukolskyWaveLevel::initialData " << m_level << endl;
 
-    // First initalise a BosonStar object
-    TeukolskyWave teukolsky_wave(m_p.eppley_packet_params, m_dx);
-
     // First set everything to zero ... we don't want undefined values in
-    // constraints etc, then  initial conditions for Boson Star
-    BoxLoops::loop(make_compute_pack(SetValue(0.0), teukolsky_wave), m_state_new,
-                   m_state_new, INCLUDE_GHOST_CELLS, disable_simd());
-
+    // constraints etc, then  initialize TeukolskyWave object
+    if (m_p.eppley_packet_params.magnetic == 0)
+    {
+        BoxLoops::loop(make_compute_pack(SetValue(0.0), TeukolskyWave<EppleyPacketM0>(m_p.eppley_packet_params, m_dx)), 
+                m_state_new, m_state_new, INCLUDE_GHOST_CELLS, disable_simd());
+    }
+    else if (m_p.eppley_packet_params.magnetic == 2)
+    {
+        BoxLoops::loop(make_compute_pack(SetValue(0.0), TeukolskyWave<EppleyPacketM2>(m_p.eppley_packet_params, m_dx)), 
+                m_state_new, m_state_new, INCLUDE_GHOST_CELLS, disable_simd());
+    }
+    else
+    {
+        pout() << "TeukolskyWaveLevel::initialData: "
+                  << "Invalid magnetic value in EppleyPacketParams: "
+                  << m_p.eppley_packet_params.magnetic
+                  << ". Valid values are 0 or 2." << std::endl;
+    }
+    
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
                    EXCLUDE_GHOST_CELLS, disable_simd());
 

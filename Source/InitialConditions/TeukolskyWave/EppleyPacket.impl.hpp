@@ -90,7 +90,7 @@ double EppleyPacket::get_C_tot(double r, double t) const
     return get_C(r, t, 1) - get_C(r, t, -1);
 }
 
-// m = 0 EppleyPacket
+// ------------- m = 0 EppleyPacket -----------------
 
 double EppleyPacketM0::get_gxx(double x, double y, double z, double r, double t) const
 {
@@ -126,6 +126,44 @@ double EppleyPacketM0::get_gzz(double x, double y, double z, double r, double t)
     return 1. + (-1. + 3.*pow(z, 4) / pow(r, 4)) * get_A_tot(r, t)
               + 6. * z*z * (x*x + y*y) * get_B_tot(r, t) / pow(r, 4)
                 + 3. * (x*x + y*y)*(x*x + y*y) * get_C_tot(r, t) / pow(r, 4);
+}
+
+// ------------- m = 2 EppleyPacket -----------------
+
+double EppleyPacketM2::get_gxx(double x, double y, double z, double r, double t) const
+{
+    return 1. + ((x*x - z*z) / (r*r) - x*x * (z*z + 2*y*y)/pow(r,4)) * get_A_tot(r, t)
+              + 2*x*x*(z*z + 2*y*y) * get_B_tot(r, t) / pow(r, 4)
+              + ((y*y+2*z*z)/(r*r) - x*x * (z*z + 2*y*y)/pow(r,4)) * get_C_tot(r, t);
+}
+
+double EppleyPacketM2::get_gxy(double x, double y, double z, double r, double t) const
+{
+    return x*y*(x*x - y*y) * (get_A_tot(r, t) - 2*get_B_tot(r, t) + get_C_tot(r, t)) / pow(r, 4);
+}           
+
+double EppleyPacketM2::get_gxz(double x, double y, double z, double r, double t) const
+{
+    return x*z * ( (2*x*x + z*z)*get_A_tot(r, t) + (z*z + 3*y*y - x*x)*get_B_tot(r, t) - (x*x + 2*z*z + 3*y*y) * get_C_tot(r, t)) / pow(r,4);
+}
+
+double EppleyPacketM2::get_gyy(double x, double y, double z, double r, double t) const
+{
+    return 1. + ((z*z - y*y) / (r*r) + y*y * (z*z + 2*x*x)/pow(r,4)) * get_A_tot(r, t)
+              - 2*y*y*(z*z + 2*x*x) * get_B_tot(r, t) / pow(r, 4)
+              + (-(x*x+2*z*z)/(r*r) + y*y * (z*z + 2*x*x)/pow(r,4)) * get_C_tot(r, t);
+}
+
+double EppleyPacketM2::get_gyz(double x, double y, double z, double r, double t) const
+{
+    return y*z * ( -(2*y*y + z*z)*get_A_tot(r, t) - (z*z + 3*x*x - y*y)*get_B_tot(r, t) + (y*y + 2*z*z + 3*x*x) * get_C_tot(r, t)) / pow(r,4);
+}
+
+double EppleyPacketM2::get_gzz(double x, double y, double z, double r, double t) const
+{
+    return 1. + ((pow(y,4) - pow(x,4)) * get_A_tot(r, t)
+              - 2. * z*z * (x*x - y*y) * get_B_tot(r, t)
+              + (x*x - y*y)*(r*r + z*z) * get_C_tot(r, t)) / pow(r, 4);
 }
 
 #endif /* EPPLEYPACKET_IMPL_HPP_ */
