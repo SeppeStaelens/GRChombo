@@ -22,16 +22,15 @@ inline TeukolskyWave::TeukolskyWave(EppleyPacket_params_t a_params_eppley_packet
 template <class data_t>
 void TeukolskyWave::compute(Cell<data_t> current_cell) const
 {
-    // CHANGE TO VACUUM
     CCZ4Vars::VarsWithGauge<data_t> vars;
 
     current_cell.load_vars(vars);
 
-    // Coordinates for centre of mass
+    // Coordinates for centre of the wave
     Coordinates<data_t> coords(current_cell, m_dx,
                                m_params_eppley_packet.wave_centre);
 
-    // First star positioning
+    // Extract the coordinates
     double x = coords.x;
     double z = coords.z;
     double y = coords.y;
@@ -55,7 +54,7 @@ void TeukolskyWave::compute(Cell<data_t> current_cell) const
     double chi = pow(det_g, -1. / 3.);
 
     // Initialise conformal metric
-    double h[3][3] = {{0., 0., 0.}, {0., 0., 0.}, {0., 0., 0.}};
+    double h[3][3] = {{1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}};
     FOR2(i, j) h[i][j] = g[i][j] / chi;
 
     // Define initial conformal factor

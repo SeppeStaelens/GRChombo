@@ -14,7 +14,7 @@
 #include "SetValue.hpp"
 
 // Tagging criterion
-#include "ChiTaggingCriterion.hpp"
+#include "ChiExtractionTaggingCriterion.hpp"
 
 // For RHS update
 #include "IntegratedMovingPunctureGauge.hpp"
@@ -120,12 +120,13 @@ void TeukolskyWaveLevel::specificPostTimeStep()
 
     bool first_step = (m_time == 0.0);
 
-    if (m_p.activate_weyl_extraction == 1)
+    if (m_p.activate_extraction == 1)
     {
-        int min_level = m_p.extraction_params.min_extraction_level();
-        bool calculate_weyl = at_level_timestep_multiple(min_level);
-        if (calculate_weyl)
-        {
+	// int min_level = m_p.extraction_params.min_extraction_level();
+        // bool calculate_weyl = at_level_timestep_multiple(min_level);
+        //if (calculate_weyl)
+        if (m_level == 0)
+	{
             // Populate the Weyl Scalar values on the grid
             fillAllGhosts();
             BoxLoops::loop(
@@ -133,8 +134,8 @@ void TeukolskyWaveLevel::specificPostTimeStep()
                 m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
             // Do the extraction on the min extraction level
-            if (m_level == min_level)
-            {
+            //if (m_level == min_level)
+            //{
                 CH_TIME("WeylExtraction");
                 // Now refresh the interpolator and do the interpolation
                 // fill ghosts manually to minimise communication
@@ -142,12 +143,13 @@ void TeukolskyWaveLevel::specificPostTimeStep()
                 m_gr_amr.m_interpolator->refresh(fill_ghosts);
                 m_gr_amr.fill_multilevel_ghosts(
                     VariableType::diagnostic, Interval(c_Weyl4_Re, c_Weyl4_Im),
-                    min_level);
-                WeylExtraction my_extraction(m_p.extraction_params, m_dt,
+                //    min_level);
+                    m_level);
+		WeylExtraction my_extraction(m_p.extraction_params, m_dt,
                                              m_time, first_step,
                                              m_restart_time);
                 my_extraction.execute_query(m_gr_amr.m_interpolator);
-            }
+            //}
         }
     }
 
@@ -186,5 +188,6 @@ void TeukolskyWaveLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state,
     const FArrayBox &current_state_diagnostics)
 {
-    BoxLoops::loop(ChiTaggingCriterion(m_dx), current_state, tagging_criterion);
+    //BoxLoops::loop(ChiTaggingCriterion(m_dx), current_state, tagging_criterion);
+    BoxLoops::loop(ChiExtractionTaggingCriterion(m_dx, m_level, m_p.extraction_params, m_p.activate_extraction), current_state, tagging_criterion);
 }

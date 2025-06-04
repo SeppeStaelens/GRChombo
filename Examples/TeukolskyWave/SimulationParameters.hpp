@@ -32,14 +32,11 @@ class SimulationParameters : public SimulationParametersBase
         // ######################################
 
         // Eppley Packete initial data params
-        pp.load("amplitude", eppley_packet_params.amplitude, 0.01);
-        pp.load("sigma", eppley_packet_params.sigma, 0.1);
+        pp.load("Eppley_amplitude", eppley_packet_params.amplitude, 0.01);
+        pp.load("Eppley_sigma", eppley_packet_params.sigma, 0.1);
         pp.load("magnetic", eppley_packet_params.magnetic, 0);
 	pp.load("time_offset", eppley_packet_params.time_offset, 0.);
         pp.load("wave_centre", eppley_packet_params.wave_centre, center);
-
-        // Weyl extraction
-        pp.load("activate_gw_extraction", activate_weyl_extraction, 0);
 
         // Do we cant to calculate L2 norms of constraint violations
         pp.load("calculate_constraint_violations",
@@ -53,8 +50,6 @@ class SimulationParameters : public SimulationParametersBase
 
     // Initial data for matter and potential
     double G_Newton;
-
-    int activate_weyl_extraction;
 
     // Do we want to write a file with the L2 norms of contraints?
     bool calculate_constraint_violations;
