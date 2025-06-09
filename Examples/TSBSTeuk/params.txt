@@ -3,9 +3,9 @@
 ##############################################################
 verbosity = 0
 
-chk_prefix = TeukWaveChk_
-plot_prefix = TeukWavep_
-#restart_file = hdf5/TeukWaveChk_000040.3d.hdf5
+chk_prefix = TSBSTeukChk_
+plot_prefix =  TSBSTeukp_
+#restart_file = hdf5/ TSBSTeukChk_000040.3d.hdf5
 
 hdf5_subpath = "hdf5"
 pout_subpath = "pout"
@@ -30,7 +30,18 @@ L_full = 512
 
 # Regridding
 # Thresholds on the change across a cell which prompts regrid
-# regrid_threshold_phi = 0.3
+regrid_threshold_phi = 0.3
+regrid_threshold_chi = 0.3
+
+##############################################################
+# BosonStar Initial data parameters
+central_amplitude_CSF = 0.17
+
+# Potential params
+scalar_mass = 1.0
+phi4_coeff = 0.0
+solitonic = true # if false, next line is irrelevant. Make true for solitonic potential
+sigma_solitonic = 0.2 # try central density ~ 0.05, the soliton is very sensitive
 
 ##############################################################
 # Teukolsky Wave Initial data parameters
@@ -65,7 +76,7 @@ isPeriodic = 0 0 0
 # 0 = static, 1 = sommerfeld, 2 = reflective
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 1 1 1
-lo_boundary = 1 1 2
+lo_boundary = 1 2 2
 
 # if sommerfeld boundaries selected, must select
 # asymptotic values (in order given by UserVariables.hpp)
@@ -76,9 +87,17 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 0 4 6 0 5 0    #K and Aij
                          0 1 2 3          #Theta and Gamma
                          0 1 2 3 1 2 3    #lapse shift and B
+                         0 0 0 0          #phi and Pi
 
-vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
+vars_parity_diagnostic = 0                #modphi
+                         0 0              #ADM mass and J
+                         0                #Noether charge
+                         0 1 2 3          #H,mom constraints
+                         0 0 0 0          #dtK Veff_n Veff_d1 Veff_d2
                          0 7              #Weyl4 re im
+                         0 1 2 3          #Stresstensor rho s1 s2 s3
+                         0 4 6 0 5 0      #Stresstensor s11 s12 s13 s22 s23 s33
+
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)
 
@@ -86,8 +105,15 @@ vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
                          0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
                          0.0 0.0 0.0 0.0             #Theta and Gamma
                          1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
+                         0.0 0.0 0.0 0.0             #phi and Pi (Re and Im)
+                         0.0                         #mod_phi
+                         0.0 0.0                     #Madm and Jadm
+                         0.0                         #N(oether charge density)
                          0.0 0.0 0.0 0.0             #Ham and Mom
+                         0.0 0.0 0.0 0.0             #dtK Veff_n Veff_d1 Veff_d2
                          0.0 0.0                     #Wely4_Re and Weyl4_Im
+                         0.0 0.0 0.0 0.0             #Stress tensor rho s1 s2 s3
+                         0.0 0.0 0.0 0.0 0.0 0.0     #Stress tensor s11 s12 s13 s22 s23 s33
 
 ##############################################################
 # Set up time steps
@@ -118,9 +144,23 @@ covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 sigma = 0.3
 
 ##############################################################
+# If 1, a file called NoetherCharge.dat will be written with the integrated
+# Noether charge at every coarse timestep
+calculate_noether_charge = 1
+
 # Vars to write to plot files
-num_plot_vars = 7
-plot_vars = Weyl4_Re K Ham Mom1 Mom2 Mom3 chi
+num_plot_vars = 9
+plot_vars = Weyl4_Re K rho Ham Mom1 Mom2 Mom3 mod_phi chi
+
+##############################################################
+# Mass extraction params
+mass_extraction_center = 256 0 0
+activate_mass_extraction = 1
+num_mass_extraction_radii = 6
+mass_extraction_radii = 60. 100. 120. 140. 160. 180.
+mass_extraction_levels = 3 2 1 1 1 1
+num_points_phi_mass = 16
+num_points_theta_mass = 24
 
 ##############################################################
 # GW extraction params
