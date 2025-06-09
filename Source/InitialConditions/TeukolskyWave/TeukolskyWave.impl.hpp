@@ -14,7 +14,7 @@
 
 template <class packet_t>
 inline TeukolskyWave<packet_t>::TeukolskyWave(EppleyPacket_params_t a_params_eppley_packet, double a_dx)
-    : m_dx(a_dx), m_params_eppley_packet(a_params_eppley_packet) 
+    : m_dx(a_dx), m_params_eppley_packet(a_params_eppley_packet), 
     m_eppley_packet(packet_t(a_params_eppley_packet))
 {
 }
