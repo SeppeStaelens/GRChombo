@@ -6,10 +6,6 @@
 # Included makefiles need an absolute path to the Chombo installation
 # CHOMBO_HOME := Please set the CHOMBO_HOME locally (e.g. export CHOMBO_HOME=... in bash)
 
-#ifndef BOOST_ROOT
-#		$(error The BosonStar example requires BOOST_ROOT to be set to the root of the boost library directory.)
-#endif
-
 GRCHOMBO_SOURCE = ../../Source
 
 ebase := Main_TSBSTeuk
@@ -19,14 +15,14 @@ LibNames := AMRTimeDependent AMRTools BoxTools
 src_dirs := $(GRCHOMBO_SOURCE)/utils \
             $(GRCHOMBO_SOURCE)/simd  \
             $(GRCHOMBO_SOURCE)/CCZ4  \
-            $(GRCHOMBO_SOURCE)/Matter  \
+	    $(GRCHOMBO_SOURCE)/Matter \
             $(GRCHOMBO_SOURCE)/BoxUtils  \
             $(GRCHOMBO_SOURCE)/GRChomboCore  \
             $(GRCHOMBO_SOURCE)/TaggingCriteria  \
             $(GRCHOMBO_SOURCE)/AMRInterpolator  \
-            $(GRCHOMBO_SOURCE)/BosonStars \
-	        $(GRCHOMBO_SOURCE)/InitialConditions/ThinShell \
-            $(GRCHOMBO_SOURCE)/InitialConditions/TeukolskyWave \ 
-            $(GRCHOMBO_SOURCE)/InitialConditions/TSBSTeukWave \
+	    $(GRCHOMBO_SOURCE)/InitialConditions/TSBSTeukWave \
+	    $(GRCHOMBO_SOURCE)/BosonStars \
+	    $(GRCHOMBO_SOURCE)/InitialConditions/ThinShell \
+	        $(GRCHOMBO_SOURCE)/InitialConditions/TeukolskyWave \
 
 include $(CHOMBO_HOME)/mk/Make.test

@@ -372,6 +372,7 @@ void TSBSTeukLevel::specificPostTimeStep()
                 my_extraction.execute_query(m_gr_amr.m_interpolator);
             }
     }
+    }
 }
 
 void TSBSTeukLevel::computeTaggingCriterion(
