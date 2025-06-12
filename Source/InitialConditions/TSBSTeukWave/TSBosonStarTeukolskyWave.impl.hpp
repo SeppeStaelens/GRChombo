@@ -79,7 +79,7 @@ void TSBosonStarTeukolskyWave<packet_t>::compute(Cell<data_t> current_cell) cons
     vars.phi_Re = A_;
     vars.phi_Im = 0.;
     vars.Pi_Re = 0.;
-    vars.Pi_Im += -(1. / lapse_) * (w_ * A_);
+    vars.Pi_Im += -(1. / lapse_bs) * (w_ * A_);
 
     // Initialise conformal metric
     double h[3][3] = {{1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}};
@@ -119,7 +119,7 @@ void TSBosonStarTeukolskyWave<packet_t>::compute(Cell<data_t> current_cell) cons
     vars.chi += chi;
 
     // Define initial lapse
-    vars.lapse += lapse_;
+    vars.lapse += lapse_bs;
 
     // Define initial trace of K and A_ij
     FOR2(i, j) vars.h[i][j] = h[i][j];

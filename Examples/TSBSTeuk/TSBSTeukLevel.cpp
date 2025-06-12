@@ -385,6 +385,7 @@ void TSBSTeukLevel::specificPostTimeStep()
                 }
             }
     }
+    }
 }
 
 void TSBSTeukLevel::computeTaggingCriterion(
