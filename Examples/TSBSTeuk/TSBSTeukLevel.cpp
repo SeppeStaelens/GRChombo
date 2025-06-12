@@ -353,7 +353,8 @@ void TSBSTeukLevel::specificPostTimeStep()
             // Populate the Weyl Scalar values on the grid
             fillAllGhosts();
             BoxLoops::loop(
-                Weyl4(m_p.extraction_params.center, m_dx, m_p.formulation),
+                Weyl4(m_p.extraction_params.center, m_dx, m_p.formulation, 
+                      m_p.calculate_Weyl0),
                 m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
             // Do the extraction on the min extraction level
@@ -366,10 +367,22 @@ void TSBSTeukLevel::specificPostTimeStep()
                 m_gr_amr.fill_multilevel_ghosts(
                     VariableType::diagnostic, Interval(c_Weyl4_Re, c_Weyl4_Im),
                     min_level);
-		WeylExtraction my_extraction(m_p.extraction_params, m_dt,
+		        WeylExtraction my_extraction(m_p.extraction_params, m_dt,
                                              m_time, first_step,
                                              m_restart_time);
                 my_extraction.execute_query(m_gr_amr.m_interpolator);
+                if (m_p.calculate_Weyl0)
+                {
+                    // Now do the Weyl0 extraction
+                    m_gr_amr.fill_multilevel_ghosts(
+                        VariableType::diagnostic,
+                        Interval(c_Weyl0_Re, c_Weyl0_Im), min_level);
+                    WeylExtraction my_extraction_Weyl0(
+                        m_p.extraction_params, m_dt, m_time, first_step,
+                        m_restart_time, true);
+                    my_extraction_Weyl0.execute_query(
+                        m_gr_amr.m_interpolator);
+                }
             }
     }
 }

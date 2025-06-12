@@ -41,6 +41,9 @@ enum
     c_s23,
     c_s33,
 
+    c_Weyl0_Re, // Weyl0 scalar components
+    c_Weyl0_Im,
+
     NUM_DIAGNOSTIC_VARS
 };
 
@@ -78,6 +81,9 @@ static const std::array<std::string, NUM_DIAGNOSTIC_VARS> variable_names = {
     "s22",
     "s23",
     "s33",
+
+    "Weyl0_Re",
+    "Weyl0_Im",
 };
 
 }

@@ -38,13 +38,13 @@ template <class data_t> struct NPScalar_t
     data_t Im;   // Imaginary component
 };
 
-//!  Calculates the Weyl4 scalar for spacetimes without matter content
+//!  Calculates the Weyl4 and Weyl0 scalar for spacetimes without matter content
 /*!
-   This class calculates the Weyl4 scalar real and im parts using definitions
+   This class calculates the Weyl4/Weyl0 scalar real and im parts using definitions
    from Alcubierres book "Introduction to 3+1 Numerical Relativity". We use a
    decomposition of the Weyl tensor in electric and magnetic parts, which then
    is used together with the tetrads defined in "gr-qc/0104063" to calculate the
-   Weyl4 scalar.
+   Weyl4/Weyl0 scalar.
 */
 class Weyl4
 {
@@ -60,9 +60,9 @@ class Weyl4
         the formulation.
     */
     Weyl4(const std::array<double, CH_SPACEDIM> a_center, const double a_dx,
-          const int a_formulation = CCZ4RHS<>::USE_CCZ4)
+          const int a_formulation = CCZ4RHS<>::USE_CCZ4, bool a_calculate_Weyl0 = false)
         : m_center(a_center), m_dx(a_dx), m_deriv(a_dx),
-          m_formulation(a_formulation)
+          m_formulation(a_formulation), m_calculate_Weyl0(a_calculate_Weyl0)
     {
     }
 
@@ -75,6 +75,7 @@ class Weyl4
     const double m_dx;                              //!< the grid spacing
     const FourthOrderDerivatives m_deriv; //!< for calculating derivs of vars
     const int m_formulation;              //!< CCZ4 or BSSN?
+    const bool m_calculate_Weyl0; //!< Whether to calculate Weyl0 or not
 
     //! Compute spatial volume element
     template <class data_t>
@@ -84,6 +85,15 @@ class Weyl4
     //! Calculation of Weyl_4 scalar
     template <class data_t>
     NPScalar_t<data_t> compute_Weyl4(const EBFields_t<data_t> &ebfields,
+                                     const Vars<data_t> &vars,
+                                     const Vars<Tensor<1, data_t>> &d1,
+                                     const Diff2Vars<Tensor<2, data_t>> &d2,
+                                     const Tensor<2, data_t> &h_UU,
+                                     const Coordinates<data_t> &coords) const;
+
+    //! Calculation of Weyl_0 scalar
+    template <class data_t>
+    NPScalar_t<data_t> compute_Weyl0(const EBFields_t<data_t> &ebfields,
                                      const Vars<data_t> &vars,
                                      const Vars<Tensor<1, data_t>> &d1,
                                      const Diff2Vars<Tensor<2, data_t>> &d2,
