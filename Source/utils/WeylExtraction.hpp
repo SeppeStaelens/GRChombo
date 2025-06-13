@@ -33,7 +33,6 @@ class WeylExtraction : public SphericalExtraction
         {
             add_var(c_Weyl0_Re, VariableType::diagnostic);
             add_var(c_Weyl0_Im, VariableType::diagnostic);
-            m_params.extraction_file_prefix = "Weyl0_mode_";
         }
         else
         {
@@ -91,9 +90,11 @@ class WeylExtraction : public SphericalExtraction
         for (int imode = 0; imode < m_num_modes; ++imode)
         {
             const auto &mode = m_modes[imode];
-            std::string integrals_filename = m_params.integral_file_prefix +
-                                             std::to_string(mode.first) +
-                                             std::to_string(mode.second);
+            std::string integrals_filename;
+	    if (m_extract_weyl0) { integrals_filename = "Weyl0_mode_"; }
+	    else { integrals_filename = m_params.integral_file_prefix; }
+	    integrals_filename += std::to_string(mode.first) +
+                                  std::to_string(mode.second);
             std::vector<std::vector<double>> integrals_for_writing = {
                 std::move(mode_integrals[imode].first),
                 std::move(mode_integrals[imode].second)};

@@ -128,7 +128,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("calculate_noether_charge", calculate_noether_charge, false);
 
         // Do we want to calculate Weyl0?
-        pp.load("calculate_Weyl0", m_calculate_Weyl0, false);
+        pp.load("calculate_Weyl0", calculate_Weyl0, false);
     }
 
     // Tagging thresholds
@@ -158,7 +158,7 @@ class SimulationParameters : public SimulationParametersBase
     // Do we want to write the Noether Charge to a file
     bool calculate_noether_charge;
 
-    bool m_calculate_Weyl0; //!< Whether to calculate Weyl0 or not
+    bool calculate_Weyl0; //!< Whether to calculate Weyl0 or not
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */
