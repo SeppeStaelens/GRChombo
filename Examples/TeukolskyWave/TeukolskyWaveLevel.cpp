@@ -27,7 +27,7 @@
 #include "TeukolskyWave.hpp"
 
 // For GW extraction
-#include "WeylExtraction.hpp"
+#include "WeylExtractionWithWeyl0.hpp"
 #include "Weyl4.hpp"
 
 // DataIO

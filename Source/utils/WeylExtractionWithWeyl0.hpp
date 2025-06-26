@@ -18,17 +18,27 @@
 class WeylExtraction : public SphericalExtraction
 {
   private:
+    bool m_extract_weyl0; //!< whether or not to extract the Weyl0 scalar
     
   public:
     //! The constructor
     WeylExtraction(const spherical_extraction_params_t &a_params, double a_dt,
                    double a_time, bool a_first_step,
-                   double a_restart_time = 0.0)
+                   double a_restart_time = 0.0, bool a_extract_Weyl0 = false)
         : SphericalExtraction(a_params, a_dt, a_time, a_first_step,
-                              a_restart_time)
+                              a_restart_time), m_extract_weyl0(a_extract_Weyl0)
     {
-        add_var(c_Weyl4_Re, VariableType::diagnostic);
-        add_var(c_Weyl4_Im, VariableType::diagnostic);
+        
+        if (m_extract_weyl0)
+        {
+            add_var(c_Weyl0_Re, VariableType::diagnostic);
+            add_var(c_Weyl0_Im, VariableType::diagnostic);
+        }
+        else
+        {
+            add_var(c_Weyl4_Re, VariableType::diagnostic);
+            add_var(c_Weyl4_Im, VariableType::diagnostic);
+        }
     }
 
     //! The old constructor which assumes it is called in specificPostTimeStep
@@ -80,9 +90,11 @@ class WeylExtraction : public SphericalExtraction
         for (int imode = 0; imode < m_num_modes; ++imode)
         {
             const auto &mode = m_modes[imode];
-            std::string integrals_filename = m_params.integral_file_prefix +
-                                             std::to_string(mode.first) +
-                                             std::to_string(mode.second);
+            std::string integrals_filename;
+	    if (m_extract_weyl0) { integrals_filename = "Weyl0_mode_"; }
+	    else { integrals_filename = m_params.integral_file_prefix; }
+	    integrals_filename += std::to_string(mode.first) +
+                                  std::to_string(mode.second);
             std::vector<std::vector<double>> integrals_for_writing = {
                 std::move(mode_integrals[imode].first),
                 std::move(mode_integrals[imode].second)};

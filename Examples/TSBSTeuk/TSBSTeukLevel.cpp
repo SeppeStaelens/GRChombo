@@ -36,7 +36,7 @@
 
 // For GW extraction
 #include "MatterWeyl4.hpp"
-#include "WeylExtraction.hpp"
+#include "WeylExtractionWithWeyl0.hpp"
 
 // For Noether Charge calculation
 #include "DiagnosticTimeDerivativeK.hpp"
