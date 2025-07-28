@@ -138,6 +138,77 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("effective_potential_extraction_center",
                 effective_potential_extraction_params.extraction_center,
                 {0.5 * L, 0.5 * L, 0.5 * L});
+	
+	// Phi extraction
+	pp.load("activate_phi_extraction", activate_phi_extraction, false);
+	
+	if (activate_phi_extraction)
+        {
+	    phi_extraction_params.extraction_radii = effective_potential_extraction_params.extraction_radii;
+	    phi_extraction_params.extraction_levels = effective_potential_extraction_params.extraction_levels;
+            phi_extraction_params.write_extraction = effective_potential_extraction_params.write_extraction;
+	    phi_extraction_params.center = effective_potential_extraction_params.center;
+	    pp.load("num_points_phi_Phi", phi_extraction_params.num_points_phi, 2);
+            pp.load("num_points_theta_Phi", phi_extraction_params.num_points_theta, 5);
+            if (extraction_params.num_points_theta % 2 == 0)
+            {
+                extraction_params.num_points_theta += 1;
+                pout() << "Parameter: num_points_theta incompatible with "
+                          "Simpson's "
+                       << "rule so increased by 1.\n";
+            }
+
+            if (pp.contains("modes"))
+            {
+                pp.load("num_modes", extraction_params.num_modes);
+                std::vector<int> extraction_modes_vect(
+                    2 * extraction_params.num_modes);
+                pp.load("modes", extraction_modes_vect,
+                        2 * extraction_params.num_modes);
+                extraction_params.modes.resize(extraction_params.num_modes);
+                for (int i = 0; i < extraction_params.num_modes; ++i)
+                {
+                    extraction_params.modes[i].first =
+                        extraction_modes_vect[2 * i];
+                    extraction_params.modes[i].second =
+                        extraction_modes_vect[2 * i + 1];
+                }
+            }
+            else
+            {
+                // by default extraction (l,m) = (2,0), (2,1) and (2,2)
+                extraction_params.num_modes = 3;
+                extraction_params.modes.resize(3);
+                for (int i = 0; i < 3; ++i)
+                {
+                    extraction_params.modes[i].first = 2;
+                    extraction_params.modes[i].second = i;
+                }
+            }
+
+            std::string phi_extraction_path;
+            if (pp.contains("phi_extraction_subpath"))
+            {
+                pp.load("phi_extraction_subpath", phi_extraction_path);
+                if (!phi_extraction_path.empty() && phi_extraction_path.back() != '/')
+                    phi_extraction_path += "/";
+                if (output_path != "./" && !output_path.empty())
+                    phi_extraction_path = output_path + phi_extraction_path;
+            }
+            else
+                phi_extraction_path = data_path;
+
+            phi_extraction_params.data_path = data_path;
+            phi_extraction_params.extraction_path = phi_extraction_path;
+
+            // default names to Weyl extraction
+            pp.load("phi_extraction_file_prefix",
+                    phi_extraction_params.extraction_file_prefix,
+                    std::string("Phi_extraction_"));
+            pp.load("phi_integral_file_prefix",
+                    phi_extraction_params.integral_file_prefix,
+                    std::string("Phi_mode_"));
+        }
 
         // Do we cant to calculate L2 norms of constraint violations
         pp.load("calculate_constraint_violations",
@@ -174,6 +245,9 @@ class SimulationParameters : public SimulationParametersBase
     int activate_effective_potential_extraction;
     extraction_params_t effective_potential_extraction_params;
 
+    bool activate_phi_extraction;
+    spherical_extraction_params_t phi_extraction_params;
+    
     // Do we want to write a file with the L2 norms of contraints?
     bool calculate_constraint_violations;
 
