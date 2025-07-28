@@ -1,0 +1,91 @@
+/* GRChombo
+ * Copyright 2012 The GRChombo collaboration.
+ * Please refer to LICENSE in GRChombo's root directory.
+ */
+
+#ifndef DIAGNOSTICVARIABLES_HPP
+#define DIAGNOSTICVARIABLES_HPP
+
+// assign an enum to each variable
+enum
+{
+    c_mod_phi, // the complex scalar field modulus
+
+    c_Madm,
+    c_Jadm,
+
+    c_N, // Noether Charge integrand
+
+    c_Ham,
+
+    c_Mom1,
+    c_Mom2,
+    c_Mom3,
+
+    c_dtK,
+    c_V_eff_n,
+    c_V_eff_d1,
+    c_V_eff_d2,
+
+    c_Weyl4_Re,
+    c_Weyl4_Im,
+
+    c_rho, // stress tensor components
+    c_s1,
+    c_s2,
+    c_s3,
+    c_s11,
+    c_s12,
+    c_s13,
+    c_s22,
+    c_s23,
+    c_s33,
+
+    c_Weyl0_Re, // Weyl0 scalar components
+    c_Weyl0_Im,
+
+    NUM_DIAGNOSTIC_VARS
+};
+
+namespace DiagnosticVariables
+{
+static const std::array<std::string, NUM_DIAGNOSTIC_VARS> variable_names = {
+
+    "mod_phi",
+
+    "Madm",
+    "Jadm",
+
+    "N",
+
+    "Ham",
+    "Mom1",
+    "Mom2",
+    "Mom3",
+
+    "dtK",
+    "V_eff_n",
+    "V_eff_d1",
+    "V_eff_d2",
+
+    "Weyl4_Re",
+    "Weyl4_Im",
+
+    "rho",
+    "s1",
+    "s2",
+    "s3",
+    "s11",
+    "s12",
+    "s13",
+    "s22",
+    "s23",
+    "s33",
+
+    "Weyl0_Re",
+    "Weyl0_Im",
+};
+
+}
+
+#endif /* DIAGNOSTICVARIABLES_HPP */

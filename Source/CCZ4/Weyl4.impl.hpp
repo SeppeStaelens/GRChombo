@@ -40,6 +40,15 @@ template <class data_t> void Weyl4::compute(Cell<data_t> current_cell) const
     // Write the rhs into the output FArrayBox
     current_cell.store_vars(out.Real, c_Weyl4_Re);
     current_cell.store_vars(out.Im, c_Weyl4_Im);
+
+    // If we are calculating Weyl0, do so
+    if (m_calculate_Weyl0)
+    {
+        NPScalar_t<data_t> out_Weyl0 =
+            compute_Weyl0(ebfields, vars, d1, d2, h_UU, coords);
+        current_cell.store_vars(out_Weyl0.Real, c_Weyl0_Re);
+        current_cell.store_vars(out_Weyl0.Im, c_Weyl0_Im);
+    }
 }
 
 template <class data_t>
@@ -213,6 +222,36 @@ NPScalar_t<data_t> Weyl4::compute_Weyl4(const EBFields_t<data_t> &ebfields,
                            2.0 * ebfields.B[i][j] * tetrad.w[i] * tetrad.v[j]);
         out.Im += 0.5 * (ebfields.B[i][j] * (-tetrad.w[i] * tetrad.w[j] +
                                              tetrad.v[i] * tetrad.v[j]) -
+                         2.0 * ebfields.E[i][j] * tetrad.w[i] * tetrad.v[j]);
+    }
+
+    return out;
+}
+
+// Calculation of the Weyl0 scalar
+template <class data_t>
+NPScalar_t<data_t> Weyl4::compute_Weyl0(const EBFields_t<data_t> &ebfields,
+                                        const Vars<data_t> &vars,
+                                        const Vars<Tensor<1, data_t>> &d1,
+                                        const Diff2Vars<Tensor<2, data_t>> &d2,
+                                        const Tensor<2, data_t> &h_UU,
+                                        const Coordinates<data_t> &coords) const
+{
+    NPScalar_t<data_t> out;
+
+    // Calculate the tetrads
+    const Tetrad_t<data_t> tetrad = compute_null_tetrad(vars, h_UU, coords);
+
+    // Projection of Electric and magnetic field components using tetrads
+    out.Real = 0.0;
+    out.Im = 0.0;
+    FOR(i, j)
+    {
+        out.Real += 0.5 * (ebfields.E[i][j] * (tetrad.w[i] * tetrad.w[j] -
+                                               tetrad.v[i] * tetrad.v[j]) +
+                           2.0 * ebfields.B[i][j] * tetrad.w[i] * tetrad.v[j]);
+        out.Im += 0.5 * (ebfields.B[i][j] * (-tetrad.w[i] * tetrad.w[j] +
+                                             tetrad.v[i] * tetrad.v[j]) +
                          2.0 * ebfields.E[i][j] * tetrad.w[i] * tetrad.v[j]);
     }
 
