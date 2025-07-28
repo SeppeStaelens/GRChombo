@@ -17,8 +17,6 @@
 */
 class WeylExtraction : public SphericalExtraction
 {
-  private:
-    
   public:
     //! The constructor
     WeylExtraction(const spherical_extraction_params_t &a_params, double a_dt,
@@ -64,7 +62,7 @@ class WeylExtraction : public SphericalExtraction
                                   r * Weyl4_reim_parts[1]);
         };
 
-         // add the modes that will be integrated
+        // add the modes that will be integrated
         for (int imode = 0; imode < m_num_modes; ++imode)
         {
             const auto &mode = m_modes[imode];
