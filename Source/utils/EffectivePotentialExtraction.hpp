@@ -33,7 +33,7 @@ class EffectivePotentialExtraction : public SphericalExtraction
                               a_restart_time),
           m_params(a_params)
     {
-        add_var(c_alpha2, VariableType::diagnostic);
+        add_var(c_lapse, VariableType::evolution);
         add_var(c_beta2, VariableType::diagnostic);
         add_var(c_V_eff_d, VariableType::diagnostic);
     }
@@ -45,13 +45,13 @@ class EffectivePotentialExtraction : public SphericalExtraction
         extract(a_interpolator);
 
         if (m_params.write_extraction)
-            write_extraction(data_path + m_params.extraction_file_prefix);
+            write_extraction(m_params.extraction_file_prefix);
 
-        std::vector<double> integrals_alpha2;
+        std::vector<double> integrals_alpha;
         std::vector<double> integrals_beta2;
         std::vector<double> integrals_V_eff_d;
 
-        add_var_integrand(0, integrals_alpha2);
+        add_var_integrand(0, integrals_alpha);
         add_var_integrand(1, integrals_beta2);
         add_var_integrand(2, integrals_V_eff_d);
 
@@ -65,13 +65,13 @@ class EffectivePotentialExtraction : public SphericalExtraction
         for (int i = 0; i < integrals_V_eff_d.size(); i++)
         {
             areal_radii[i] = sqrt(integrals_V_eff_d[i] / (4 * M_PI));
-	    V_eff_values[i] = sqrt((integrals_alpha2[i] - integrals_beta2[i]) / (4 * M_PI)) /
+	    V_eff_values[i] = sqrt((integrals_alpha[i]*integrals_alpha[i] - integrals_beta2[i]) / (4 * M_PI)) /
                                m_params.extraction_radii[i] /
                                areal_radii[i];
-	    V_eff_p_values[i] = (sqrt(integrals_alpha2[i]) + sqrt(integrals_beta2[i]))  / sqrt(4 * M_PI) /
+	    V_eff_p_values[i] = (sqrt(integrals_alpha[i]*integrals_alpha[i]) + sqrt(integrals_beta2[i]))  / sqrt(4 * M_PI) /
                                m_params.extraction_radii[i] /
                                areal_radii[i];
-            V_eff_m_values[i] = (sqrt(integrals_alpha2[i]) - sqrt(integrals_beta2[i]))  / sqrt(4 * M_PI) /
+            V_eff_m_values[i] = (sqrt(integrals_alpha[i]*integrals_alpha[i]) - sqrt(integrals_beta2[i]))  / sqrt(4 * M_PI) /
                                m_params.extraction_radii[i] / 
                                areal_radii[i];
 	}

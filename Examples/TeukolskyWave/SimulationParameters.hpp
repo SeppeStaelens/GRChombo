@@ -37,6 +37,7 @@ class SimulationParameters : public SimulationParametersBase
         // Do we cant to calculate L2 norms of constraint violations
         pp.load("calculate_constraint_violations",
                 calculate_constraint_violations, false);
+    	pp.load("calculate_Weyl0", calculate_Weyl0);
     }
 
     // Tagging thresholds
@@ -49,6 +50,9 @@ class SimulationParameters : public SimulationParametersBase
 
     // Do we want to write a file with the L2 norms of contraints?
     bool calculate_constraint_violations;
+
+    // Do we want to calculate Weyl0 as well?
+    bool calculate_Weyl0;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

@@ -49,8 +49,6 @@ class EffectivePotential
         // The numerator of the effective potential is calculated by averaging
         // the lapse and shift squared over a sphere. The square root gets taken
         // in the Extraction
-        const auto alpha_squared = vars.lapse * vars.lapse;
-
 	auto norm_shift_squared = vars.chi;
 	FOR2(i, j)
         norm_shift_squared +=
@@ -82,7 +80,6 @@ class EffectivePotential
         // r^2 sin theta, we need to divide by this.
         const auto V_eff_denominator = root_det_g / (R * R * sint);
 
-        current_cell.store_vars(alpha_squared, c_alpha2);
         current_cell.store_vars(norm_shift_squared, c_beta2);
         current_cell.store_vars(V_eff_denominator, c_V_eff_d);
     }

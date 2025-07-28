@@ -88,7 +88,19 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("effective_potential_extraction_file_prefix",
                 effective_potential_extraction_params.extraction_file_prefix,
                 std::string("Veff"));
-        pp.load("num_effective_potential_extraction_radii",
+	if (pp.contains("effective_potential_extraction_subpath"))
+        {
+            pp.load("effective_potential_extraction_subpath", effective_potential_extraction_path);
+            if (!effective_potential_extraction_path.empty() && effective_potential_extraction_path.back() != '/')
+                effective_potential_extraction_path += "/";
+            if (output_path != "./" && !output_path.empty())
+                effective_potential_extraction_path = output_path + effective_potential_extraction_path;
+        }
+        else
+            effective_potential_extraction_path = data_path;
+	effective_potential_extraction_params.data_path = data_path;
+	effective_potential_extraction_params.extraction_path = effective_potential_extraction_path;
+       	pp.load("num_effective_potential_extraction_radii",
                 effective_potential_extraction_params.num_extraction_radii, 2);
         double min_r, max_r;
         int effective_potential_extraction_level;
@@ -151,6 +163,7 @@ class SimulationParameters : public SimulationParametersBase
     // Effective potential extraction
     int activate_effective_potential_extraction;
     extraction_params_t effective_potential_extraction_params;
+    std::string effective_potential_extraction_path;
 
     // Do we want to write a file with the L2 norms of contraints?
     bool calculate_constraint_violations;
