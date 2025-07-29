@@ -104,6 +104,17 @@ class SimulationParameters : public SimulationParametersBase
                 activate_effective_potential_extraction, 0);
         pp.load("effective_potential_write_extraction",
                 effective_potential_extraction_params.write_extraction, false);
+        std::string effective_potential_extraction_path;
+        if (pp.contains("effective_potential_extraction_subpath"))
+        {
+        pp.load("effective_potential_extraction_subpath", effective_potential_extraction_path);
+        if (!effective_potential_extraction_path.empty() && effective_potential_extraction_path.back() != '/')
+                effective_potential_extraction_path += "/";
+        if (output_path != "./" && !output_path.empty())
+                effective_potential_extraction_path = output_path + effective_potential_extraction_path;
+        }
+        else
+                effective_potential_extraction_path = data_path;
         pp.load("effective_potential_extraction_file_prefix",
                 effective_potential_extraction_params.extraction_file_prefix,
                 std::string("Veff"));
