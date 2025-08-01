@@ -57,51 +57,54 @@ class EffectivePotentialExtraction : public SphericalExtraction
 
         // do the integration over the surface
         integrate();
+	
+	pout() << "int V eff size " << integrals_V_eff_d.size() << endl;
 
         std::vector<double> V_eff_values(integrals_V_eff_d.size());
-        std::vector<double> V_eff_p_values(integrals_V_eff_d.size());
-	std::vector<double> V_eff_m_values(integrals_V_eff_d.size());
+        //std::vector<double> V_eff_p_values(integrals_V_eff_d.size());
+	//std::vector<double> V_eff_m_values(integrals_V_eff_d.size());
+	std::vector<double> average_alpha(integrals_V_eff_d.size());
+	std::vector<double> average_beta2(integrals_V_eff_d.size());
 	std::vector<double> areal_radii(integrals_V_eff_d.size());
         for (int i = 0; i < integrals_V_eff_d.size(); i++)
         {
             areal_radii[i] = sqrt(integrals_V_eff_d[i] / (4 * M_PI));
-	    V_eff_values[i] = sqrt((integrals_alpha[i]*integrals_alpha[i] - integrals_beta2[i]) / (4 * M_PI)) /
-                               m_params.extraction_radii[i] /
+	    average_alpha[i] = integrals_alpha[i] / (4 * M_PI * m_params.extraction_radii[i]*m_params.extraction_radii[i]);
+	    average_beta2[i] = integrals_beta2[i] / (4 * M_PI * m_params.extraction_radii[i]*m_params.extraction_radii[i]);
+	    V_eff_values[i] = sqrt(average_alpha[i]*average_alpha[i] - average_beta2[i]) /
                                areal_radii[i];
-	    V_eff_p_values[i] = (sqrt(integrals_alpha[i]*integrals_alpha[i]) + sqrt(integrals_beta2[i]))  / sqrt(4 * M_PI) /
-                               m_params.extraction_radii[i] /
-                               areal_radii[i];
-            V_eff_m_values[i] = (sqrt(integrals_alpha[i]*integrals_alpha[i]) - sqrt(integrals_beta2[i]))  / sqrt(4 * M_PI) /
-                               m_params.extraction_radii[i] / 
-                               areal_radii[i];
+	    //V_eff_p_values[i] = (average_alpha[i] + sqrt(average_beta2[i])) /
+            //                   areal_radii[i];
+            //V_eff_m_values[i] = (average_alpha[i] - sqrt(average_beta2[i])) /
+            //                   areal_radii[i];
 	}
         // write the integrals
         write_to_dat(V_eff_values, data_path, "EffectivePotential");
-        write_to_dat(V_eff_p_values, data_path, "EffectivePotential_p");
-        write_to_dat(V_eff_m_values, data_path, "EffectivePotential_m");
+	//write_to_dat(V_eff_p_values, data_path, "EffectivePotential_p");
+        //write_to_dat(V_eff_m_values, data_path, "EffectivePotential_m");
 
         // find the light rings
         find_light_rings(V_eff_values, areal_radii);
         if (found_light_rings)
         {
             write_light_rings_to_dat(m_light_rings, data_path, "LightRings");
-            found_light_rings = false;
-            m_light_rings.clear();
-	    m_potential_extrema.clear();
+        //    found_light_rings = false;
+        //    m_light_rings.clear();
+	//    m_potential_extrema.clear();
         }
-        find_light_rings(V_eff_p_values, areal_radii);
-        if (found_light_rings)
-        {
-            write_light_rings_to_dat(m_light_rings, data_path, "LightRings_p");
-            found_light_rings = false;
-            m_light_rings.clear();
-            m_potential_extrema.clear();
-	}
-	find_light_rings(V_eff_m_values, areal_radii);
-        if (found_light_rings)
-        {
-            write_light_rings_to_dat(m_light_rings, data_path, "LightRings_m");
-        }
+        //find_light_rings(V_eff_p_values, areal_radii);
+        //if (found_light_rings)
+        //{
+        //    write_light_rings_to_dat(m_light_rings, data_path, "LightRings_p");
+        //    found_light_rings = false;
+        //    m_light_rings.clear();
+        //    m_potential_extrema.clear();
+	//}
+	//find_light_rings(V_eff_m_values, areal_radii);
+        //if (found_light_rings)
+        //{
+        //    write_light_rings_to_dat(m_light_rings, data_path, "LightRings_m");
+        //}
 
     }
 

@@ -216,7 +216,11 @@ void BosonStarLevel::specificPostTimeStep()
 
     if (m_p.activate_phi_extraction == 1)
     {
-	int min_level =
+	if (m_verbosity >= 1)
+        {
+            pout() << "Extracting Phi" << std::endl;
+        }
+    	int min_level =
             m_p.phi_extraction_params.min_extraction_level();
         if (at_level_timestep_multiple(min_level) && m_level == min_level)
         {

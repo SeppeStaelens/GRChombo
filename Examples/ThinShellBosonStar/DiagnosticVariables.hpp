@@ -23,7 +23,6 @@ enum
     c_Mom3,
 
     c_dtK,
-    c_alpha,
     c_beta2,
     c_V_eff_d,
 
@@ -40,20 +39,6 @@ enum
     c_s22,
     c_s23,
     c_s33,
-
-    c_Qphi_density,
-
-    c_Fphi_flux,
-
-    c_Sphi_source,
-
-    c_weight1,
-    c_weight2,
-
-    c_profile1,
-    c_profile2,
-
-    c_testHam,
 
     NUM_DIAGNOSTIC_VARS
 };
@@ -75,7 +60,6 @@ static const std::array<std::string, NUM_DIAGNOSTIC_VARS> variable_names = {
     "Mom3",
 
     "dtK",
-    "alpha",
     "beta2",
     "V_eff_d",
 
@@ -91,20 +75,7 @@ static const std::array<std::string, NUM_DIAGNOSTIC_VARS> variable_names = {
     "s13",
     "s22",
     "s23",
-    "s33",
-
-    "Qphi_density",
-    "Fphi_flux",
-    "Sphi_source",
-
-    "weight1",
-    "weight2",
-
-    "profile1",
-    "profile2",
-
-    "testHam"
-
+    "s33"
 };
 
 }

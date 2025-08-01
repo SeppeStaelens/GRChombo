@@ -163,8 +163,8 @@ class SimulationParameters : public SimulationParametersBase
 	    phi_extraction_params.extraction_levels = effective_potential_extraction_params.extraction_levels;
             phi_extraction_params.write_extraction = effective_potential_extraction_params.write_extraction;
 	    phi_extraction_params.center = effective_potential_extraction_params.center;
-	    pp.load("num_points_phi_Phi", phi_extraction_params.num_points_phi, 2);
-            pp.load("num_points_theta_Phi", phi_extraction_params.num_points_theta, 5);
+	    pp.load("num_points_phi_Phi", phi_extraction_params.num_points_phi, 12);
+            pp.load("num_points_theta_Phi", phi_extraction_params.num_points_theta, 15);
             if (extraction_params.num_points_theta % 2 == 0)
             {
                 extraction_params.num_points_theta += 1;
@@ -173,31 +173,31 @@ class SimulationParameters : public SimulationParametersBase
                        << "rule so increased by 1.\n";
             }
 
-            if (pp.contains("modes"))
+            if (pp.contains("phi_modes"))
             {
-                pp.load("num_modes", extraction_params.num_modes);
-                std::vector<int> extraction_modes_vect(
-                    2 * extraction_params.num_modes);
-                pp.load("modes", extraction_modes_vect,
-                        2 * extraction_params.num_modes);
-                extraction_params.modes.resize(extraction_params.num_modes);
-                for (int i = 0; i < extraction_params.num_modes; ++i)
+                pp.load("num_phi_modes", phi_extraction_params.num_modes);
+                std::vector<int> phi_extraction_modes_vect(
+                    2 * phi_extraction_params.num_modes);
+                pp.load("phi_modes", phi_extraction_modes_vect,
+                        2 * phi_extraction_params.num_modes);
+                phi_extraction_params.modes.resize(phi_extraction_params.num_modes);
+                for (int i = 0; i < phi_extraction_params.num_modes; ++i)
                 {
-                    extraction_params.modes[i].first =
-                        extraction_modes_vect[2 * i];
-                    extraction_params.modes[i].second =
-                        extraction_modes_vect[2 * i + 1];
+                    phi_extraction_params.modes[i].first =
+                        phi_extraction_modes_vect[2 * i];
+                    phi_extraction_params.modes[i].second =
+                        phi_extraction_modes_vect[2 * i + 1];
                 }
             }
             else
             {
                 // by default extraction (l,m) = (2,0), (2,1) and (2,2)
-                extraction_params.num_modes = 3;
-                extraction_params.modes.resize(3);
+                phi_extraction_params.num_modes = 3;
+                phi_extraction_params.modes.resize(3);
                 for (int i = 0; i < 3; ++i)
                 {
-                    extraction_params.modes[i].first = 2;
-                    extraction_params.modes[i].second = i;
+                    phi_extraction_params.modes[i].first = 2;
+                    phi_extraction_params.modes[i].second = i;
                 }
             }
 
