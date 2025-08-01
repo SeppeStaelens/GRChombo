@@ -159,10 +159,11 @@ class SimulationParameters : public SimulationParametersBase
 	
 	if (activate_phi_extraction)
         {
-	    phi_extraction_params.extraction_radii = effective_potential_extraction_params.extraction_radii;
-	    phi_extraction_params.extraction_levels = effective_potential_extraction_params.extraction_levels;
-            phi_extraction_params.write_extraction = effective_potential_extraction_params.write_extraction;
-	    phi_extraction_params.center = effective_potential_extraction_params.center;
+	    phi_extraction_params.num_extraction_radii = effective_potential_extraction_params.num_extraction_radii;
+	    phi_extraction_params.extraction_radii = radii;
+	    phi_extraction_params.extraction_levels = levels;
+            phi_extraction_params.write_extraction = true;
+	    phi_extraction_params.center = center;
 	    pp.load("num_points_phi_Phi", phi_extraction_params.num_points_phi, 12);
             pp.load("num_points_theta_Phi", phi_extraction_params.num_points_theta, 15);
             if (extraction_params.num_points_theta % 2 == 0)
