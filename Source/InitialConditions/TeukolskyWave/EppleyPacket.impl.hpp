@@ -15,13 +15,6 @@
 #include <iostream>
 #include <string>
 
-EppleyPacket::EppleyPacket(EppleyPacket_params_t m_params)
-    : amplitude(m_params.amplitude),
-      sigma(m_params.sigma)
-{
-    // Constructor implementation
-}
-
 // F function and its derivatives where x = r \pm t
 double EppleyPacket::get_F(double x) const
 {
@@ -50,18 +43,18 @@ double EppleyPacket::get_Fd4(double x) const
 
 // Auxiliary functions. In the end we want the superposition, so these are also implemented as get_X_tot
 
-double EppleyPacket::get_A(double r, double t, int sign) const
+double EvenEppleyPacket::get_A(double r, double t, int sign) const
 {
     double x = t - sign * r;
     return 3 * get_Fd2(x) / pow(r, 3) + sign * 9. * get_Fd1(x)  / pow(r, 4) + 3. * get_F(x) / pow(r, 5);
 }
 
-double EppleyPacket::get_A_tot(double r, double t) const
+double EvenEppleyPacket::get_A_tot(double r, double t) const
 {
     return get_A(r, t, 1) - get_A(r, t, -1);
 }
 
-double EppleyPacket::get_B(double r, double t, int sign) const
+double EvenEppleyPacket::get_B(double r, double t, int sign) const
 {
     double x = t - sign * r;
     return -1. *sign * get_Fd3(x) / (r*r)
@@ -70,12 +63,12 @@ double EppleyPacket::get_B(double r, double t, int sign) const
            -6. * get_F(x) / pow(r, 5);
 }
 
-double EppleyPacket::get_B_tot(double r, double t) const
+double EvenEppleyPacket::get_B_tot(double r, double t) const
 {
     return get_B(r, t, 1) - get_B(r, t, -1);
 }
 
-double EppleyPacket::get_C(double r, double t, int sign) const
+double EvenEppleyPacket::get_C(double r, double t, int sign) const
 {
     double x = t - sign * r;
     return 0.25 * get_Fd4(x) / r
@@ -85,9 +78,31 @@ double EppleyPacket::get_C(double r, double t, int sign) const
            + 5.25 * get_F(x) / pow(r, 5);
 }
 
-double EppleyPacket::get_C_tot(double r, double t) const
+double EvenEppleyPacket::get_C_tot(double r, double t) const
 {
     return get_C(r, t, 1) - get_C(r, t, -1);
+}
+
+double OddEppleyPacket::get_K(double r, double t, int sign) const
+{
+    double x = t - sign * r;
+    return get_Fd2(x) / pow(r, 2) + sign * 3. * get_Fd1(x) / pow(r, 3) + 3. * get_F(x) / pow(r, 4);
+}
+
+double OddEppleyPacket::get_K_tot(double r, double t) const
+{
+    return get_K(r, t, 1) - get_K(r, t, -1);
+}
+
+double OddEppleyPacket::get_L(double r, double t, int sign) const
+{
+    double x = t - sign * r;
+    return sign * get_Fd3(x) / r + 2. * get_Fd2(x) / pow(r, 2) + 3. * sign * get_Fd1(x) / pow(r, 3) + 3. * get_F(x) / pow(r, 4);
+}
+
+double OddEppleyPacket::get_L_tot(double r, double t) const
+{
+    return get_L(r, t, 1) - get_L(r, t, -1);
 }
 
 // ------------- m = 0 EppleyPacket -----------------
@@ -164,6 +179,42 @@ double EppleyPacketM2::get_gzz(double x, double y, double z, double r, double t)
     return 1. + ((pow(y,4) - pow(x,4)) * get_A_tot(r, t)
               - 2. * z*z * (x*x - y*y) * get_B_tot(r, t)
               + (x*x - y*y)*(r*r + z*z) * get_C_tot(r, t)) / pow(r, 4);
+}
+
+// -------------- m = 2 Odd parity EppleyPacket -----------------
+
+double OddEppleyPacketM2::get_gxx(double x, double y, double z, double r, double t) const
+{
+    return 1. + 2.*z * pow(r,-3) * (-4 * get_K_tot(r, t) * x*x *(x*x - 3* x*x)*(x*x + y*y) - get_L_tot(r, t)*r*r*(3* x*x * y*y + pow(y,4)) 
+    + get_L_tot(r, t)* x*x *(2* y*y *(x*x + y*y) + (-x + y)*(x + y)* z*z))*pow(x*x + y*y,-2);
+}
+
+double OddEppleyPacketM2::get_gxy(double x, double y, double z, double r, double t) const
+{
+    return 16*get_K_tot(r, t) * x*y*z * pow(r,-3) * (-x*x + y*y)*pow(x*x + y*y,-1);
+}
+
+double OddEppleyPacketM2::get_gxz(double x, double y, double z, double r, double t) const
+{
+    return 2*x*pow(r,-3)*(2*get_L_tot(r, t)*r*r*y*y - get_L_tot(r, t)*y*y*(x*x + y*y) + 2*get_K_tot(r, t)*(pow(x,4) - pow(y,4)) + ((-2*get_K_tot(r, t) + get_L_tot(r, t))*x*x + (6*get_K_tot(r, t) - get_L_tot(r, t))*y*y)*pow(z,2))*
+   pow(x*x + y*y,-1);
+}
+
+double OddEppleyPacketM2::get_gyy(double x, double y, double z, double r, double t) const
+{
+    return 1 + 2*z*pow(r,-3)*(get_L_tot(r, t)*x*x*(-2*y*y*(x*x + y*y) + r*r*(x*x + 3*y*y)) + 4*get_K_tot(r, t)*y*y*(-3*pow(x,4) - 2*x*x*y*y + pow(y,4)) + 
+      get_L_tot(r, t)*(-x + y)*(x + y)*y*y*pow(z,2))*pow(x*x + y*y,-2);
+}
+
+double OddEppleyPacketM2::get_gyz(double x, double y, double z, double r, double t) const
+{
+    return 2*y*pow(r,-3)*(-2*get_L_tot(r, t)*r*r*x*x + 2*get_K_tot(r, t)*pow(x,4) + get_L_tot(r, t)*pow(x,4) + get_L_tot(r, t)*x*x*y*y - 2*get_K_tot(r, t)*pow(y,4) + ((-6*get_K_tot(r, t) + get_L_tot(r, t))*x*x + (2*get_K_tot(r, t) - get_L_tot(r, t))*y*y)*pow(z,2))*
+   pow(x*x + y*y,-1);
+}
+
+double OddEppleyPacketM2::get_gzz(double x, double y, double z, double r, double t) const
+{
+    return 1 + 2*(4*get_K_tot(r, t) - get_L_tot(r, t))*(x - y)*(x + y)*z*pow(r,-3);
 }
 
 #endif /* EPPLEYPACKET_IMPL_HPP_ */
