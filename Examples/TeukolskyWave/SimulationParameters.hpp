@@ -31,7 +31,8 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("Eppley_amplitude", eppley_packet_params.amplitude, 0.01);
         pp.load("Eppley_sigma", eppley_packet_params.sigma, 0.1);
         pp.load("magnetic", eppley_packet_params.magnetic, 0);
-	      pp.load("time_offset", eppley_packet_params.time_offset, 0.);
+        pp.load("parity", eppley_packet_params.parity, 0);
+	    pp.load("time_offset", eppley_packet_params.time_offset, 0.);
         pp.load("wave_centre", eppley_packet_params.wave_centre, center);
 
         // Do we cant to calculate L2 norms of constraint violations

@@ -60,22 +60,28 @@ void TeukolskyWaveLevel::initialData()
 
     // First set everything to zero ... we don't want undefined values in
     // constraints etc, then  initialize TeukolskyWave object
-    if (m_p.eppley_packet_params.magnetic == 0)
+    if (m_p.eppley_packet_params.magnetic == 0 && m_p.eppley_packet_params.parity == 0)
     {
         BoxLoops::loop(make_compute_pack(SetValue(0.0), TeukolskyWave<EppleyPacketM0>(m_p.eppley_packet_params, m_dx)), 
                 m_state_new, m_state_new, INCLUDE_GHOST_CELLS, disable_simd());
     }
-    else if (m_p.eppley_packet_params.magnetic == 2)
+    else if (m_p.eppley_packet_params.magnetic == 2 && m_p.eppley_packet_params.parity == 0)
     {
         BoxLoops::loop(make_compute_pack(SetValue(0.0), TeukolskyWave<EppleyPacketM2>(m_p.eppley_packet_params, m_dx)), 
+                m_state_new, m_state_new, INCLUDE_GHOST_CELLS, disable_simd());
+    }
+    else if (m_p.eppley_packet_params.magnetic == 2 && m_p.eppley_packet_params.parity == 1)
+    {
+        BoxLoops::loop(make_compute_pack(SetValue(0.0), TeukolskyWave<OddEppleyPacketM2>(m_p.eppley_packet_params, m_dx)), 
                 m_state_new, m_state_new, INCLUDE_GHOST_CELLS, disable_simd());
     }
     else
     {
         pout() << "TeukolskyWaveLevel::initialData: "
-                  << "Invalid magnetic value in EppleyPacketParams: "
+                  << "Invalid (parity, magnetic) value in EppleyPacketParams: "
+                  << m_p.eppley_packet_params.parity << ", "
                   << m_p.eppley_packet_params.magnetic
-                  << ". Valid values are 0 or 2." << std::endl;
+                  << ". Valid values are (0, 0), (0, 2), or (1, 2)." << std::endl;
     }
     
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
