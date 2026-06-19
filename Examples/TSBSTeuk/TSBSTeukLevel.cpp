@@ -46,6 +46,7 @@
 // For effective potential calculation
 #include "EffectivePotential.hpp"
 #include "EffectivePotentialExtraction.hpp"
+#include "PhiExtraction.hpp"
 
 // for chombo grid Functions
 #include "AMRReductions.hpp"
@@ -214,6 +215,25 @@ void TSBSTeukLevel::specificPostTimeStep()
                 V_extraction.execute_query(m_gr_amr.m_interpolator,
                                            m_p.data_path);
             }
+        }
+    }
+
+    // Phi extraction
+    if (m_p.activate_phi_extraction == 1)
+    {
+	if (m_verbosity >= 1)
+        {
+            pout() << "Extracting Phi" << std::endl;
+        }
+    	int min_level =
+            m_p.phi_extraction_params.min_extraction_level();
+        if (at_level_timestep_multiple(min_level) && m_level == min_level)
+        {
+            m_gr_amr.m_interpolator->refresh();
+            PhiExtraction Phi_extraction(
+                m_p.phi_extraction_params, m_dt, m_time,
+                first_step, m_restart_time);
+            Phi_extraction.execute_query(m_gr_amr.m_interpolator);
         }
     }
 
