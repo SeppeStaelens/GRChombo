@@ -36,7 +36,7 @@ void TeukolskyWave<packet_t>::compute(Cell<data_t> current_cell) const
     double x = coords.x;
     double z = coords.z;
     double y = coords.y;
-    double r = sqrt(x * x + y * y + z * z);
+    double r = sqrt(x * x + y * y + z * z) + m_params_eppley_packet.regularize_r;
     double t = m_params_eppley_packet.time_offset;
 
     // get the metric componennts

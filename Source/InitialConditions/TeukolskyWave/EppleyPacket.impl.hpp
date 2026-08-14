@@ -185,8 +185,8 @@ double EppleyPacketM2::get_gzz(double x, double y, double z, double r, double t)
 
 double OddEppleyPacketM2::get_gxx(double x, double y, double z, double r, double t) const
 {
-    return 1. + 2.*z * pow(r,-3) * (-4 * get_K_tot(r, t) * x*x *(x*x - 3* x*x)*(x*x + y*y) - get_L_tot(r, t)*r*r*(3* x*x * y*y + pow(y,4)) 
-    + get_L_tot(r, t)* x*x *(2* y*y *(x*x + y*y) + (-x + y)*(x + y)* z*z))*pow(x*x + y*y,-2);
+    return 1. + 2.*z * pow(r,-3) * (-4 * get_K_tot(r, t) * x*x *(x*x - 3* y*y)*(x*x + y*y) - get_L_tot(r, t)*r*r*(3* x*x * y*y + pow(y,4)) 
+    + get_L_tot(r, t)* x*x *(2* y*y *(x*x + y*y) + (y*y-x*x)* z*z))*pow(x*x + y*y,-2);
 }
 
 double OddEppleyPacketM2::get_gxy(double x, double y, double z, double r, double t) const
@@ -203,18 +203,18 @@ double OddEppleyPacketM2::get_gxz(double x, double y, double z, double r, double
 double OddEppleyPacketM2::get_gyy(double x, double y, double z, double r, double t) const
 {
     return 1 + 2*z*pow(r,-3)*(get_L_tot(r, t)*x*x*(-2*y*y*(x*x + y*y) + r*r*(x*x + 3*y*y)) + 4*get_K_tot(r, t)*y*y*(-3*pow(x,4) - 2*x*x*y*y + pow(y,4)) + 
-      get_L_tot(r, t)*(-x + y)*(x + y)*y*y*pow(z,2))*pow(x*x + y*y,-2);
+      get_L_tot(r, t)*(-x*x + y*y) * y*y * z*z)*pow(x*x + y*y,-2);
 }
 
 double OddEppleyPacketM2::get_gyz(double x, double y, double z, double r, double t) const
 {
-    return 2*y*pow(r,-3)*(-2*get_L_tot(r, t)*r*r*x*x + 2*get_K_tot(r, t)*pow(x,4) + get_L_tot(r, t)*pow(x,4) + get_L_tot(r, t)*x*x*y*y - 2*get_K_tot(r, t)*pow(y,4) + ((-6*get_K_tot(r, t) + get_L_tot(r, t))*x*x + (2*get_K_tot(r, t) - get_L_tot(r, t))*y*y)*pow(z,2))*
+    return 2*y*pow(r,-3)*(-2*get_L_tot(r, t)* r*r * x*x + 2*get_K_tot(r, t)*pow(x,4) + get_L_tot(r, t)*pow(x,4) + get_L_tot(r, t) * x*x * y*y - 2*get_K_tot(r, t)*pow(y,4) + ((-6*get_K_tot(r, t) + get_L_tot(r, t))*x*x + (2*get_K_tot(r, t) - get_L_tot(r, t))*y*y)*pow(z,2))*
    pow(x*x + y*y,-1);
 }
 
 double OddEppleyPacketM2::get_gzz(double x, double y, double z, double r, double t) const
 {
-    return 1 + 2*(4*get_K_tot(r, t) - get_L_tot(r, t))*(x - y)*(x + y)*z*pow(r,-3);
+    return 1 + 2*(4*get_K_tot(r, t) - get_L_tot(r, t))*(x*x - y*y)*z*pow(r,-3);
 }
 
 #endif /* EPPLEYPACKET_IMPL_HPP_ */

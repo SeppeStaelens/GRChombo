@@ -34,6 +34,11 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("parity", eppley_packet_params.parity, 0);
 	    pp.load("time_offset", eppley_packet_params.time_offset, 0.);
         pp.load("wave_centre", eppley_packet_params.wave_centre, center);
+        pp.load("regularize_r", eppley_packet_params.regularize_r, 1e-3);
+        if (eppley_packet_params.regularize_r < 1.e-3)
+        {
+            pout() << "Warning: regularize_r is set to a value smaller than 1.e-3. This may lead to numerical instabilities at the origin." << std::endl;
+        }
 
         // Do we cant to calculate L2 norms of constraint violations
         pp.load("calculate_constraint_violations",
