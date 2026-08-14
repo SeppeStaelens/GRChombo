@@ -141,7 +141,7 @@ class SimulationParameters : public SimulationParametersBase
                 {0.5 * L, 0.5 * L, 0.5 * L});
 
 	// Phi extraction
-	pp.load("activate_phi_extraction", activate_phi_extraction, false);
+	pp.load("activate_phi_extraction", activate_phi_extraction, 0);
 	
 	if (activate_phi_extraction)
         {
@@ -245,7 +245,7 @@ class SimulationParameters : public SimulationParametersBase
     int activate_effective_potential_extraction;
     extraction_params_t effective_potential_extraction_params;
 
-    bool activate_phi_extraction;
+    int activate_phi_extraction;
     spherical_extraction_params_t phi_extraction_params;
 
     // Do we want to write a file with the L2 norms of contraints?
