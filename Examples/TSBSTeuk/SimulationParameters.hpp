@@ -81,26 +81,33 @@ class SimulationParameters : public SimulationParametersBase
                 mass_extraction_params.extraction_center,
                 {0.5 * L, 0.5 * L, 0.5 * L});
 
+	// Weyl extraction
+        pp.load("activate_gw_extraction", activate_weyl_extraction, 0);
+
         // Effective potential extraction
         pp.load("activate_effective_potential_extraction",
                 activate_effective_potential_extraction, 0);
         pp.load("effective_potential_write_extraction",
                 effective_potential_extraction_params.write_extraction, false);
-        pp.load("effective_potential_extraction_file_prefix",
-                effective_potential_extraction_params.extraction_file_prefix,
-                std::string("Veff"));
-	if (pp.contains("effective_potential_extraction_subpath"))
+
+        std::string effective_potential_extraction_path;
+        if (pp.contains("effective_potential_extraction_subpath"))
         {
-            pp.load("effective_potential_extraction_subpath", effective_potential_extraction_path);
-            if (!effective_potential_extraction_path.empty() && effective_potential_extraction_path.back() != '/')
+        pp.load("effective_potential_extraction_subpath", effective_potential_extraction_path);
+        if (!effective_potential_extraction_path.empty() && effective_potential_extraction_path.back() != '/')
                 effective_potential_extraction_path += "/";
-            if (output_path != "./" && !output_path.empty())
+        if (output_path != "./" && !output_path.empty())
                 effective_potential_extraction_path = output_path + effective_potential_extraction_path;
         }
         else
-            effective_potential_extraction_path = data_path;
-	effective_potential_extraction_params.data_path = data_path;
-	effective_potential_extraction_params.extraction_path = effective_potential_extraction_path;
+                effective_potential_extraction_path = data_path;
+        effective_potential_extraction_params.data_path = data_path;
+        effective_potential_extraction_params.extraction_path =
+            effective_potential_extraction_path;
+	
+	pp.load("effective_potential_extraction_file_prefix",
+                effective_potential_extraction_params.extraction_file_prefix,
+                std::string("Veff"));
        	pp.load("num_effective_potential_extraction_radii",
                 effective_potential_extraction_params.num_extraction_radii, 2);
         double min_r, max_r;
@@ -133,6 +140,78 @@ class SimulationParameters : public SimulationParametersBase
                 effective_potential_extraction_params.extraction_center,
                 {0.5 * L, 0.5 * L, 0.5 * L});
 
+	// Phi extraction
+	pp.load("activate_phi_extraction", activate_phi_extraction, false);
+	
+	if (activate_phi_extraction)
+        {
+	    phi_extraction_params.num_extraction_radii = effective_potential_extraction_params.num_extraction_radii;
+	    phi_extraction_params.extraction_radii = radii;
+	    phi_extraction_params.extraction_levels = levels;
+            phi_extraction_params.write_extraction = true;
+	    phi_extraction_params.center = center;
+	    pp.load("num_points_phi_Phi", phi_extraction_params.num_points_phi, 12);
+            pp.load("num_points_theta_Phi", phi_extraction_params.num_points_theta, 15);
+            if (extraction_params.num_points_theta % 2 == 0)
+            {
+                extraction_params.num_points_theta += 1;
+                pout() << "Parameter: num_points_theta incompatible with "
+                          "Simpson's "
+                       << "rule so increased by 1.\n";
+            }
+
+            if (pp.contains("phi_modes"))
+            {
+                pp.load("num_phi_modes", phi_extraction_params.num_modes);
+                std::vector<int> phi_extraction_modes_vect(
+                    2 * phi_extraction_params.num_modes);
+                pp.load("phi_modes", phi_extraction_modes_vect,
+                        2 * phi_extraction_params.num_modes);
+                phi_extraction_params.modes.resize(phi_extraction_params.num_modes);
+                for (int i = 0; i < phi_extraction_params.num_modes; ++i)
+                {
+                    phi_extraction_params.modes[i].first =
+                        phi_extraction_modes_vect[2 * i];
+                    phi_extraction_params.modes[i].second =
+                        phi_extraction_modes_vect[2 * i + 1];
+                }
+            }
+            else
+            {
+                // by default extraction (l,m) = (2,0), (2,1) and (2,2)
+                phi_extraction_params.num_modes = 3;
+                phi_extraction_params.modes.resize(3);
+                for (int i = 0; i < 3; ++i)
+                {
+                    phi_extraction_params.modes[i].first = 2;
+                    phi_extraction_params.modes[i].second = i;
+                }
+            }
+
+            std::string phi_extraction_path;
+            if (pp.contains("phi_extraction_subpath"))
+            {
+                pp.load("phi_extraction_subpath", phi_extraction_path);
+                if (!phi_extraction_path.empty() && phi_extraction_path.back() != '/')
+                    phi_extraction_path += "/";
+                if (output_path != "./" && !output_path.empty())
+                    phi_extraction_path = output_path + phi_extraction_path;
+            }
+            else
+                phi_extraction_path = data_path;
+
+            phi_extraction_params.data_path = data_path;
+            phi_extraction_params.extraction_path = phi_extraction_path;
+
+            // default names to Weyl extraction
+            pp.load("phi_extraction_file_prefix",
+                    phi_extraction_params.extraction_file_prefix,
+                    std::string("Phi_extraction_"));
+            pp.load("phi_integral_file_prefix",
+                    phi_extraction_params.integral_file_prefix,
+                    std::string("Phi_mode_"));
+        }
+
         // Do we cant to calculate L2 norms of constraint violations
         pp.load("calculate_constraint_violations",
                 calculate_constraint_violations, false);
@@ -161,10 +240,13 @@ class SimulationParameters : public SimulationParametersBase
     int activate_mass_extraction;
     extraction_params_t mass_extraction_params;
 
-    // Effective potential extraction
+    int activate_weyl_extraction;
+
     int activate_effective_potential_extraction;
     extraction_params_t effective_potential_extraction_params;
-    std::string effective_potential_extraction_path;
+
+    bool activate_phi_extraction;
+    spherical_extraction_params_t phi_extraction_params;
 
     // Do we want to write a file with the L2 norms of contraints?
     bool calculate_constraint_violations;
