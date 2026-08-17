@@ -31,33 +31,65 @@ EppleyPacketDerivs EppleyPacket::get_F_derivs(double x) const
     // --- paste generated F0..F4 assignments here ---
     double F0, F1, F2, F3, F4;
 
-    F0 = pow(x, 9)*(exp_plus + exp_minus);
+    F0 = (exp_plus + exp_minus)*x;
     
-    F1 = pow(x,8)*(9*(exp_plus + exp_minus) - (2*x*(exp_minus*(-r0 + x) + \
-         exp_plus*(r0 + x)))/sigma2);
+    F1 = exp_minus + exp_plus + (2*exp_minus*(r0 - x)*x)/sigma2 - (2*exp_plus*x*(r0 \
+    + x))/sigma2;
 
-    F2 = (2*pow(x,7)*(exp_minus*(36*sigma4 + sigma2*(18*r0 - \
-          19*x)*x + 2*pow(r0 - x,2)*x*x) + exp_plus*(36*sigma4 + \
-          2*x*x*pow(r0 + x,2) - sigma2*x*(18*r0 + \
-          19*x))))/sigma4;
+    F2 = (4*(exp_minus*(r0 - x) - exp_plus*(r0 + x)))/sigma2 - \
+    (2*x*(exp_minus*sigma2 + exp_plus*sigma2 - 2*exp_minus*pow(r0 - \
+    x,2) - 2*exp_plus*pow(r0 + x,2)))/sigma4;
 
-    F3 = (2*pow(x,6)*(exp_minus*(252*sigma6 + \
-          27*sigma4*(8*r0 - 9*x)*x + 4*pow(r0 - x,3)*pow(x,3) + \
-          6*sigma2*x*x*(9*r0*r0 - 19*r0*x + 10*x*x)) \
-          + exp_plus*(252*sigma6 - 4*pow(x,3)*pow(r0 + x,3) - \
-          27*sigma4*x*(8*r0 + 9*x) + \
-          6*sigma2*x*x*(9*r0*r0 + 19*r0*x + \
-          10*x*x))))/sigma6;
+    F3 = (-2*(3*sigma2*(exp_minus*sigma2 + exp_plus*sigma2 \
+    - 2*exp_minus*pow(r0 - x,2) - 2*exp_plus*pow(r0 + x,2)) + \
+    2*x*(3*exp_minus*sigma2*(r0 - x) - 2*exp_minus*pow(r0 - x,3) - \
+    3*exp_plus*sigma2*(r0 + x) + 2*exp_plus*pow(r0 + \
+    x,3))))/sigma6;
 
-    F4 = (4*pow(x,5)*(exp_minus*(756*sigma8 + \
-        72*sigma6*(14*r0 - 17*x)*x + 12*sigma2*(6*r0 - \
-        7*x)*pow(r0 - x,2)*pow(x,3) + 4*pow(r0 - x,4)*pow(x,4) + \
-        3*sigma4*x*x*(144*r0*r0 - 324*r0*x + \
-        181*x*x)) + exp_plus*(756*sigma8 + 4*pow(x,4)*pow(r0 + \
-        x,4) - 12*sigma2*pow(x,3)*pow(r0 + x,2)*(6*r0 + 7*x) - \
-        72*sigma6*x*(14*r0 + 17*x) + \
-        3*sigma4*x*x*(144*r0*r0 + 324*r0*x + \
-        181*x*x))))/sigma8;
+    F4 = (4*(-4*sigma2*(3*exp_minus*sigma2*(r0 - x) - \
+    2*exp_minus*pow(r0 - x,3) - 3*exp_plus*sigma2*(r0 + x) + \
+    2*exp_plus*pow(r0 + x,3)) + x*(3*exp_minus*sigma4 + \
+    3*exp_plus*sigma4 - 12*exp_minus*sigma2*pow(r0 - x,2) + \
+    4*exp_minus*pow(r0 - x,4) - 12*exp_plus*sigma2*pow(r0 + x,2) + \
+    4*exp_plus*pow(r0 + x,4))))/sigma8;
+
+    // F0 = pow(x, 9)*(exp_plus + exp_minus);
+    
+    // F1 = pow(x,8)*(9*(exp_plus + exp_minus) - (2*x*(exp_minus*(-r0 + x) + \
+F4 = (4*(-4*sigma2*(3*expM*sigma2*(r0 - x) - \
+2*expM*pow(r0 - x,3) - 3*expP*sigma2*(r0 + x) + \
+2*expP*pow(r0 + x,3)) + x*(3*expM*sigma4 + \
+3*expP*sigma4 - 12*expM*sigma2*pow(r0 - x,2) + \
+4*expM*pow(r0 - x,4) - 12*expP*sigma2*pow(r0 + x,2) + \
+4*expP*pow(r0 + x,4))))/sigma8;
+
+    // F0 = pow(x, 9)*(exp_plus + exp_minus);
+    
+    // F1 = pow(x,8)*(9*(exp_plus + exp_minus) - (2*x*(exp_minus*(-r0 + x) + \
+    //      exp_plus*(r0 + x)))/sigma2);
+
+    // F2 = (2*pow(x,7)*(exp_minus*(36*sigma4 + sigma2*(18*r0 - \
+    //       19*x)*x + 2*pow(r0 - x,2)*x*x) + exp_plus*(36*sigma4 + \
+    //       2*x*x*pow(r0 + x,2) - sigma2*x*(18*r0 + \
+    //       19*x))))/sigma4;
+
+    // F3 = (2*pow(x,6)*(exp_minus*(252*sigma6 + \
+    //       27*sigma4*(8*r0 - 9*x)*x + 4*pow(r0 - x,3)*pow(x,3) + \
+    //       6*sigma2*x*x*(9*r0*r0 - 19*r0*x + 10*x*x)) \
+    //       + exp_plus*(252*sigma6 - 4*pow(x,3)*pow(r0 + x,3) - \
+    //       27*sigma4*x*(8*r0 + 9*x) + \
+    //       6*sigma2*x*x*(9*r0*r0 + 19*r0*x + \
+    //       10*x*x))))/sigma6;
+
+    // F4 = (4*pow(x,5)*(exp_minus*(756*sigma8 + \
+    //     72*sigma6*(14*r0 - 17*x)*x + 12*sigma2*(6*r0 - \
+    //     7*x)*pow(r0 - x,2)*pow(x,3) + 4*pow(r0 - x,4)*pow(x,4) + \
+    //     3*sigma4*x*x*(144*r0*r0 - 324*r0*x + \
+    //     181*x*x)) + exp_plus*(756*sigma8 + 4*pow(x,4)*pow(r0 + \
+    //     x,4) - 12*sigma2*pow(x,3)*pow(r0 + x,2)*(6*r0 + 7*x) - \
+    //     72*sigma6*x*(14*r0 + 17*x) + \
+    //     3*sigma4*x*x*(144*r0*r0 + 324*r0*x + \
+    //     181*x*x))))/sigma8;
 
     return EppleyPacketDerivs{A*F0/2., A*F1/2., A*F2/2., A*F3/2., A*F4/2.};
 }
