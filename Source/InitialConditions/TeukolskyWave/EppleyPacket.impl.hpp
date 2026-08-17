@@ -129,7 +129,7 @@ EvenEppleyPacketCoefficients EvenEppleyPacket::get_ABC(double r) const
     // Compute out coefficients
     double A_out = 3 * F_derivs_out.F2 / pow(r, 3) 
                    + 9. * F_derivs_out.F1 / pow(r, 4) 
-                   + 3. * F_derivs_out.F0 / pow(r, 5);
+                   + 9. * F_derivs_out.F0 / pow(r, 5);
     double B_out = -1. * F_derivs_out.F3 / (r*r)
                    -3. * F_derivs_out.F2 / pow(r, 3)
                    -6. * F_derivs_out.F1 / pow(r, 4)
@@ -143,7 +143,7 @@ EvenEppleyPacketCoefficients EvenEppleyPacket::get_ABC(double r) const
     // Compute in coefficients
     double A_in = 3 * F_derivs_in.F2 / pow(r, 3) 
                   - 9. * F_derivs_in.F1 / pow(r, 4) 
-                  + 3. * F_derivs_in.F0 / pow(r, 5); 
+                  + 9. * F_derivs_in.F0 / pow(r, 5); 
     double B_in = 1. * F_derivs_in.F3 / (r*r)
                   -3. * F_derivs_in.F2 / pow(r, 3)
                   +6. * F_derivs_in.F1 / pow(r, 4)
