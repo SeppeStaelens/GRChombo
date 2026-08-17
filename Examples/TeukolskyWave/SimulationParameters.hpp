@@ -32,7 +32,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("Eppley_sigma", eppley_packet_params.sigma, 0.1);
         pp.load("magnetic", eppley_packet_params.magnetic, 0);
         pp.load("parity", eppley_packet_params.parity, 0);
-	    pp.load("time_offset", eppley_packet_params.time_offset, 0.);
+	    pp.load("radial_offset", eppley_packet_params.radial_offset, 0.);
         pp.load("wave_centre", eppley_packet_params.wave_centre, center);
         pp.load("regularize_r", eppley_packet_params.regularize_r, 1e-3);
         if (eppley_packet_params.regularize_r < 1.e-3)

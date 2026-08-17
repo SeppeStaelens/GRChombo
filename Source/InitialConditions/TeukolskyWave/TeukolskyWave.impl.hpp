@@ -36,18 +36,15 @@ void TeukolskyWave<packet_t>::compute(Cell<data_t> current_cell) const
     double x = coords.x;
     double z = coords.z;
     double y = coords.y;
-    double r = sqrt(x * x + y * y + z * z) + m_params_eppley_packet.regularize_r;
-    double t = m_params_eppley_packet.time_offset;
+    // double r = sqrt(x * x + y * y + z * z) + m_params_eppley_packet.regularize_r;
+    // r = r + m_params_eppley_packet.regularize_r * exp(-r*r);
 
     // get the metric componennts
-    double gxx = m_eppley_packet.get_gxx(x, y, z, r, t);
-    double gxy = m_eppley_packet.get_gxy(x, y, z, r, t);
-    double gxz = m_eppley_packet.get_gxz(x, y, z, r, t);
-    double gyy = m_eppley_packet.get_gyy(x, y, z, r, t);
-    double gyz = m_eppley_packet.get_gyz(x, y, z, r, t);
-    double gzz = m_eppley_packet.get_gzz(x, y, z, r, t);
+    EppleyPacketMetricComponents metric = m_eppley_packet.get_metric_components(x, y, z);
 
-    double g[3][3] = {{gxx, gxy, gxz}, {gxy, gyy, gyz}, {gxz, gyz, gzz}};
+    double g[3][3] = {{metric.gxx, metric.gxy, metric.gxz}, 
+                      {metric.gxy, metric.gyy, metric.gyz},
+                      {metric.gxz, metric.gyz, metric.gzz}};
 
     // Define the conformal factor
     double det_g = g[0][0] * (g[1][1] * g[2][2] - g[1][2] * g[2][1]) -

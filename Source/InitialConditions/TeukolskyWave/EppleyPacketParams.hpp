@@ -15,7 +15,7 @@ struct EppleyPacket_params_t
     double amplitude; //!< amplitude of the packet
     int magnetic; //!< magnetic quantum number
     int parity; //!< parity of the packet. 0 for even, 1 for odd
-    double time_offset; // offset for time to not center the wave on the center
+    double radial_offset; // offset for radial coordinate to not center the wave on the center
     double regularize_r; // small regularization parameter for the radial coordinate
     std::array<double, CH_SPACEDIM>
         wave_centre; //!< coordinates of the centre of the star
