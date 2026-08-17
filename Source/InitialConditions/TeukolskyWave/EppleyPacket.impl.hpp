@@ -244,6 +244,8 @@ OddEppleyPacketCoefficients OddEppleyPacket::get_KL(double r) const
 EppleyPacketMetricComponents EppleyPacketM0::get_metric_components(double x, double y, double z) const
 {
     double r = sqrt(x * x + y * y + z * z);
+    // regularize at the origin
+    r = r + 1. * exp(-r*r);
     EvenEppleyPacketCoefficients coeffs = get_ABC(r);
     double A_tot = coeffs.A;
     double B_tot = coeffs.B;
