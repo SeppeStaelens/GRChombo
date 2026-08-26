@@ -54,8 +54,8 @@ void TeukolskyWave<packet_t>::compute(Cell<data_t> current_cell) const
 
     // Initialise conformal metric
     double h[3][3] = {{0., 0., 0.}, {0., 0., 0.}, {0., 0., 0.}};
-    FOR2(i, j) h[i][j] = g[i][j];
-    //FOR2(i, j) h[i][j] = g[i][j] * chi;
+    //FOR2(i, j) h[i][j] = g[i][j];
+    FOR2(i, j) h[i][j] = g[i][j] * chi;
 
     // Define initial conformal factor
     vars.chi += chi;
