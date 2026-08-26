@@ -36,8 +36,6 @@ void TeukolskyWave<packet_t>::compute(Cell<data_t> current_cell) const
     double x = coords.x;
     double z = coords.z;
     double y = coords.y;
-    // double r = sqrt(x * x + y * y + z * z) + m_params_eppley_packet.regularize_r;
-    // r = r + m_params_eppley_packet.regularize_r * exp(-r*r);
 
     // get the metric componennts
     EppleyPacketMetricComponents metric = m_eppley_packet.get_metric_components(x, y, z);
